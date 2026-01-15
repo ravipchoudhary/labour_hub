@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    background-color: rgb(9, 75, 231);
+    color: rgb(255 255 255);
+    font-family: ui-sans-serif, system-ui, sans-serif;
+  }
+}
