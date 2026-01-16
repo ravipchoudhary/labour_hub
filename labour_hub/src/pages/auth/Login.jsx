@@ -24,7 +24,7 @@ const Login = () => {
               Don't have an account?
             </p>
             <button className="border border-white px-8
-             py-2 rounded-full text-sm ">
+             py-2 rounded-full font-semibold text-sm ">
               Register
             </button>
           </div>
@@ -34,20 +34,33 @@ const Login = () => {
         <h2 className="text-3xl font-bold text-gray-750 
         mr-8 text-center">Login</h2>
 {/* username */}
-        <div className="mb-4 relative">
-          <input type="text"
-          placeholder="username"
-          className="w-full bg-gray-100 px-4 py-3 rounded-lg  "/>
-          <span className="absolute right-4 top-1/2  text-gray-100 ">👤</span>
-        </div>
-{/* password */}
-         <div className="mb-2 relative"></div>
-         <input type="password"
-         placeholder="password"
-         className="w-full bg-gray-100 px-4 py-3 rounded-lg "/>
-          <span className="absolute right-4 top-3/2 mt-3 text-gray-100 ">👤</span>
-         
+        <div className="mb-4 mt-4 relative">
+            <input
+              type="text"
+              placeholder="Username"
+              className="w-full bg-gray-100 px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-[#7a97f5]"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+              👤
+            </span>
+          </div>
 
+          {/* Password */}
+          <div className="mb-2 relative">
+            <input
+              type="password"
+              placeholder="Password"
+              className="w-full bg-gray-100 px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-[#7a97f5]"
+            />
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
+              👤
+            </span>
+         </div>
+         <div className="text-gray-700 text-sm text-center mb-6 cursor-pointer hover:font-bold">Forget Password?</div>
+         <button className="w-full text-white bg-[#7a97f5] text-sm text-center 
+          px-2 py-1.5 font-semibold rounded-lg hover:font-bold ">Login</button>
+
+         <div className="text-gray-500 text-sm text-center mb-6 mt-2">or login with social platforms </div>
         </div>
 
       </div>
