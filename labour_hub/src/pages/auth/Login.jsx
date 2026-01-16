@@ -1,64 +1,58 @@
-export default function Login() {
-    return (
-        <div className="min-h-screen bg-[#8EC5FF]
-         flex items-center justify-center">
+import React from "react";
 
-            <div className="w-full max-w-[1500px]
-            bg-[#141A73] rounded-[17px] flex
-            justify-center py-20 mt-3 mb-3 ">
+const Login = () => {
+  return (
+    <div className="min-h-screen flex items-center
+     justify-center bg-gradient-to-r
+      from-gray-100 to-blue-100">
 
-                <div className="w-[420px] bg-white 
-                rounded-[20px] px-10 py-12 shadow-1g">
-{/* logo */}
-                    <div className="flex justify-center
-                    mb-5">
+      {/* CARD */}
+      <div className="relative w-[900px] h-[480px]
+       bg-white rounded-2xl shadow-xl overflow-hidden">
 
-                        <div className="w-14 h-14 
-                        bg-[#FF8A00] rounded-xl 
-                        flex items-center justify-center 
-                        text-white text-xl">logo
-                        </div>
-                    </div>
-                    <h1 className="text-center text-xl 
-                    font-semibold">Admin Portal</h1>
+        {/* BLUE SHAPE */}
+        <div className="absolute left-0 top-0 h-full
+         w-[50%] bg-[#7a97f5] rounded-r-[140px]"></div>
 
-                    <p className="text-center text-sm 
-                    text-gray-500 mt-1">Sign in to access the admin dashboard</p>
-
-                    <div className="relative mt-7">
-                        <span className="absolute left-3 top-1/2 -translate-y-3/2 mt-1 
-                        text-gray-400">✉️</span>
-                        <label className="text-sm font-medium">Email Address</label>
-                        
-                        <input className="w-full mt-1 h-[46px] 
-                        border rounded-lg pl-10 pr-4" defaultValue="admin@gmail.com"/>
-                    </div>
-
-                    <div className="mt-4">
-                        <label className="text-sm font-medium">Password</label>
-                        <div className="relative mt-1">
-                            <span className="absolute left-3 
-                            top-1/2 -translate-y-1/2 mt-0.5 text-gray-400">🔒</span>
-                            <input type="password" className="w-full mt-1 
-                        h-[46px] border rounded-lg pl-10 pr-10" 
-                        placeholder="Enter your password"/>
-
-                        <span className="absolute right-3 top-3/2
-                        mt-4 -translate-1/2 text-gray-400 cursor-pointer 
-                        ">👁️</span>
-                        </div>
-                    </div>
-
-                    <button className="w-full mt-6 
-                    h-[46px] bg-[#FF8A00] text-white font-semibold 
-                    rounded-lg">Sign In to button</button>
-
-                    <div className="my-6 border-t"></div>
-
-                    <p className="text-center text-sm 
-                    text-gray-500 cursor-pointer ">Back to Home</p>
-                </div>
-            </div>
+        {/* LEFT */}
+        <div className="absolute left-0 top-0 h-full
+         w-[55%] flex items-center justify-center">
+          
+          <div className="text-center text-white px-12">
+            <h2 className="text-3xl font-bold mb-3">Hello, Welcome!</h2>
+            <p className="text-sm mb-6 opacity-90">
+              Don't have an account?
+            </p>
+            <button className="border border-white px-8
+             py-2 rounded-full text-sm ">
+              Register
+            </button>
+          </div>
         </div>
-    );
-}
+        <div className="absolute right-0 top-0 
+        h-full w-[45%] flex flex-col justify-center pt-14">
+        <h2 className="text-3xl font-bold text-gray-750 
+        mr-8 text-center">Login</h2>
+{/* username */}
+        <div className="mb-4 relative">
+          <input type="text"
+          placeholder="username"
+          className="w-full bg-gray-100 px-4 py-3 rounded-lg  "/>
+          <span className="absolute right-4 top-1/2  text-gray-100 ">👤</span>
+        </div>
+{/* password */}
+         <div className="mb-2 relative"></div>
+         <input type="password"
+         placeholder="password"
+         className="w-full bg-gray-100 px-4 py-3 rounded-lg "/>
+          <span className="absolute right-4 top-3/2 mt-3 text-gray-100 ">👤</span>
+         
+
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+export default Login;
