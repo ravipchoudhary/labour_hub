@@ -13,8 +13,8 @@ const Header = () => {
             </nav>
 
             <div className="flex gap-3">
-                <button className="border px-4 py-1 rounded">Sign In</button>
-                <button className="bg-orange-500 text-white px-4 py-1 rounded">
+                <button className="border px-4 py-1 rounded bg-slate-200 hover:bg-orange-500 hover:text-white">Sign In</button>
+                <button className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-1 rounded">
                     Get Started
                 </button>
             </div>
