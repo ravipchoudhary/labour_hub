@@ -2,10 +2,12 @@ import React from "react";
 
 const Login = () => {
   return (
-<div className="min-h-screen w-full bg-gradient-to-br from-[#c7e7ff] via-[#ffd6a5] to-[#ffb4c6] flex items-center justify-center">      <div className="relative w-[900px] h-[480px] bg-white 
+    <div className="min-h-screen w-full bg-gradient-to-br from-[#c7e7ff] via-[#ffd6a5] to-[#ffb4c6] flex items-center justify-center">
+
+      <div className="relative w-[900px] h-[480px] bg-white 
       rounded-2xl shadow-xl overflow-hidden">
 
-        {/* BLUE SHAPE */}
+        {/* Orange BG */}
         <div className="absolute left-0 top-0 h-full w-[55%]
          bg-[#fb923c] rounded-r-[180px]"></div>
 
@@ -15,7 +17,7 @@ const Login = () => {
           <div className="text-center text-white px-12">
             <h2 className="text-3xl font-bold mb-3">Hello, Welcome!</h2>
             <p className="text-sm mb-6 opacity-90">
-              Don&apos;t have an account?
+              Don't have an account?
             </p>
             <button className="border border-white px-8 py-2 
             rounded-full text-sm hover:bg-white 
