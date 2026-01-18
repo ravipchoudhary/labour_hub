@@ -1,17 +1,21 @@
-import React from "react";
+import { useNavigate } from "react-router-dom";
+import { FormEvent } from "react";
 
 const Login = () => {
+  const navigate = useNavigate();
+  const handleLogin = (e: FormEvent)=> {
+    e.preventDefault();
+    navigate('/admin/dashboard');
+  }
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-[#c7e7ff] via-[#ffd6a5] to-[#ffb4c6] flex items-center justify-center">
 
       <div className="relative w-[900px] h-[480px] bg-white 
       rounded-2xl shadow-xl overflow-hidden">
 
-        {/* Orange BG */}
         <div className="absolute left-0 top-0 h-full w-[55%]
          bg-[#fb923c] rounded-r-[180px]"></div>
 
-        {/* LEFT */}
         <div className="absolute left-0 top-0 h-full w-[55%] 
         flex items-center justify-center">
           <div className="text-center text-white px-12">
@@ -27,7 +31,6 @@ const Login = () => {
           </div>
         </div>
 
-        {/* RIGHT  */}
         <div className="absolute right-0 top-0 
         h-full w-[45%] flex flex-col justify-center px-14">
           <h2 className="text-3xl font-bold text-gray-800 
@@ -35,7 +38,6 @@ const Login = () => {
             Login
           </h2>
 
-          {/* Username */}
           <div className="mb-4 relative">
             <input
               type="text"
@@ -48,7 +50,6 @@ const Login = () => {
             </span>
           </div>
 
-          {/* Password */}
           <div className="mb-2 relative">
             <input
               type="password"
@@ -66,10 +67,12 @@ const Login = () => {
             Forgot Password?
           </div>
 
-          <button className="w-full bg-[#fb923c] 
+          <form onClick={handleLogin}>
+            <button type="button"  className="w-full bg-[#fb923c] 
           text-white py-3 rounded-lg font-semibold hover:font-bold bg-[#fb923c] transition">
             Login
           </button>
+          </form>
 
           <div className="text-center text-sm
            text-gray-500 mt-6">
