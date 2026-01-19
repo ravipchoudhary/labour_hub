@@ -81,7 +81,7 @@ const Registeremp = () => {
           {/* Sign In */}
           <p className="text-sm text-gray-600 mt-4 text-center">
             Already have an account?{" "}
-            <Link to="/signin" className="text-orange-500 font-semibold">
+            <Link to="/login" className="text-orange-500 font-semibold">
               Sign In
             </Link>
           </p>

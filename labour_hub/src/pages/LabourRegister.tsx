@@ -1,14 +1,16 @@
 import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { User, Phone, MapPin, Lock, Eye, ArrowLeft } from 'lucide-react';
 
 const Register = () => {
+  const navigate = useNavigate();
   return (
     <div className="flex min-h-screen font-sans">
       {/* LEFT SIDE: THE FORM */}
       <div className="w-full lg:w-[60%] p-8 md:p-16 bg-white overflow-y-auto">
         
         
-        <div className="flex items-center text-gray-500 mb-8 cursor-pointer">
+        <div className="flex items-center text-gray-500 mb-8 cursor-pointer" onClick={() => navigate('/')}>
           <ArrowLeft size={18} className="mr-2" />
           <span className="text-sm">Back to role selection</span>
         </div>
@@ -69,7 +71,7 @@ const Register = () => {
           </button>
 
           <p className="text-center text-gray-500 text-sm mt-4">
-            Already have an account? <span className="text-brandOrange font-semibold cursor-pointer">Sign In</span>
+            Already have an account? <Link to="/login" className="text-brandOrange font-semibold hover:underline">Sign In</Link>
           </p>
         </form>
       </div>
