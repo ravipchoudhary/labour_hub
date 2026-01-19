@@ -18,7 +18,6 @@ const Home = () => {
                 </div>
             </div>
 
-            {/* Main Title */}
             <div className="text-center mb-12">
                 <h2 className="text-4xl font-bold text-black mb-3">
                     How do you want to use LabourHub?
