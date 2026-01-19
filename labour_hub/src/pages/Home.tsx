@@ -72,7 +72,7 @@ const Home = () => {
             <div className="text-center">
                 <p className="text-gray-600">
                     Already have an account?{" "}
-                    <Link to="/signin" className="text-orange-500 font-semibold hover:text-orange-600">
+                    <Link to="/login" className="text-orange-500 font-semibold hover:text-orange-600">
                         Sign In
                     </Link>
                 </p>

@@ -1,13 +1,14 @@
 import { Routes, Route } from "react-router-dom";
 import Header from "./components/common/Header";
 import Footer from "./components/common/Footer";
+import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import FindLabour from "./pages/FindLabour";
 import Register from "./pages/LabourRegister";
-import Home from "./pages/Home";
 import Registeremp from "./pages/Registeremp";
 import LabourDashboard from "./pages/LabourDashboard";
-
+import WorkerDetail from "./pages/WorkerDetail";
+import Login from "./pages/auth/Login";
 
 function App() {
   return (
@@ -15,12 +16,13 @@ function App() {
       <Header />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/find-labour" element={<FindLabour />} />
         <Route path="/register/worker" element={<Register />} />
-        <Route path="/registeremp" element={<Registeremp />} />
+        <Route path="/register/employer" element={<Registeremp />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/labourDashboard" element={<LabourDashboard />} />
-
+        <Route path="/labour-dashboard" element={<LabourDashboard />} />
+        <Route path="/worker/:id" element={<WorkerDetail />} />
       </Routes>
       <Footer />
     </>
@@ -28,26 +30,3 @@ function App() {
 }
 
 export default App;
-// import { Routes, Route } from "react-router-dom";
-// import Header from "./components/common/Header";
-// import Footer from "./components/common/Footer";
-// import Dashboard from "./pages/Dashboard";
-// import FindLabour from "./pages/FindLabour";
-// import Register from "./pages/LabourRegister";
-// import Home from "./pages/Home";
-// function App() {
-//   return (
-//     <>
-//       <Header />
-//       <Routes>
-//         <Route path="/find-labour" element={<FindLabour />} />
-//         <Route path="/register" element={<Register />} /> 
-//         <Route path="/" element={<Home />} />
-//         <Route path="/dashboard" element={<Dashboard />} />
-//       </Routes>
-//       <Footer />
-//     </>
-//   );
-// }
-
-// export default App;
