@@ -5,6 +5,8 @@ import Dashboard from "./pages/Dashboard";
 import FindLabour from "./pages/FindLabour";
 import Register from "./pages/LabourRegister";
 import Home from "./pages/Home";
+import LabourDashboard from "./pages/LabourDashboard";
+
 
 function App() {
   return (
@@ -15,6 +17,8 @@ function App() {
         <Route path="/register" element={<Register />} /> 
         <Route path="/" element={<Home />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/labourDashboard" element={<LabourDashboard />} />
+
       </Routes>
       <Footer />
     </>
