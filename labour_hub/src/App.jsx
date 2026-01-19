@@ -1,3 +1,5 @@
+import Login from "./pages/auth/Login.jsx";
+
 import Header from "./components/common/Header";
 import { Routes, Route } from "react-router-dom";
 import Footer from "./components/common/Footer";
