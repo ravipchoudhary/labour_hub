@@ -5,15 +5,17 @@ import Dashboard from "./pages/Dashboard";
 import FindLabour from "./pages/FindLabour";
 import Register from "./pages/LabourRegister";
 import Home from "./pages/Home";
+import Registeremp from "./pages/Registeremp";
 
 function App() {
   return (
     <>
       <Header />
       <Routes>
-        <Route path="/find-labour" element={<FindLabour />} />
-        <Route path="/register" element={<Register />} /> 
         <Route path="/" element={<Home />} />
+        <Route path="/find-labour" element={<FindLabour />} />
+        <Route path="/register/worker" element={<Register />} />
+        <Route path="/registeremp" element={<Registeremp />} />
         <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
       <Footer />
