@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));    
-         font-family: ui-sans-serif, system-ui, sans-serif;
+    background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));
+    font-family: ui-sans-serif, system-ui, sans-serif;
   }
 }

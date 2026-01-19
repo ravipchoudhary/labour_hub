@@ -1,14 +1,27 @@
 import StatCard from "../components/cards/StatCard";
-// import { workers } from "../data/worker";
+import { useState } from "react"
+import { workers } from "../data/worker";
 // import WorkerCard from "../components/cards/WorkerCard";
 const Dashboard = () => {
+    const [selectedSkill, setSelectedSkill] = useState("All");
+    const [location, setLocation] = useState("");
+    const filteredWorkers = workers.filter((worker) => {
+        const skillMatch =
+            selectedSkill === "All" || worker.skills.includes(selectedSkill);
+
+        const locationMatch = worker.location
+            .toLowerCase()
+            .includes(location.toLowerCase());
+
+        return skillMatch && locationMatch;
+    });
     return (
-        <div className="bg-gray-200 p-8 min-h-screen">
+        <div className="bg-gray-00 p-8 min-h-screen">
             <h2 className="text-2xl font-semibold mb-6">
                 Welcome back, Employer!
             </h2>
 
-            <div className="mt-8 grid border grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 <StatCard value="24" title="Workers Contacted" />
                 <StatCard title="Active Searches" value="3" />
                 <StatCard title="Workers Hired" value="12" />
@@ -18,17 +31,23 @@ const Dashboard = () => {
                 <h2 className="text-lg font-semibold">Find Workers</h2>
 
                 <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-                    <select className="w-full rounded-lg border-2 px-4 py-3 text-sm focus:outline-none">
-                        <option>All Skills</option>
-                        <option>Electrician</option> 
-                        <option>Plumber</option>
-                        <option>Carpenter</option>
+                    <select
+                        value={selectedSkill}
+                        onChange={(e) => setSelectedSkill(e.target.value)}
+                        className="w-full rounded-lg border px-4 py-3 text-sm focus:outline-none"
+                    >
+                        <option value="All">All Skills</option>
+                        <option value="Electrician">Electrician</option>
+                        <option value="Plumber">Plumber</option>
+                        <option value="Carpenter">Carpenter</option>
                     </select>
 
-                    <input 
+                    <input
                         type="text"
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
                         placeholder="Enter area or locality"
-                        className="w-full rounded-lg  border-2 px-4 py-3 text-sm focus:outline-none"
+                        className="w-full rounded-lg border-2 px-4 py-3 text-sm focus:outline-none"
                     />
 
                     <div>
@@ -89,17 +108,21 @@ const Dashboard = () => {
                     </li>
                 </ul>
             </div>
-            {/* <div className="mt-10">
-                <h2 className="mb-4 text-lg font-semiblod"> Available Workers </h2>
+            <div className="mt-10">
+                {/* <h2 className="mb-4 text-lg font-semiblod"> Available Workers </h2> */}
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {workers.map((workar) => (
-                        <WorkerCard
-                            key={Worker.id}
-                            name={workar.name}
-                            skills={wor}/>
-                            ))}
+                    {/* {filteredWorkers.map((worker) => (
+                        // <WorkerCard
+                        //     key={worker.id}
+                        //     name={worker.name}
+                        //     skills={worker.skills}
+                        //     location={worker.location}
+                        //     rating={worker.rating}
+                        //     available={worker.available}
+                        // />
+                    ))} */}
                 </div>
-            </div> */}
+            </div>
         </div>
     );
 };
