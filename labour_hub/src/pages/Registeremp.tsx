@@ -1,61 +1,112 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
+
+
 
 type InputProps = {
   label: string;
   placeholder: string;
   type?: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
 const Registeremp = () => {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    location: "",
+    about: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const isFormValid =
+    formData.name &&
+    formData.email &&
+    formData.phone &&
+    formData.location &&
+    formData.about &&
+    formData.password &&
+    formData.confirmPassword &&
+    formData.password === formData.confirmPassword;
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!isFormValid) return;
+
+    // API call will go here later
+    console.log("Employer Registered:", formData);
+    alert("Registration Successful!");
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-10">
-      <div className="bg-white w-full max-w-5xl rounded-xl shadow-lg grid md:grid-cols-2 gap-10 p-8">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-10">
+      <div className="bg-white w-full max-w-5xl rounded-xl shadow-lg grid grid-cols-1 md:grid-cols-2 gap-10 p-6 sm:p-8">
 
         {/* Left Section – Form */}
-        <div>
-          {/* Logo */}
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-orange-500 rounded flex items-center justify-center">
-              <svg
-                className="w-6 h-6 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                />
-              </svg>
-            </div>
-            <h1 className="text-2xl font-bold">
-              <span className="text-black">Labour</span>
-              <span className="text-orange-500">Hub</span>
-            </h1>
-          </div>
-
-          {/* Heading */}
-          <h2 className="text-2xl font-bold mb-2">Register as an Employer</h2>
-          <p className="text-gray-500 mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold mb-2">
+            Register as an Employer
+          </h2>
+          <p className="text-gray-500 mb-6 text-sm sm:text-base">
             Create your account and start hiring skilled workers
           </p>
 
           {/* Form */}
-          <form className="space-y-4">
-            <Input label="Your Name" placeholder="Enter your full name" />
-            <Input label="Email Address" placeholder="Enter your email id" />
-            <Input label="Phone Number" placeholder="Enter your phone number" />
-            <Input label="Address / Location" placeholder="Enter your area/locality" />
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            <Input
+              label="Your Name"
+              placeholder="Enter your full name"
+              value={formData.name}
+              onChange={handleChange}
+              type="text"
+              name="name"
+            />
+
+            <Input
+              label="Email Address"
+              placeholder="Enter your email id"
+              value={formData.email}
+              onChange={handleChange}
+              type="email"
+              name="email"
+            />
+
+            <Input
+              label="Phone Number"
+              placeholder="Enter your phone number"
+              value={formData.phone}
+              onChange={handleChange}
+              type="tel"
+              name="phone"
+            />
+
+            <Input
+              label="Address / Location"
+              placeholder="Enter your area/locality"
+              value={formData.location}
+              onChange={handleChange}
+              name="location"
+            />
 
             <div>
               <label className="block text-sm font-medium mb-1">
                 About yourself
               </label>
               <textarea
+                name="about"
+                value={formData.about}
+                onChange={handleChange}
                 placeholder="Brief about yourself and hiring needs..."
-                className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                className="w-full border rounded-md px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-400"
               />
             </div>
 
@@ -63,22 +114,40 @@ const Registeremp = () => {
               label="Password"
               type="password"
               placeholder="Create your password"
+              value={formData.password}
+              onChange={handleChange}
+              name="password"
             />
+
             <Input
               label="Confirm Password"
               type="password"
               placeholder="Confirm your password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              name="confirmPassword"
             />
+
+            {formData.password &&
+              formData.confirmPassword &&
+              formData.password !== formData.confirmPassword && (
+                <p className="text-sm text-red-500">
+                  Passwords do not match
+                </p>
+              )}
 
             <button
               type="submit"
-              className="w-full bg-orange-500 text-white py-2 rounded-md font-semibold hover:bg-orange-600 transition"
+              disabled={!isFormValid}
+              className={`w-full py-2.5 rounded-md font-semibold transition ${
+                isFormValid
+                  ? "bg-orange-500 hover:bg-orange-600 text-white"
+                  : "bg-gray-300 cursor-not-allowed text-gray-600"
+              }`}
             >
               Sign Up
             </button>
           </form>
-
-          {/* Sign In */}
           <p className="text-sm text-gray-600 mt-4 text-center">
             Already have an account?{" "}
             <Link to="/login" className="text-orange-500 font-semibold">
@@ -90,24 +159,34 @@ const Registeremp = () => {
         {/* Right Section – Illustration */}
         <div className="hidden md:flex items-center justify-center">
           <img
-            src="/images/employer-illustration.svg"
+            src="/employer-illustration.svg"
             alt="Employer Illustration"
-            className="max-w-sm"
+            className="w-64 lg:w-96 h-auto"
           />
         </div>
       </div>
-    </div>
+
   );
 };
 
-
-const Input = ({ label, type = "text", placeholder }: InputProps) => (
+const Input = ({
+  label,
+  type = "text",
+  placeholder,
+  value,
+  onChange,
+  name,
+}: InputProps & { name: string }) => (
   <div>
     <label className="block text-sm font-medium mb-1">{label}</label>
     <input
+      name={name}
       type={type}
+      value={value}
+      onChange={onChange}
       placeholder={placeholder}
-      className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
+      className="w-full border rounded-md px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-400"
+      required
     />
   </div>
 );
