@@ -25,8 +25,8 @@ const WorkerCard = ({ id,name, price, rating, available, location, skills }: Pro
                     {available ? "Available" : "Busy"}
                 </span>
             </div>
-            {/* <p className="text-sm text-gray-500">${price}⭐ {rating}</p> */}
-            <p className="mt-2 text-lg font-normal  text-gray-800">⭐{rating} ₹{price}</p>
+            <p className="text-sm text-gray-500">⭐ {rating}</p>
+            <p className="mt-2 text-lg font-normal  text-gray-800">₹{price} / day</p>
             <p className="text-sm text-gray-500">{location}</p>
             <div className="flex items-center gap-2 mt-2">
                 <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">{skills}</span>
@@ -34,7 +34,9 @@ const WorkerCard = ({ id,name, price, rating, available, location, skills }: Pro
 
             </div>
             <div className="flex gap-2 mt-4">
-                <button className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded">
+                <button 
+                onClick={(e) =>{e.stopPropagation();}}
+                className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded">
                     Call Now
                 </button>
                 <button className="border px-3 py-1 rounded hover:bg-orange-500 hover:text-white">WhatsApp</button>

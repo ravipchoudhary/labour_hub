@@ -1,40 +1,38 @@
 import StatCard from "../components/cards/StatCard";
-import { useState } from "react"
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { workers } from "../data/worker";
-// import WorkerCard from "../components/cards/WorkerCard";
+
 const Dashboard = () => {
     const [selectedSkill, setSelectedSkill] = useState("All");
     const [location, setLocation] = useState("");
+    const navigate = useNavigate();
+
     const filteredWorkers = workers.filter((worker) => {
-        const skillMatch =
-            selectedSkill === "All" || worker.skills.includes(selectedSkill);
-
-        const locationMatch = worker.location
-            .toLowerCase()
-            .includes(location.toLowerCase());
-
+        const skillMatch = selectedSkill === "All" || worker.skills.includes(selectedSkill);
+        const locationMatch = worker.location.toLowerCase().includes(location.toLowerCase());
         return skillMatch && locationMatch;
     });
+
     return (
-        <div className="bg-gray-00 p-8 min-h-screen">
-            <h2 className="text-2xl font-semibold mb-6">
-                Welcome back, Employer!
-            </h2>
+        <div className="bg-gray-50 p-8 min-h-screen">
+            <h2 className="text-2xl font-semibold mb-6">Welcome back, Employer!</h2>
 
             <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                <StatCard value="24" title="Workers Contacted" />
-                <StatCard title="Active Searches" value="3" />
-                <StatCard title="Workers Hired" value="12" />
-                <StatCard title="Avg Response Time" value="2h" />
+                <StatCard value="24" title="Workers Contacted" icon={<span className="text-xl">👥</span>} />
+                <StatCard value="3" title="Active Searches" icon={<span className="text-xl">🔍</span>} />
+                <StatCard value="12" title="Workers Hired" icon={<span className="text-xl">✅</span>} />
+                <StatCard value="2h" title="Avg Response Time" icon={<span className="text-xl">⏱️</span>} />
             </div>
-            <div className="mt-10 rounded-xl border bg-white p-6">
-                <h2 className="text-lg font-semibold">Find Workers</h2>
 
-                <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <div className="mt-10 rounded-xl border bg-white p-6 shadow-md">
+                <h2 className="text-lg font-semibold mb-4">Find Workers</h2>
+
+                <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
                     <select
                         value={selectedSkill}
                         onChange={(e) => setSelectedSkill(e.target.value)}
-                        className="w-full rounded-lg border px-4 py-3 text-sm focus:outline-none"
+                        className="w-full rounded-lg border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                     >
                         <option value="All">All Skills</option>
                         <option value="Electrician">Electrician</option>
@@ -47,47 +45,51 @@ const Dashboard = () => {
                         value={location}
                         onChange={(e) => setLocation(e.target.value)}
                         placeholder="Enter area or locality"
-                        className="w-full rounded-lg border-2 px-4 py-3 text-sm focus:outline-none"
+                        className="w-full rounded-lg border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                     />
 
                     <div>
                         <p className="mb-2 text-sm text-gray-500">Distance: 10 km</p>
-                        <input type="range" className="w-full" />
+                        <input type="range" className="w-full accent-orange-500" />
                     </div>
                 </div>
 
-                <div className="mt-6 flex flex-col gap-4 sm:flex-row">
-                    <button className="flex-1 rounded-lg bg-orange-500 hover:bg-orange-600 active:scale-95 transition-all duration-200 text-white">
+                <div className="mt-6 flex flex-col sm:flex-row gap-4">
+                    <button
+                        onClick={() => navigate("/find-labour")}
+                        className="flex-1 rounded-lg bg-orange-500 hover:bg-orange-600 active:scale-95 transition-all duration-200 text-white py-3"
+                    >
                         Search Workers
                     </button>
 
-                    <button className="rounded-lg border px-6 py-3 text-sm
-                    hover:bg-orange-500 bg-slate-200 hover:text-white">
+                    <button className="rounded-lg border px-6 py-3 text-sm hover:bg-orange-500 bg-slate-200 hover:text-white transition">
                         More Filters
                     </button>
                 </div>
             </div>
+
             <div className="mt-10">
                 <h2 className="mb-4 text-lg font-semibold">Recent Searches</h2>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    <div className="rounded-xl border bg-white p-4 hover:shadow-md transition">
+                    <div className="rounded-xl border bg-white p-4 hover:shadow-lg hover:scale-105 transition cursor-pointer">
                         <p className="font-medium">Electrician</p>
                         <p className="text-sm text-gray-500">Noida</p>
                         <p className="mt-2 text-xs text-gray-400">2 hours ago</p>
                     </div>
-                    <div className="rounded-xl border bg-white p-4 hover:shadow-md transition">
+                    <div className="rounded-xl border bg-white p-4 hover:shadow-lg hover:scale-105 transition cursor-pointer">
                         <p className="font-medium">Plumber</p>
                         <p className="text-sm text-gray-500">Delhi</p>
                         <p className="mt-2 text-xs text-gray-400">Yesterday</p>
                     </div>
-                    <div className="rounded-xl border bg-white p-4 hover:shadow-md transition">
+                    <div className="rounded-xl border bg-white p-4 hover:shadow-lg hover:scale-105 transition cursor-pointer">
                         <p className="font-medium">Carpenter</p>
                         <p className="text-sm text-gray-500">Gurgaon</p>
                         <p className="mt-2 text-xs text-gray-400">2 days ago</p>
                     </div>
                 </div>
             </div>
-            <div className="mt-10 rounded-xl bg-orange-50 p-6">
+
+            <div className="mt-10 rounded-xl bg-gradient-to-r from-orange-50 to-orange-100 p-6 shadow-sm">
                 <h2 className="text-lg font-semibold text-orange-700">Hiring Tips</h2>
                 <ul className="mt-4 space-y-3 text-sm text-orange-700">
                     <li className="flex items-start gap-2">
@@ -107,21 +109,6 @@ const Dashboard = () => {
                         Compare multiple workers before finalizing
                     </li>
                 </ul>
-            </div>
-            <div className="mt-10">
-                {/* <h2 className="mb-4 text-lg font-semiblod"> Available Workers </h2> */}
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {/* {filteredWorkers.map((worker) => (
-                        // <WorkerCard
-                        //     key={worker.id}
-                        //     name={worker.name}
-                        //     skills={worker.skills}
-                        //     location={worker.location}
-                        //     rating={worker.rating}
-                        //     available={worker.available}
-                        // />
-                    ))} */}
-                </div>
             </div>
         </div>
     );
