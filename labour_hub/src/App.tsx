@@ -1,25 +1,43 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import Header from "./components/common/Header";
 import Footer from "./components/common/Footer";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import FindLabour from "./pages/FindLabour";
 import Register from "./pages/LabourRegister";
+import Login from "./Admin/Login";
+import AdminDashboard from "./Admin/pages/AdminDashboard";
+import UserManagement from "./Admin/pages/UserManagement"
+import LabourVerification from "./Admin/pages/LabourVerification";
 import Registeremp from "./pages/Registeremp";
 import LabourDashboard from "./pages/LabourDashboard";
 import WorkerDetail from "./pages/WorkerDetail";
-import Login from "./pages/auth/Login";
 import Landing from "./pages/Landing";
 
 function App() {
+
+  const location = useLocation();
+  const isAdminPage = location.pathname.startsWith("/admin");
   return (
     <>
-      <Header />
+      {!isAdminPage && <Header />}
+      {/* <Header /> */}
+
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/Home" element={<Home />} /> 
         <Route path="/login" element={<Login />} />
         <Route path="/find-labour" element={<FindLabour />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        {/* Admin route */}
+        <Route path="/admin/login" element={<Login />}></Route>
+        <Route path="/admin/dashboard" element={<AdminDashboard />}></Route>
+        <Route path="/admin/users" element={<UserManagement />}></Route>
+        <Route path="/admin/labours" element={<LabourVerification />}></Route>
+        </Routes>
+      {!isAdminPage && <Footer />}
         <Route path="/register/worker" element={<Register />} />
         <Route path="/register/employer" element={<Registeremp />} />
         <Route path="/dashboard" element={<Dashboard />} />
