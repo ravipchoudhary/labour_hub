@@ -9,13 +9,15 @@ import Registeremp from "./pages/Registeremp";
 import LabourDashboard from "./pages/LabourDashboard";
 import WorkerDetail from "./pages/WorkerDetail";
 import Login from "./pages/auth/Login";
+import Landing from "./pages/Landing";
 
 function App() {
   return (
     <>
       <Header />
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/Home" element={<Home />} /> 
         <Route path="/login" element={<Login />} />
         <Route path="/find-labour" element={<FindLabour />} />
         <Route path="/register/worker" element={<Register />} />
@@ -23,7 +25,8 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/labour-dashboard" element={<LabourDashboard />} />
         <Route path="/worker/:id" element={<WorkerDetail />} />
-      </Routes>
+
+      </Routes> 
       <Footer />
     </>
   );
