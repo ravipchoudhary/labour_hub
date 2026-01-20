@@ -1,10 +1,13 @@
+
+import { useNavigate } from "react-router-dom";
 const SideCards = () => {
+  const navigate = useNavigate();
   return (
     <div className="space-y-6">
       <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-4">
         <h2 className="font-semibold">Similar Workers</h2>
 
-<div className="bg-[#FFEFD8] p-4 rounded-xl flex items-center justify-between">
+<div onClick={()=> navigate("/admin/users")} className="bg-[#FFEFD8] p-4 rounded-xl flex items-center justify-between cursor-pointer">
   <div className="flex items-center gap-3">
     <div className="w-10 h-10 bg-orange-200 rounded-lg 
     flex items-center justify-center">

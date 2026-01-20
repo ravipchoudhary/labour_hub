@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { recentRegistrations } from "../datas/recentRegistrations";
 
 const statusStyle: Record<string, string> = {
@@ -7,11 +8,12 @@ const statusStyle: Record<string, string> = {
 };
 
 const RecentRegistrations = () => {
+  const navigate = useNavigate();
   return (
     <div className="bg-white border border-gray-200 rounded-2xl p-6">
       <div className="flex justify-between mb-4">
         <h2 className="font-semibold">Recent Registrations</h2>
-        <span className="text-sm text-gray-500 cursor-pointer">
+        <span onClick={()=> navigate("/admin/users")} className="text-sm text-gray-500 cursor-pointer hover:font-medium">
           View All ›
         </span>
       </div>
