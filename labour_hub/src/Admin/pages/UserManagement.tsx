@@ -25,25 +25,18 @@ const UserManagement = () => {
   const filteredUsers = users.filter((u) => {
     const q = globalSearch.toLowerCase();
 
-    const matchesSearch =
-      u.name.toLowerCase().includes(q) ||
-      u.email.toLowerCase().includes(q);
-
-    const matchesStatus =
-      statusFilter === "all" || u.status === statusFilter;
-
-    const matchesType =
-      typeFilter === "all" || u.type === typeFilter;
-
-    return matchesSearch && matchesStatus && matchesType;
+    return (
+      (u.name.toLowerCase().includes(q) ||
+        u.email.toLowerCase().includes(q)) &&
+      (statusFilter === "all" || u.status === statusFilter) &&
+      (typeFilter === "all" || u.type === typeFilter)
+    );
   });
 
   
   const updateStatus = (email: string, status: Status) => {
     setUsers((prev) =>
-      prev.map((u) =>
-        u.email === email ? { ...u, status } : u
-      )
+      prev.map((u) => (u.email === email ? { ...u, status } : u))
     );
   };
 
@@ -51,9 +44,10 @@ const UserManagement = () => {
     <div className="min-h-screen bg-[#FAF6F5]">
       <TopBar />
 
-      <div className="max-w-[1500px] mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8">
-
-        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+      <div className="max-w-[1500px] mx-auto px-4 sm:px-6 py-6 space-y-8">
+        
+        <div className="flex flex-col md:flex-row 
+        md:items-start md:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold">User Management</h1>
             <p className="text-sm text-gray-500">
@@ -63,27 +57,29 @@ const UserManagement = () => {
 
           <button
             onClick={() => navigate("/admin/labours")}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl text-sm font-medium w-full md:w-auto"
+            className="bg-indigo-600 hover:bg-indigo-700 
+            text-white px-5 py-2 rounded-xl text-sm font-medium w-full md:w-auto"
           >
             Labour Verification →
           </button>
         </div>
 
         
-        <div className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col md:flex-row gap-4">
+        <div className="bg-white border border-gray-200 
+        rounded-2xl p-5 flex flex-col md:flex-row gap-4">
           <input
-            placeholder="Search by name or email..."
             value={globalSearch}
             readOnly
-            className="border border-gray-300 rounded-xl px-4 py-2 w-full md:w-[35%] outline-none bg-gray-50"
+            placeholder="Search by name or email..."
+            className="border border-gray-300 rounded-xl 
+            px-4 py-2 w-full md:w-[35%] outline-none bg-gray-50"
           />
 
           <select
             value={statusFilter}
-            onChange={(e) =>
-              setStatusFilter(e.target.value as any)
-            }
-            className="border border-gray-200 rounded-xl px-4 py-2 outline-none w-full md:w-auto"
+            onChange={(e) => setStatusFilter(e.target.value as any)}
+            className="border border-gray-200 rounded-xl p
+            x-4 py-2 outline-none w-full md:w-auto"
           >
             <option value="all">All Status</option>
             <option value="pending">Pending</option>
@@ -93,10 +89,9 @@ const UserManagement = () => {
 
           <select
             value={typeFilter}
-            onChange={(e) =>
-              setTypeFilter(e.target.value as any)
-            }
-            className="border border-gray-200 rounded-xl px-4 py-2 outline-none w-full md:w-auto"
+            onChange={(e) => setTypeFilter(e.target.value as any)}
+            className="border border-gray-200 rounded-xl px-4 py-2
+             outline-none w-full md:w-auto"
           >
             <option value="all">All Types</option>
             <option value="Labour">Labour</option>
@@ -105,46 +100,58 @@ const UserManagement = () => {
         </div>
 
         
-        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+        <div className="bg-white border border-gray-200 rounded-2xl
+         overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-[900px] w-full text-sm">
+            <table className="min-w-[1100px] w-full text-sm border-collapse">
               <thead className="bg-gray-100 text-gray-600">
-                <tr>
-                  <th className="p-4 text-left">User</th>
-                  <th>Type</th>
-                  <th>Contact</th>
-                  <th>Status</th>
-                  <th className="text-center">Actions</th>
+                <tr className="h-[56px]">
+                  <th className="px-6 text-left w-[20%]">User</th>
+                  <th className="px-6 text-center w-[20%]">Type</th>
+                  <th className="px-6 text-left w-[20%]">Contact</th>
+                  <th className="px-6 text-center w-[20%]">Status</th>
+                  <th className="px-6 text-center w-[20%]">Actions</th>
                 </tr>
               </thead>
 
+              
               <tbody>
                 {filteredUsers.map((u) => (
                   <tr
                     key={u.email}
-                    className="border-t hover:bg-gray-50"
+                    className="border-t h-[68px] hover:bg-gray-50"
                   >
-                    <td className="p-4">
-                      <p className="font-medium">{u.name}</p>
-                      <p className="text-xs text-gray-500">
-                        Registered {u.registeredAt}
-                      </p>
+                    
+                    <td className="px-6 align-middle">
+                      <div className="flex flex-col justify-center">
+                        <span className="font-medium">{u.name}</span>
+                        <span className="text-xs text-gray-500">
+                          Registered {u.registeredAt}
+                        </span>
+                      </div>
                     </td>
 
-                    <td>
-                      <span className="border px-3 py-1 rounded-full text-xs">
+                    
+                    <td className="px-6 text-center align-middle">
+                      <span className="inline-flex items-center justify-center min-w-[90px] h-[28px] border rounded-full text-xs">
                         {u.type}
                       </span>
                     </td>
 
-                    <td className="text-xs">
-                      <p>{u.email}</p>
-                      <p>{u.phone}</p>
+                    
+                    <td className="px-6 align-middle text-xs">
+                      <div className="flex flex-col">
+                        <span className="truncate max-w-[320px]">
+                          {u.email}
+                        </span>
+                        <span className="text-gray-500">{u.phone}</span>
+                      </div>
                     </td>
 
-                    <td>
+                    
+                    <td className="px-6 text-center align-middle">
                       <span
-                        className={`text-white text-xs px-4 py-1 rounded-full ${
+                        className={`inline-flex items-center justify-center min-w-[110px] h-[28px] text-white text-xs rounded-full ${
                           u.status === "pending"
                             ? "bg-indigo-600"
                             : u.status === "approved"
@@ -156,49 +163,54 @@ const UserManagement = () => {
                       </span>
                     </td>
 
-                    <td className="text-center space-x-2">
-                      {u.status === "pending" && (
-                        <>
-                          <button
-                            onClick={() =>
-                              updateStatus(u.email, "approved")
-                            }
-                            className="text-green-600 font-bold text-xl"
-                          >
-                            ✔
-                          </button>
+                    
+                    <td className="px-6 text-center align-middle">
+                      <div className="flex items-center justify-center gap-4">
+                        {u.status === "pending" && (
+                          <>
+                            <button
+                              onClick={() =>
+                                updateStatus(u.email, "approved")
+                              }
+                              className="text-green-600 font-bold text-xl"
+                            >
+                              ✔
+                            </button>
+                            <button
+                              onClick={() =>
+                                updateStatus(u.email, "blocked")
+                              }
+                              className="text-red-600 font-bold text-xl"
+                            >
+                              ✖
+                            </button>
+                          </>
+                        )}
+
+                        {u.status === "approved" && (
                           <button
                             onClick={() =>
                               updateStatus(u.email, "blocked")
                             }
-                            className="text-red-600 font-bold text-xl"
+                            className="bg-orange-500 text-white text-xs px-4 
+                            py-1 rounded-full"
                           >
-                            ✖
+                            Block
                           </button>
-                        </>
-                      )}
+                        )}
 
-                      {u.status === "approved" && (
-                        <button
-                          onClick={() =>
-                            updateStatus(u.email, "blocked")
-                          }
-                          className="bg-orange-500 text-white text-xs px-3 py-1 rounded-full"
-                        >
-                          Block
-                        </button>
-                      )}
-
-                      {u.status === "blocked" && (
-                        <button
-                          onClick={() =>
-                            updateStatus(u.email, "approved")
-                          }
-                          className="bg-green-600 text-white text-xs px-3 py-1 rounded-full"
-                        >
-                          Unblock
-                        </button>
-                      )}
+                        {u.status === "blocked" && (
+                          <button
+                            onClick={() =>
+                              updateStatus(u.email, "approved")
+                            }
+                            className="bg-green-600 text-white text-xs px-4 
+                            py-1 rounded-full"
+                          >
+                            Unblock
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

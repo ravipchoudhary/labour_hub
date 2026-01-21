@@ -12,16 +12,13 @@ const LabourVerification = () => {
     return () => window.removeEventListener("admin-search", handler);
   }, []);
 
-  
-  const filteredLabours = data.filter(l =>
+  const filteredLabours = data.filter((l) =>
     l.name.toLowerCase().includes(globalSearch.toLowerCase())
   );
 
   const updateStatus = (id: number, status: string) => {
-    setData(prev =>
-      prev.map(l =>
-        l.id === id ? { ...l, status } : l
-      )
+    setData((prev) =>
+      prev.map((l) => (l.id === id ? { ...l, status } : l))
     );
   };
 
@@ -30,59 +27,89 @@ const LabourVerification = () => {
       <TopBar />
 
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <h1 className="text-2xl font-semibold mb-6">
-          Labour Verification
-        </h1>
+        <h1 className="text-2xl font-semibold mb-6">Labour Verification</h1>
 
-        <div className="bg-white rounded-2xl border overflow-hidden">
+        <div className="bg-white border rounded-2xl overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-[700px] w-full text-sm">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="p-4 text-left">Name</th>
-                  <th>Skill</th>
-                  <th>Document</th>
-                  <th>Status</th>
-                  <th className="text-center">Action</th>
+            <table className="w-full min-w-[900px] table-fixed text-sm">
+              <thead className="bg-gray-100 text-gray-600">
+                <tr className="h-[56px]">
+                  <th className="px-6 text-left w-[20%]">Name</th>
+                  <th className="px-6 text-left w-[20%]">Skill</th>
+                  <th className="px-6 text-left w-[20%]">Document</th>
+                  <th className="px-6 text-center w-[20%]">Status</th>
+                  <th className="px-6 text-center w-[20%]">Action</th>
                 </tr>
               </thead>
 
+              
               <tbody>
-                {filteredLabours.map(l => (
-                  <tr key={l.id} className="border-t">
-                    <td className="p-4 font-medium">{l.name}</td>
-                    <td>{l.skill}</td>
-                    <td>{l.document}</td>
-                    <td>
-                      <span
-                        className={`px-3 py-1 text-xs rounded-full text-white ${
-                          l.status === "pending"
-                            ? "bg-indigo-600"
-                            : l.status === "approved"
-                            ? "bg-green-600"
-                            : "bg-red-500"
-                        }`}
-                      >
-                        {l.status}
-                      </span>
+                {filteredLabours.map((l) => (
+                  <tr
+                    key={l.id}
+                    className="border-t h-[64px] hover:bg-gray-50">
+                    
+                    <td className="px-6 align-middle">
+                      <div className="flex items-center h-full">
+                        <span className="font-medium">{l.name}</span>
+                      </div>
                     </td>
-                    <td className="text-center space-x-2">
-                      {l.status === "pending" && (
-                        <>
-                          <button
-                            onClick={() => updateStatus(l.id, "approved")}
-                            className="text-green-600 font-bold text-2xl"
-                          >
-                            ✔
-                          </button>
-                          <button
-                            onClick={() => updateStatus(l.id, "blocked")}
-                            className="text-red-600 font-bold text-2xl"
-                          >
-                            ✖
-                          </button>
-                        </>
-                      )}
+
+                    
+                    <td className="px-6 align-middle">
+                      <div className="flex items-center h-full">
+                        {l.skill}
+                      </div>
+                    </td>
+                    <td className="px-6 align-middle">
+                      <div className="flex items-center h-full">
+                        {l.document}
+                      </div>
+                    </td>
+                    <td className="px-6 align-middle text-center">
+                      <div className="flex justify-center items-center h-full">
+                        <span
+                          className={`px-4 py-1 rounded-full text-xs 
+                            text-white ${
+                            l.status === "pending"
+                              ? "bg-indigo-600"
+                              : l.status === "approved"
+                              ? "bg-green-600"
+                              : "bg-red-500"
+                          }`}
+                        >
+                          {l.status}
+                        </span>
+                      </div>
+                    </td>
+
+                    
+                    <td className="px-6 align-middle text-center">
+                      <div className="flex justify-center items-center
+                       h-full gap-4">
+                        {l.status === "pending" && (
+                          <>
+                            <button
+                              onClick={() =>
+                                updateStatus(l.id, "approved")
+                              }
+                              className="text-green-600 font-bold text-xl"
+                              title="Approve"
+                            >
+                              ✔
+                            </button>
+                            <button
+                              onClick={() =>
+                                updateStatus(l.id, "blocked")
+                              }
+                              className="text-red-600 font-bold text-xl"
+                              title="Block"
+                            >
+                              ✖
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

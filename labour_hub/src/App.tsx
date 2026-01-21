@@ -36,7 +36,7 @@ function App() {
         <Route path="/admin/dashboard" element={<AdminDashboard />}></Route>
         <Route path="/admin/users" element={<UserManagement />}></Route>
         <Route path="/admin/labours" element={<LabourVerification />}></Route>
-        </Routes>
+        
       {!isAdminPage && <Footer />}
         <Route path="/register/worker" element={<Register />} />
         <Route path="/register/employer" element={<Registeremp />} />
@@ -45,7 +45,7 @@ function App() {
         <Route path="/worker/:id" element={<WorkerDetail />} />
 
       </Routes> 
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 }
