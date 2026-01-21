@@ -20,7 +20,7 @@ const TopBar = () => {
         <img
           src="/logo.png"
           alt="Admin Logo"
-          className="h-8 w-auto object-contain"
+          className="h-16 w-auto object-contain"
         />
         <h1 className="text-base md:text-lg font-semibold">
           Admin Dashboard
