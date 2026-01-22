@@ -15,6 +15,8 @@ import LabourDashboard from "./pages/LabourDashboard";
 import WorkerDetail from "./pages/WorkerDetail";
 import HelpCenter from "./pages/HelpCenter";
 import Landing from "./pages/Landing";
+import EditLabourDetails from "./pages/EditLabourDetails";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 function App() {
 
@@ -34,6 +36,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<Home />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />}/>
         {/* Admin route */}
         <Route path="/admin/login" element={<Login />}></Route>
         <Route path="/admin/dashboard" element={<AdminDashboard />}></Route>
@@ -41,15 +44,23 @@ function App() {
         <Route path="/admin/labours" element={<LabourVerification />}></Route>
 
         {/* {!isAdminPage && <Footer />} */}
+        
+      
         <Route path="/register/worker" element={<Register />} />
         <Route path="/register/employer" element={<Registeremp />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/labour-dashboard" element={<LabourDashboard />} />
         <Route path="/help-center" element={<HelpCenter />} />
         <Route path="/worker/:id" element={<WorkerDetail />} />
+        <Route path="/labour/profile/edit" element={<EditLabourDetails />}/>
+
+        
 
       </Routes>
       <Footer />
+      </Routes> 
+      {!isAdminPage && <Footer />}
+      {/* <Footer /> */}
     </>
   );
 }
