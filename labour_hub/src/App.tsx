@@ -13,6 +13,7 @@ import Registeremp from "./pages/Registeremp";
 import LabourDashboard from "./pages/LabourDashboard";
 import WorkerDetail from "./pages/WorkerDetail";
 import Landing from "./pages/Landing";
+import EditLabourDetails from "./pages/EditLabourDetails";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 function App() {
@@ -45,6 +46,8 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/labour-dashboard" element={<LabourDashboard />} />
         <Route path="/worker/:id" element={<WorkerDetail />} />
+        <Route path="/labour/profile/edit" element={<EditLabourDetails />}/>
+
         
 
       </Routes> 
