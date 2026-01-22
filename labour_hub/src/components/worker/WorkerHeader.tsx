@@ -5,14 +5,28 @@ type Props = {
 };
 
 const WorkerHeader = ({ worker }: Props) => {
+    const isAvailable = worker.available;
+
     return (
         <div className="bg-white p-6 rounded-lg shadow mb-6">
-            <h2 className="text-2xl font-bold">{worker.name}</h2>
+            <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold">{worker.name}</h2>
+
+                <span
+                    className={`px-3 py-1 text-sm rounded-full font-medium ${isAvailable
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                >
+                    {isAvailable ? "Available" : "Busy"}
+                </span>
+            </div>
+
             <p className="text-gray-500">{worker.location}</p>
             <p className="mt-1">⭐ {worker.rating}</p>
             <p className="mt-1 font-semibold">₹{worker.price} / day</p>
 
-            <div className="flex gap-2 mt-3">
+            <div className="flex gap-2 mt-3 flex-wrap">
                 {worker.skills.map((skill, i) => (
                     <span
                         key={i}
@@ -22,11 +36,25 @@ const WorkerHeader = ({ worker }: Props) => {
                     </span>
                 ))}
             </div>
+
             <div className="flex gap-4 mt-6">
-                <button className="bg-orange-500 text-white px-5 py-2 rounded hover:bg-orange-600">
+                <button
+                    disabled={!isAvailable}
+                    className={`px-5 py-2 rounded text-white ${isAvailable
+                            ? "bg-orange-500 hover:bg-orange-600"
+                            : "bg-gray-400 cursor-not-allowed"
+                        }`}
+                >
                     Call Now
                 </button>
-                <button className="border px-5 py-2 rounded hover:bg-orange-500 hover:text-white">
+
+                <button
+                    disabled={!isAvailable}
+                    className={`border px-5 py-2 rounded ${isAvailable
+                            ? "hover:bg-orange-500 hover:text-white"
+                            : "text-gray-400 cursor-not-allowed"
+                        }`}
+                >
                     WhatsApp
                 </button>
             </div>
