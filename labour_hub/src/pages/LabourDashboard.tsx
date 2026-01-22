@@ -1,138 +1,189 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+} from "recharts";
 
-const LabourDashboard = () => {
+const earningsData = [
+  { month: "Aug", earning: 6000 },
+  { month: "Sep", earning: 8500 },
+  { month: "Oct", earning: 7200 },
+  { month: "Nov", earning: 9800 },
+  { month: "Dec", earning: 11000 },
+  { month: "Jan", earning: 12500 },
+];
+
+const jobData = [
+  { name: "Completed", value: 28 },
+  { name: "Pending", value: 4 },
+  { name: "Rejected", value: 3 },
+];
+
+const completedJobs = [
+  { id: 1, work: "House Wiring", location: "Sector 62, Noida", amount: 1200 },
+  { id: 2, work: "Inverter Installation", location: "Sector 18, Noida", amount: 1800 },
+];
+
+const pendingJobs = [
+  { id: 3, work: "Fan Repair", location: "Sector 50, Noida", amount: 500 },
+  { id: 4, work: "Switch Board Fix", location: "Sector 12, Noida", amount: 300 },
+];
+
+export default function LabourDashboard() {
   const [available, setAvailable] = useState(true);
+  const [activeTab, setActiveTab] = useState("dashboard");
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
-      {/* TITLE */}
-      <h1 className="text-3xl font-bold">My Dashboard</h1>
-      <p className="text-gray-500 mb-6">
-        Manage your profile and track your performance
-      </p>
+    <div className="min-h-screen bg-gray-50 p-6 space-y-8">
 
-      {/* STATS */}
-      <div className="grid grid-cols-4 gap-6 mb-8">
-        <StatCard title="Profile Views" value="124" />
-        <StatCard title="Calls Received" value="32" />
-        <StatCard title="Rating" value="4.8" />
-        <StatCard title="Jobs Done" value="156" />
+      {/* ================= PROFILE ================= */}
+      <div className="bg-white rounded-2xl shadow p-6 flex justify-between">
+        <div className="flex gap-5">
+          <div className="w-20 h-20 rounded-xl bg-orange-100 flex items-center justify-center text-3xl">
+            👷
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-semibold">Rajesh Kumar</h2>
+            <p className="text-gray-500">Electrician • Noida, UP</p>
+            <p className="text-yellow-500">⭐ 4.6 Rating</p>
+          </div>
+        </div>
+
+        <div className="flex gap-4 items-center">
+          <button
+            onClick={() => setAvailable(!available)}
+            className={`px-4 py-2 rounded-full text-sm ${
+              available
+                ? "bg-green-100 text-green-700"
+                : "bg-red-100 text-red-700"
+            }`}
+          >
+            {available ? "Available for Work" : "Unavailable"}
+          </button>
+
+          <button className="px-5 py-2 bg-orange-500 text-white rounded-lg">
+            Edit Profile
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
-        {/* PROFILE INFO */}
-        <div className="col-span-2 bg-white p-6 rounded-xl shadow">
+      {/* ================= STATS ================= */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Stat title="Total Jobs" value="35" />
+        <Stat
+          title="Completed Jobs"
+          value="28"
+          clickable
+          onClick={() => setActiveTab("completed")}
+        />
+        <Stat
+          title="Pending Requests"
+          value="4"
+          clickable
+          onClick={() => setActiveTab("pending")}
+        />
+        <Stat title="Total Earnings" value="₹42,500" />
+      </div>
+
+      {/* ================= DASHBOARD ================= */}
+      {activeTab === "dashboard" && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white rounded-2xl shadow p-6">
+            <h3 className="font-semibold mb-4">Monthly Earnings</h3>
+            <ResponsiveContainer width="100%" height={280}>
+              <LineChart data={earningsData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Line
+                  type="monotone"
+                  dataKey="earning"
+                  stroke="#f97316"
+                  strokeWidth={3}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow p-6">
+            <h3 className="font-semibold mb-4">Job Status Overview</h3>
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={jobData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="value" fill="#fb923c" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
+      {/* ================= HISTORY TAB ================= */}
+      {activeTab !== "dashboard" && (
+        <div className="bg-white rounded-2xl shadow p-6">
           <div className="flex justify-between mb-4">
-            <h2 className="text-xl font-semibold">Profile Information</h2>
-            <button className="border px-4 py-1 rounded-lg text-sm">
-              Edit Profile
+            <h3 className="font-semibold text-lg">
+              {activeTab === "completed"
+                ? "Completed Jobs History"
+                : "Pending Jobs History"}
+            </h3>
+
+            <button
+              onClick={() => setActiveTab("dashboard")}
+              className="text-orange-600"
+            >
+              ← Back
             </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Input label="Full Name" value="Rajesh Kumar" />
-            <Input label="Phone Number" value="+91 9876543210" />
-            <Input label="Experience (Years)" value="8" />
-            <Input label="Daily Rate (₹)" value="600 / Day" />
-          </div>
-
-          <div className="mt-4">
-            <Input label="Address" value="Sector 18, Noida, UP" />
-          </div>
-
-          <div className="mt-4">
-            <label className="block text-sm font-medium mb-1">
-              About Me
-            </label>
-            <textarea
-              className="w-full border rounded-lg p-3"
-              rows={3}
-              value="Experienced electrician with expertise in residential and commercial wiring, AC installation and repair."
-              readOnly
-            />
-          </div>
-
-          <div className="mt-4">
-            <label className="block text-sm font-medium mb-2">Skills</label>
-            <div className="flex gap-2">
-              <SkillTag text="Electrician" />
-              <SkillTag text="Wiring" />
-              <SkillTag text="AC Repair" />
-            </div>
+          <div className="space-y-4">
+            {(activeTab === "completed"
+              ? completedJobs
+              : pendingJobs
+            ).map((job) => (
+              <div
+                key={job.id}
+                className="border rounded-xl p-4 flex justify-between"
+              >
+                <div>
+                  <p className="font-medium">{job.work}</p>
+                  <p className="text-sm text-gray-500">{job.location}</p>
+                </div>
+                <p className="font-semibold text-orange-600">
+                  ₹{job.amount}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
-
-        {/* RIGHT SIDE */}
-        <div className="space-y-6">
-          {/* AVAILABILITY */}
-          <div className="bg-white p-6 rounded-xl shadow">
-            <h3 className="font-semibold mb-2">Availability Status</h3>
-            <div className="flex items-center justify-between">
-              <span className="text-green-600">
-                {available ? "Available for work" : "Not available"}
-              </span>
-              <input
-                type="checkbox"
-                checked={available}
-                onChange={() => setAvailable(!available)}
-              />
-            </div>
-          </div>
-
-          {/* QUICK ACTIONS */}
-          <div className="bg-white p-6 rounded-xl shadow">
-            <h3 className="font-semibold mb-3">Quick Actions</h3>
-            <ActionButton text="View My Public Profile" />
-            <ActionButton text="Set Working Hours" />
-            <ActionButton text="Update Location" />
-          </div>
-
-          {/* TIPS */}
-          <div className="bg-orange-50 p-6 rounded-xl">
-            <h3 className="font-semibold mb-2">💡 Profile Tips</h3>
-            <ul className="text-sm text-gray-600 list-disc ml-4 space-y-1">
-              <li>Add more skills to appear in searches</li>
-              <li>Keep your phone number updated</li>
-              <li>Set competitive rates</li>
-              <li>Update availability regularly</li>
-            </ul>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
-};
+}
 
-export default LabourDashboard;
+/* ================= STAT COMPONENT ================= */
 
-/* ---------- SMALL COMPONENTS ---------- */
-
-const StatCard = ({ title, value }: { title: string; value: string }) => (
-  <div className="bg-white p-6 rounded-xl shadow">
+const Stat = ({ title, value, clickable, onClick }) => (
+  <div
+    onClick={onClick}
+    className={`bg-white rounded-2xl shadow p-5 ${
+      clickable
+        ? "cursor-pointer hover:bg-orange-50 hover:shadow-lg"
+        : ""
+    }`}
+  >
     <p className="text-gray-500 text-sm">{title}</p>
-    <h2 className="text-2xl font-bold mt-1">{value}</h2>
+    <h3 className="text-2xl font-semibold mt-2">{value}</h3>
   </div>
-);
-
-const Input = ({ label, value }: { label: string; value: string }) => (
-  <div>
-    <label className="block text-sm font-medium mb-1">{label}</label>
-    <input
-      className="w-full border rounded-lg p-2"
-      value={value}
-      readOnly
-    />
-  </div>
-);
-
-const SkillTag = ({ text }: { text: string }) => (
-  <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm">
-    {text}
-  </span>
-);
-
-const ActionButton = ({ text }: { text: string }) => (
-  <button className="w-full border rounded-lg py-2 mb-2 text-sm">
-    {text}
-  </button>
 );

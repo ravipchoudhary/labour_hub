@@ -10,6 +10,7 @@ import LabourDashboard from "./pages/LabourDashboard";
 import WorkerDetail from "./pages/WorkerDetail";
 import Login from "./pages/auth/Login";
 import Landing from "./pages/Landing";
+import EditLabourDetails from "./pages/EditLabourDetails";
 
 function App() {
   return (
@@ -25,6 +26,8 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/labour-dashboard" element={<LabourDashboard />} />
         <Route path="/worker/:id" element={<WorkerDetail />} />
+        <Route path="/labour/profile/edit" element={<EditLabourDetails />}/>
+
 
       </Routes> 
       <Footer />
