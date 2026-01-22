@@ -57,8 +57,6 @@ function App() {
         
 
       </Routes>
-      <Footer />
-      </Routes> 
       {!isAdminPage && <Footer />}
       {/* <Footer /> */}
     </>
