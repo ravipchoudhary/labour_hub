@@ -2,6 +2,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import Header from "./components/common/Header";
 import Footer from "./components/common/Footer";
 import Home from "./pages/Home";
+import Termsofservice from "./pages/Termsofservice";
 import Dashboard from "./pages/Dashboard";
 import FindLabour from "./pages/FindLabour";
 import Register from "./pages/LabourRegister";
@@ -12,6 +13,7 @@ import LabourVerification from "./Admin/pages/LabourVerification";
 import Registeremp from "./pages/Registeremp";
 import LabourDashboard from "./pages/LabourDashboard";
 import WorkerDetail from "./pages/WorkerDetail";
+import HelpCenter from "./pages/HelpCenter";
 import Landing from "./pages/Landing";
 
 function App() {
@@ -24,8 +26,9 @@ function App() {
       {/* <Header /> */}
 
       <Routes>
+        <Route path="/terms-of-service" element={<Termsofservice />} />
         <Route path="/" element={<Landing />} />
-        <Route path="/Home" element={<Home />} /> 
+        <Route path="/Home" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/find-labour" element={<FindLabour />} />
         <Route path="/register" element={<Register />} />
@@ -36,15 +39,16 @@ function App() {
         <Route path="/admin/dashboard" element={<AdminDashboard />}></Route>
         <Route path="/admin/users" element={<UserManagement />}></Route>
         <Route path="/admin/labours" element={<LabourVerification />}></Route>
-        </Routes>
-      {!isAdminPage && <Footer />}
+
+        {/* {!isAdminPage && <Footer />} */}
         <Route path="/register/worker" element={<Register />} />
         <Route path="/register/employer" element={<Registeremp />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/labour-dashboard" element={<LabourDashboard />} />
+        <Route path="/help-center" element={<HelpCenter />} />
         <Route path="/worker/:id" element={<WorkerDetail />} />
 
-      </Routes> 
+      </Routes>
       <Footer />
     </>
   );
