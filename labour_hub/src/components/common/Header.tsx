@@ -8,14 +8,9 @@ const Header = () => {
         <header className="sticky top-0 z-50 bg-white shadow">
             <div className="flex justify-between items-center px-4 sm:px-8 h-16">
                 <Link to="/" className="flex items-center gap-2">
-                    <img
-                        src={"/logo.png"}
-                        alt="LabourHub Logo"
-                        className="h-8 w-8 object-contain"
-                    />
-                    <span className="text-xl font-bold text-orange-500">
-                        LabourHub
-                    </span>
+                    <img src="/logo.png" alt="Admin Logo"
+                        className="h-16 w-auto object-contain" />
+                    
                 </Link>
 
                 <button
