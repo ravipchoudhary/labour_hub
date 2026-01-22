@@ -13,6 +13,7 @@ import Registeremp from "./pages/Registeremp";
 import LabourDashboard from "./pages/LabourDashboard";
 import WorkerDetail from "./pages/WorkerDetail";
 import Landing from "./pages/Landing";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 function App() {
 
@@ -31,20 +32,23 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<Home />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />}/>
         {/* Admin route */}
         <Route path="/admin/login" element={<Login />}></Route>
         <Route path="/admin/dashboard" element={<AdminDashboard />}></Route>
         <Route path="/admin/users" element={<UserManagement />}></Route>
         <Route path="/admin/labours" element={<LabourVerification />}></Route>
         
-      {!isAdminPage && <Footer />}
+      
         <Route path="/register/worker" element={<Register />} />
         <Route path="/register/employer" element={<Registeremp />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/labour-dashboard" element={<LabourDashboard />} />
         <Route path="/worker/:id" element={<WorkerDetail />} />
+        
 
       </Routes> 
+      {!isAdminPage && <Footer />}
       {/* <Footer /> */}
     </>
   );

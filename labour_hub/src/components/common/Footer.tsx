@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 const Footer = () => {
     return (
         <footer className="bg-blue-900 text-white px-4 sm:px-8 py-10 mt-10">
@@ -32,7 +33,7 @@ const Footer = () => {
                         <h3 className="font-semibold mb-3">Support</h3>
                         <ul className="text-sm space-y-2 text-blue-100">
                             <li className="hover:underline cursor-pointer">Help Center</li>
-                            <li className="hover:underline cursor-pointer">Privacy Policy</li>
+                            <li> <Link to="/privacy-policy" className="hover:underline cursor-pointer">Privacy Policy</Link></li>
                             <li className="hover:underline cursor-pointer">Terms of Service</li>
                         </ul>
                     </div>
