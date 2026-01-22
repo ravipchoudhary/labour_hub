@@ -1,4 +1,7 @@
-import { useState } from "react";
+import React from 'react';
+
+import { Link, useNavigate } from 'react-router-dom';
+import { User, Phone, MapPin, Lock, Eye, ArrowLeft } from 'lucide-react';
 
 const Register = () => {
   const [formData, setFormData] = useState({

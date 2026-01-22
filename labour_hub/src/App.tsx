@@ -15,6 +15,7 @@ import LabourDashboard from "./pages/LabourDashboard";
 import WorkerDetail from "./pages/WorkerDetail";
 import HelpCenter from "./pages/HelpCenter";
 import Landing from "./pages/Landing";
+import HowItWorks from "./pages/HowItWorks";
 import EditLabourDetails from "./pages/EditLabourDetails";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 
@@ -30,6 +31,7 @@ function App() {
       <Routes>
         <Route path="/terms-of-service" element={<Termsofservice />} />
         <Route path="/" element={<Landing />} />
+        <Route path="/how-it-works" element={<HowItWorks />} /> 
         <Route path="/Home" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/find-labour" element={<FindLabour />} />
@@ -52,13 +54,8 @@ function App() {
         <Route path="/labour-dashboard" element={<LabourDashboard />} />
         <Route path="/help-center" element={<HelpCenter />} />
         <Route path="/worker/:id" element={<WorkerDetail />} />
-        <Route path="/labour/profile/edit" element={<EditLabourDetails />}/>
-
-        
-
       </Routes>
-      {!isAdminPage && <Footer />}
-      {/* <Footer /> */}
+      <Footer />
     </>
   );
 }
