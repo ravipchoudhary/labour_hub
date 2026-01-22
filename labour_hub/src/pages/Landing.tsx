@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-
+import { motion } from "framer-motion";
 import {
   Search,
   MapPin,
@@ -21,27 +21,107 @@ import {
 const Landing: React.FC = () => {
   return (
     <main className="w-full font-sans text-gray-800">
-      {/* ================= HERO ================= */}
-      <section className="min-h-screen bg-[#0B3C88] flex items-center px-6">
-        <div className="max-w-7xl mx-auto text-center text-white">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">
-            Find Skilled <span className="text-[#FF7A00]">Workers</span> Near
-            You
-          </h1>
 
-          <p className="text-blue-100 max-w-3xl mx-auto mb-12 text-lg">
+      {/* ================= HERO ================= */}
+      <section className="min-h-screen bg-gradient-to-br from-[#0B3C88] via-[#0E4BA8] to-[#0B3C88] flex items-center px-6 relative overflow-hidden">
+
+        {/* dotted background */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.08)_1px,transparent_0)] bg-[length:22px_22px] opacity-40" />
+
+        <div className="relative z-10 max-w-7xl mx-auto text-center text-white">
+
+          {/* 🔥 MAIN HEADING – SLOW & SMOOTH */}
+          <motion.h1
+            initial={{ opacity: 0, y: 60 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 1.6,        // slower
+              ease: "easeOut",
+            }}
+            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-6"
+          >
+            Find Skilled <span className="text-[#FF7A00]">Workers</span> Near You
+          </motion.h1>
+
+          {/* Sub text */}
+          <motion.p
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 1.2,
+              delay: 0.4,
+              ease: "easeOut",
+            }}
+            className="text-blue-100 max-w-3xl mx-auto text-lg sm:text-xl mb-12"
+          >
             Connect with verified local labourers for construction, plumbing,
             electrical work and more. Hire instantly with just a call.
-          </p>
+          </motion.p>
 
-          <div className="flex flex-col md:flex-row gap-5 justify-center items-center">
+          {/* Search */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 1,
+              delay: 0.7,
+              ease: "easeOut",
+            }}
+            className="flex flex-col md:flex-row justify-center items-center gap-4 mb-14"
+          >
             <Input icon={<Search size={18} />} placeholder="Skill required" />
             <Input icon={<MapPin size={18} />} placeholder="Location" />
 
-            <button className="bg-[#FF7A00] px-10 py-4 rounded-lg font-semibold flex items-center gap-2 hover:bg-orange-600 transition">
+            <button className="bg-[#FF7A00] hover:bg-orange-600 transition px-12 py-4 rounded-xl font-semibold flex items-center gap-2 shadow-lg">
               <Search size={18} /> Search
             </button>
-          </div>
+          </motion.div>
+
+          {/* Stats */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 1 }}
+            className="grid grid-cols-2 sm:grid-cols-4 gap-10 mb-14"
+          >
+            <HeroStat value="25K+" label="Verified Workers" />
+            <HeroStat value="10K+" label="Successful Jobs" />
+            <HeroStat value="100+" label="Cities Covered" />
+            <HeroStat value="4.8★" label="User Rating" />
+          </motion.div>
+
+          {/* Skill Chips */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 1.2 }}
+            className="flex flex-wrap justify-center gap-4 mb-10"
+          >
+            <HeroChip icon={<Plug size={18} />} name="Electrician" />
+            <HeroChip icon={<Wrench size={18} />} name="Plumber" />
+            <HeroChip icon={<Hammer size={18} />} name="Carpenter" />
+            <HeroChip icon={<Paintbrush size={18} />} name="Painter" />
+            <HeroChip icon={<Car size={18} />} name="Driver" />
+          </motion.div>
+
+          {/* Trust Badges */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 1.4 }}
+            className="flex flex-wrap justify-center gap-8 text-blue-100 text-sm"
+          >
+            <div className="flex items-center gap-2">
+              <ShieldCheck size={18} /> Verified Profiles
+            </div>
+            <div className="flex items-center gap-2">
+              <PhoneCall size={18} /> Direct Call
+            </div>
+            <div className="flex items-center gap-2">
+              <Zap size={18} /> Instant Hiring
+            </div>
+          </motion.div>
+
         </div>
       </section>
 
@@ -52,7 +132,6 @@ const Landing: React.FC = () => {
           <h2 className="text-4xl font-bold mb-6">
             The Smarter Way to Hire Labour
           </h2>
-
           <p className="text-gray-600 max-w-3xl mx-auto mb-14 text-lg">
             We simplify the labour hiring process using smart, reliable
             technology built for everyone.
@@ -60,45 +139,41 @@ const Landing: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
             <Feature icon={<MapPin size={28} />} title="Nearby Workers" />
-            <Feature
-              icon={<ShieldCheck size={28} />}
-              title="Verified Profiles"
-            />
-            <Feature
-              icon={<Clock size={28} />}
-              title="Real-Time Availability"
-            />
+            <Feature icon={<ShieldCheck size={28} />} title="Verified Profiles" />
+            <Feature icon={<Clock size={28} />} title="Real-Time Availability" />
             <Feature icon={<Zap size={28} />} title="Instant Hiring" />
           </div>
         </div>
       </section>
 
       {/* ================= POPULAR CATEGORIES ================= */}
-      <section className="min-h-screen flex items-center px-6">
-        <div className="max-w-7xl mx-auto text-center">
-          <p className="text-[#FF7A00] font-semibold mb-3">
+      <section className="min-h-screen flex items-center px-4 sm:px-6">
+        <div className="w-full text-center">
+          <p className="text-[#FF7A00] font-semibold text-lg mb-3">
             Popular Categories
           </p>
-          <h2 className="text-4xl font-bold mb-12">Find Workers by Skill</h2>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-10">
-            <Skill icon={<Plug size={28} />} name="Electrician" />
-            <Skill icon={<Wrench size={28} />} name="Plumber" />
-            <Skill icon={<Hammer size={28} />} name="Carpenter" />
-            <Skill icon={<Users size={28} />} name="Mason" />
-            <Skill icon={<Zap size={28} />} name="Welder" />
-            <Skill icon={<Car size={28} />} name="Driver" />
-            <Skill icon={<Scissors size={28} />} name="Tailor" />
-            <Skill icon={<Paintbrush size={28} />} name="Painter" />
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-16">
+            Find Workers by Skill
+          </h2>
+
+          <div className="max-w-[1800px] mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-12 gap-y-14">
+              <Skill icon={<Plug size={28} />} name="Electrician" />
+              <Skill icon={<Wrench size={28} />} name="Plumber" />
+              <Skill icon={<Hammer size={28} />} name="Carpenter" />
+              <Skill icon={<Users size={28} />} name="Mason" />
+              <Skill icon={<Zap size={28} />} name="Welder" />
+              <Skill icon={<Car size={28} />} name="Driver" />
+              <Skill icon={<Scissors size={28} />} name="Tailor" />
+              <Skill icon={<Paintbrush size={28} />} name="Painter" />
+            </div>
           </div>
         </div>
       </section>
 
       {/* ================= HOW IT WORKS ================= */}
-      <section
-        id="how-it-works"
-        className="min-h-screen flex items-center bg-gray-50 px-6"
-      >
+      <section className="min-h-screen flex items-center bg-gray-50 px-6">
         <div className="max-w-7xl mx-auto text-center">
           <p className="text-[#FF7A00] font-semibold mb-3">How It Works</p>
           <h2 className="text-4xl font-bold mb-14">
@@ -106,15 +181,36 @@ const Landing: React.FC = () => {
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
-            <Link to="/find-labour" className="block">
-              <Step icon={<Search />} title="Search Worker" />
+            <Link to="/find-labour">
+              <Step icon={<Search size={32} />} title="Search Worker" />
             </Link>
-            <Step icon={<Users />} title="View Profile" />
-            <Step icon={<PhoneCall />} title="Contact Directly" />
-            <Step icon={<CheckCircle />} title="Get Work Done" />
+            <Step icon={<Users size={32} />} title="View Profile" />
+            <Step icon={<PhoneCall size={32} />} title="Contact Directly" />
+            <Step icon={<CheckCircle size={32} />} title="Get Work Done" />
           </div>
         </div>
       </section>
+
+      {/* Animation Style */}
+      <style>
+        {`
+          @keyframes heroTitle {
+            0% {
+              opacity: 0;
+              transform: translateY(20px);
+            }
+            100% {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+
+          .animate-heroTitle {
+            animation: heroTitle 2.2s ease-out forwards;
+          }
+        `}
+      </style>
+
     </main>
   );
 };
@@ -122,7 +218,7 @@ const Landing: React.FC = () => {
 /* ================= REUSABLE COMPONENTS ================= */
 
 const Input = ({ icon, placeholder }: any) => (
-  <div className="flex items-center bg-white rounded-lg px-5 w-full md:w-72">
+  <div className="flex items-center bg-white rounded-xl px-5 w-full md:w-72 shadow">
     <span className="text-gray-400 mr-3">{icon}</span>
     <input
       type="text"
@@ -133,8 +229,8 @@ const Input = ({ icon, placeholder }: any) => (
 );
 
 const Feature = ({ icon, title }: any) => (
-  <div className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition flex flex-col items-center text-center">
-    <div className="w-14 h-14 rounded-full bg-orange-50 flex items-center justify-center text-[#FF7A00] mb-5">
+  <div className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition flex flex-col items-center">
+    <div className="w-14 h-14 bg-orange-50 rounded-full flex items-center justify-center text-[#FF7A00] mb-5">
       {icon}
     </div>
     <h3 className="font-semibold text-lg">{title}</h3>
@@ -142,22 +238,36 @@ const Feature = ({ icon, title }: any) => (
 );
 
 const Skill = ({ icon, name }: any) => (
-  <div className="border rounded-2xl p-6 flex flex-col items-center gap-4 hover:border-[#FF7A00] hover:shadow transition cursor-pointer">
-    <div className="w-14 h-14 rounded-full bg-orange-50 flex items-center justify-center text-[#FF7A00]">
+  <div className="border rounded-2xl p-8 flex flex-col items-center gap-4 hover:border-[#FF7A00] hover:shadow transition cursor-pointer">
+    <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center text-[#FF7A00]">
       {icon}
     </div>
-    <h3 className="font-medium">{name}</h3>
+    <h3 className="font-semibold text-lg">{name}</h3>
     <p className="text-sm text-gray-500">110+ Workers</p>
   </div>
 );
 
 const Step = ({ icon, title }: any) => (
-  <div className="bg-white p-10 rounded-2xl shadow-sm hover:shadow-md transition flex flex-col items-center text-center">
-    <div className="w-16 h-16 rounded-full bg-orange-50 flex items-center justify-center text-[#FF7A00] mb-6">
-      {React.cloneElement(icon, { size: 32 })}
+  <div className="bg-white p-10 rounded-2xl shadow-sm hover:shadow-md transition flex flex-col items-center">
+    <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center text-[#FF7A00] mb-6">
+      {icon}
     </div>
-    <h3 className="font-semibold text-xl mb-3">{title}</h3>
-    <p className="text-gray-600">Simple, fast and reliable process.</p>
+    <h3 className="font-semibold text-xl mb-2">{title}</h3>
+    <p className="text-gray-600 text-sm">Simple, fast and reliable process</p>
+  </div>
+);
+
+const HeroStat = ({ value, label }: any) => (
+  <div>
+    <p className="text-3xl font-bold">{value}</p>
+    <p className="text-blue-200 text-sm">{label}</p>
+  </div>
+);
+
+const HeroChip = ({ icon, name }: any) => (
+  <div className="flex items-center gap-2 bg-white/10 backdrop-blur px-5 py-2.5 rounded-full text-sm">
+    {icon}
+    <span>{name}</span>
   </div>
 );
 
