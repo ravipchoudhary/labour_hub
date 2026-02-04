@@ -18,6 +18,7 @@ import Landing from "./pages/Landing";
 import HowItWorks from "./pages/HowItWorks";
 import EditLabourDetails from "./pages/EditLabourDetails";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import NewRegister from "./Admin/NewRegister"
 
 function App() {
 
@@ -41,6 +42,7 @@ function App() {
         <Route path="/privacy-policy" element={<PrivacyPolicy />}/>
         {/* Admin route */}
         <Route path="/admin/login" element={<Login />}></Route>
+        <Route path="/admin/register" element={<NewRegister />}></Route>
         <Route path="/admin/dashboard" element={<AdminDashboard />}></Route>
         <Route path="/admin/users" element={<UserManagement />}></Route>
         <Route path="/admin/labours" element={<LabourVerification />}></Route>
