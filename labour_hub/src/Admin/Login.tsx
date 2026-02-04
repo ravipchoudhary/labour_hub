@@ -42,11 +42,11 @@ const Login = () => {
             <p className="text-sm mb-6 opacity-90">
               Don't have an account?
             </p>
-            <button
+            <button 
               className="
                 border border-white px-8 py-2 rounded-full text-sm
                 hover:bg-white hover:text-[#7a97f5] transition
-              "
+              " onClick={() => navigate("/admin/register")}
             >
               Register
             </button>
@@ -73,7 +73,7 @@ const Login = () => {
               placeholder="Username"
               className="
                 w-full bg-gray-100 px-4 py-3 rounded-lg
-                outline-none focus:ring-2 focus:ring-[#7a97f5]
+                outline-none focus:ring-2 focus:ring-gray-200
               "
             />
             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
@@ -88,12 +88,12 @@ const Login = () => {
               placeholder="Password"
               className="
                 w-full bg-gray-100 px-4 py-3 rounded-lg
-                outline-none focus:ring-2 focus:ring-[#7a97f5]
+                outline-none focus:ring-2 focus:ring-gray-200
               "
             />
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
-              🔒
-            </span>
+            {/* <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
+              👁️
+            </span> */}
           </div>
 
           <div
