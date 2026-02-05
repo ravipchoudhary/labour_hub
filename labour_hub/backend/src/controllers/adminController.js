@@ -1,7 +1,6 @@
 import { connection, collectionName } from "../config/db.js"
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import { error } from "console";
 
 dotenv.config();
 
@@ -20,9 +19,9 @@ export const adminRegister = async (req, resp) => {
             message: "signup success",
             token
         })
-    } catch {
+    } catch (error) {
         resp.status(500).send({
-            message: "User registered failed", error
+            message: "User registered failed", error: error?.message
         })
     }
 };
@@ -47,7 +46,8 @@ export const adminLogin = async (req, resp) => {
         }
     } catch (err) {
         resp.status(500).send({
-            message: "internal server error", error: err.message
+            message: "internal server error",
+            error: err?.message
         })
     }
 }

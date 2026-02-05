@@ -16,6 +16,7 @@ import WorkerDetail from "./pages/WorkerDetail";
 import HelpCenter from "./pages/HelpCenter";
 import Landing from "./pages/Landing";
 import HowItWorks from "./pages/HowItWorks";
+import AboutUs from "./pages/AboutUs";
 import EditLabourDetails from "./pages/EditLabourDetails";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NewRegister from "./Admin/NewRegister"
@@ -32,7 +33,8 @@ function App() {
       <Routes>
         <Route path="/terms-of-service" element={<Termsofservice />} />
         <Route path="/" element={<Landing />} />
-        <Route path="/how-it-works" element={<HowItWorks />} /> 
+        <Route path="/how-it-works" element={<HowItWorks />} />
+        <Route path="/about-us" element={<AboutUs />} /> 
         <Route path="/Home" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/find-labour" element={<FindLabour />} />

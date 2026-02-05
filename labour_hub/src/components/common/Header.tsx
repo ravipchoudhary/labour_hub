@@ -37,7 +37,7 @@ const Header = () => {
           >
             How It Works
           </Link>
-          <Link to="#" className="hover:text-orange-500">About</Link>
+          <Link to="/about-us" className="hover:text-orange-500">About</Link>
         </nav>
 
         <div className="hidden sm:flex gap-4">
@@ -69,7 +69,7 @@ const Header = () => {
           >
             How It Works
           </Link>
-          <Link to="#" onClick={() => setOpen(false)}>About</Link>
+          <Link to="/about-us" onClick={() => setOpen(false)}>About</Link>
         </div>
       )}
     </header>
