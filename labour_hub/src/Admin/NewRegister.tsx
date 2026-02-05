@@ -31,7 +31,7 @@ const Register = () => {
     })
 
     const data = await response.json()
-    if (response) {
+    if (response.ok) {
       // console.log(response);
       document.cookie = "token=" + data.token;
       alert("Registered successfully!");

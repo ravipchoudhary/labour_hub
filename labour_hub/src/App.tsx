@@ -41,13 +41,13 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />}/>
         {/* Admin route */}
-        <Route path="/admin/login" element={<Login />}></Route>
-        <Route path="/admin/register" element={<NewRegister />}></Route>
-        <Route path="/admin/dashboard" element={<AdminDashboard />}></Route>
-        <Route path="/admin/users" element={<UserManagement />}></Route>
-        <Route path="/admin/labours" element={<LabourVerification />}></Route>
+        <Route path="/admin/login" element={<Login />}/>
+        <Route path="/admin/register" element={<NewRegister />}/>
+        <Route path="/admin/dashboard" element={<AdminDashboard />}/>
+        <Route path="/admin/users" element={<UserManagement />}/>
+        <Route path="/admin/labours" element={<LabourVerification />}/>
 
-        {/* {!isAdminPage && <Footer />} */}
+        
         
       
         <Route path="/register/worker" element={<Register />} />
@@ -57,7 +57,8 @@ function App() {
         <Route path="/help-center" element={<HelpCenter />} />
         <Route path="/worker/:id" element={<WorkerDetail />} />
       </Routes>
-      <Footer />
+      {!isAdminPage && <Footer />}
+      {/* <Footer /> */}
     </>
   );
 }
