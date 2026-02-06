@@ -6,13 +6,45 @@ import bcrypt from "bcrypt";
 
 dotenv.config();
 
-const secretKey = process.env.SECRET_KEY
+const secretKey = process.env.SECRET_KEY;
+const isValidEmail = (email) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
 
 export const adminRegister = async (req, resp) => {
 
     try {
         const db = await connection();
+        const {name,email,password}=req.body;
         const userData = req.body;
+        if (!name,!email,!password) {
+            return resp.status(400).send({
+                message:"All fields are required",
+                success:false,
+            })
+        }
+
+        if(!isValidEmail(email)) {
+            return resp.status(400).send({
+                message:"invalid email",
+                success:false
+            })
+        }
+
+        if (password.length < 6) {
+            return resp.status(400).send({
+                message:"Password must at least 6 characters or more",
+                success:false
+            })
+        }
+
+        const existingUser = await db.collection(collectionName).findOne({email});
+        if(existingUser) {
+            return resp.status(400).send({
+                message:"email already registered",
+                success:false
+            })
+        }
         if(userData.password !== userData.confirmPassword) {
             return resp.send({success:false,
                 message:"password do not match"
