@@ -7,7 +7,6 @@ const Dashboard = () => {
     const [selectedSkill, setSelectedSkill] = useState("All");
     const [location, setLocation] = useState("");
     const navigate = useNavigate();
-
     const filteredWorkers = workers.filter((worker) => {
         const skillMatch = selectedSkill === "All" || worker.skills.includes(selectedSkill);
         const locationMatch = worker.location.toLowerCase().includes(location.toLowerCase());
@@ -19,9 +18,9 @@ const Dashboard = () => {
             <h2 className="text-2xl font-semibold mb-6">Welcome back, Employer!</h2>
 
             <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                <StatCard value="24" title="Workers Contacted" icon={<span className="text-xl">👥</span>} />
-                <StatCard value="3" title="Active Searches" icon={<span className="text-xl">🔍</span>} />
-                <StatCard value="12" title="Workers Hired" icon={<span className="text-xl">✅</span>} />
+                <StatCard value={filteredWorkers.length} title="Workers Contacted" icon={<span className="text-xl">👥</span>} />
+                <StatCard value={filteredWorkers.filter(w => w.available).length} title="Active Searches" icon={<span className="text-xl">🔍</span>} />
+                <StatCard value={filteredWorkers.filter(w => w.available === false).length} title="Workers Hired" icon={<span className="text-xl">✅</span>} />
                 <StatCard value="2h" title="Avg Response Time" icon={<span className="text-xl">⏱️</span>} />
             </div>
 

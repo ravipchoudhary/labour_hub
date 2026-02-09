@@ -1,21 +1,20 @@
 // import { WorkerStatus } from "../../data/worker";
 import { useNavigate } from "react-router-dom";
 type Props = {
-    id: number;
+    _id?: string;
     name: string;
     skills: string[];
     location: string;
     rating: number;
     available: boolean;
     price: number;
-
 };
 
-const WorkerCard = ({ id,name, price, rating, available, location, skills }: Props) => {
+const WorkerCard = ({ _id, name, price, rating, available, location, skills }: Props) => {
     const navigate = useNavigate();
     return (
         <div
-            onClick={() => navigate(`/worker/${id}`)}
+            onClick={() => navigate(`/worker/${_id}`)}
             className="bg-white p-5 rounded-xl border cursor-pointer
     hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
         >

@@ -27,9 +27,9 @@ const WorkerHeader = ({ worker }: Props) => {
             <p className="mt-1 font-semibold">₹{worker.price} / day</p>
 
             <div className="flex gap-2 mt-3 flex-wrap">
-                {worker.skills.map((skill, i) => (
+                {Array.isArray(worker.skills) && worker.skills.map((skill, index) => (
                     <span
-                        key={i}
+                        key={index}
                         className="bg-gray-100 px-3 py-1 rounded text-sm"
                     >
                         {skill}
