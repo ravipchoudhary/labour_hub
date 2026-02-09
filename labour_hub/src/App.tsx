@@ -19,6 +19,9 @@ import HowItWorks from "./pages/HowItWorks";
 import EditLabourDetails from "./pages/EditLabourDetails";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NewRegister from "./Admin/NewRegister"
+import ForgotPassword from "./Admin/ForgotPassword";
+import ResetPasswordDirect from "./Admin/ResetPasswordDirect";
+
 
 function App() {
 
@@ -46,9 +49,10 @@ function App() {
         <Route path="/admin/dashboard" element={<AdminDashboard />}/>
         <Route path="/admin/users" element={<UserManagement />}/>
         <Route path="/admin/labours" element={<LabourVerification />}/>
+        <Route path="/admin/forget-password" element={<ForgotPassword />}/>
+        <Route path="/admin/reset-password-direct" element={<ResetPasswordDirect />}/>
+        
 
-        
-        
       
         <Route path="/register/worker" element={<Register />} />
         <Route path="/register/employer" element={<Registeremp />} />

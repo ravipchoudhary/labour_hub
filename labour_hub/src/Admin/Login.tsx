@@ -16,9 +16,7 @@ const Login = () => {
 
     const data = await response.json()
     if (response.ok) {
-      // console.log(response);
-      document.cookie = "token=" + data.token;
-      alert("Login successfully!");
+      localStorage.setItem("token",data.token)
       navigate("/admin/dashboard");
     } else {
       alert(data.message || "Login failed")
@@ -121,11 +119,13 @@ const Login = () => {
             </span> */}
           </div>
 
+
           <div
             className="
               text-center mt-2 text-sm text-gray-900
               mb-6 cursor-pointer hover:font-bold
             "
+            onClick={() => navigate("/admin/forget-password")}
           >
             Forgot Password?
           </div>
