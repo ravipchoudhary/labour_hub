@@ -1,12 +1,31 @@
 import { useNavigate } from "react-router-dom";
-import { FormEvent } from "react";
+import { FormEvent, useState } from "react";
 
 const Login = () => {
   const navigate = useNavigate();
+  const [form,setForm] = useState({email: "",password: ""});
 
-  const handleLogin = (e: FormEvent) => {
+  const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
-    navigate("/admin/dashboard");
+    // navigate("/admin/dashboard");
+    const response = await fetch('http://localhost:4000/admin/login', {
+      method: "post",
+      body: JSON.stringify(form),
+      headers: { 'Content-Type': "application/json" }
+    })
+
+    const data = await response.json()
+    if (response.ok) {
+      localStorage.setItem("token",data.token)
+      navigate("/admin/dashboard");
+    } else {
+      alert(data.message || "Login failed")
+    }
+
+    // console.log("Registered User:", form);
+
+
+  
   };
 
   return (
@@ -70,7 +89,9 @@ const Login = () => {
           <div className="mb-4 relative">
             <input
               type="text"
-              placeholder="Username"
+              placeholder="email"
+              value={form.email}
+              onChange={(e)=> setForm({...form,email:e.target.value})}
               className="
                 w-full bg-gray-100 px-4 py-3 rounded-lg
                 outline-none focus:ring-2 focus:ring-gray-200
@@ -86,6 +107,8 @@ const Login = () => {
             <input
               type="password"
               placeholder="Password"
+              value={form.password}
+              onChange={(e)=> setForm({...form,password:e.target.value})}
               className="
                 w-full bg-gray-100 px-4 py-3 rounded-lg
                 outline-none focus:ring-2 focus:ring-gray-200
@@ -96,11 +119,13 @@ const Login = () => {
             </span> */}
           </div>
 
+
           <div
             className="
               text-center mt-2 text-sm text-gray-900
               mb-6 cursor-pointer hover:font-bold
             "
+            onClick={() => navigate("/admin/forget-password")}
           >
             Forgot Password?
           </div>

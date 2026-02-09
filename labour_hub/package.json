@@ -11,8 +11,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "framer-motion": "^12.28.1",
     "lucide-react": "^0.562.0",
+    "nodemailer": "^8.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.12.0",
