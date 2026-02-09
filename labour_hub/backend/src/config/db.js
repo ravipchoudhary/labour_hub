@@ -2,7 +2,7 @@ import { MongoClient } from "mongodb"
 import dotenv from "dotenv";
 
 dotenv.config();
-const url = process.env.MONGO_URI;
+const url = process.env.MONGO_URI || "mongodb://localhost:27017";
 const client = new MongoClient(url);
 let dbName = "labour_hub";
 export const collectionName="adminlogin";
