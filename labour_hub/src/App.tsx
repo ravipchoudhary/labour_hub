@@ -20,6 +20,9 @@ import AboutUs from "./pages/AboutUs";
 import EditLabourDetails from "./pages/EditLabourDetails";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NewRegister from "./Admin/NewRegister"
+import ForgotPassword from "./Admin/ForgotPassword";
+import ResetPasswordDirect from "./Admin/ResetPasswordDirect";
+
 
 function App() {
 
@@ -43,14 +46,15 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />}/>
         {/* Admin route */}
-        <Route path="/admin/login" element={<Login />}></Route>
-        <Route path="/admin/register" element={<NewRegister />}></Route>
-        <Route path="/admin/dashboard" element={<AdminDashboard />}></Route>
-        <Route path="/admin/users" element={<UserManagement />}></Route>
-        <Route path="/admin/labours" element={<LabourVerification />}></Route>
-
-        {/* {!isAdminPage && <Footer />} */}
+        <Route path="/admin/login" element={<Login />}/>
+        <Route path="/admin/register" element={<NewRegister />}/>
+        <Route path="/admin/dashboard" element={<AdminDashboard />}/>
+        <Route path="/admin/users" element={<UserManagement />}/>
+        <Route path="/admin/labours" element={<LabourVerification />}/>
+        <Route path="/admin/forget-password" element={<ForgotPassword />}/>
+        <Route path="/admin/reset-password-direct" element={<ResetPasswordDirect />}/>
         
+
       
         <Route path="/register/worker" element={<Register />} />
         <Route path="/register/employer" element={<Registeremp />} />
@@ -59,7 +63,8 @@ function App() {
         <Route path="/help-center" element={<HelpCenter />} />
         <Route path="/worker/:id" element={<WorkerDetail />} />
       </Routes>
-      <Footer />
+      {!isAdminPage && <Footer />}
+      {/* <Footer /> */}
     </>
   );
 }

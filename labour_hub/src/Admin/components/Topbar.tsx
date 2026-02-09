@@ -19,7 +19,7 @@ const TopBar = () => {
       <div className="flex items-center gap-3">
         <img
           src="/logo.png"
-          alt="Admin Logo"
+          alt="Urban Force"
           className="h-16 w-auto object-contain"
         />
         <h1 className="text-base md:text-lg font-semibold">
