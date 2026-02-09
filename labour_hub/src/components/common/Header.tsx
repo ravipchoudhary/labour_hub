@@ -11,10 +11,10 @@ const Header = () => {
           <img
             src="/logo.png"
             alt="LabourHub Logo"
-            className="h-8 w-8 object-contain"
+            className="h-15 w-12 object-contain"
           />
           <span className="text-xl font-bold text-orange-500">
-            LabourHub
+            Urban Force
           </span>
         </Link>
 

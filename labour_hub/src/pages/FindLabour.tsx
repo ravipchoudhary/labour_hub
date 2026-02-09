@@ -16,7 +16,8 @@ const FindLabour = () => {
 
                 const transformedData = data.map((labour: any) => ({
                     ...labour,
-                    skills: [labour.skill],
+                    skills: labour.skill ? [labour.skill] : [],
+                    available: labour.available ?? true,
                 }));
 
                 console.log("Fetched labours:", transformedData);
@@ -80,7 +81,7 @@ const FindLabour = () => {
                             key={worker._id}
                             _id={worker._id}
                             name={worker.name}
-                            skills={[worker.skill]}
+                            skills={worker.skills}
                             location={worker.location}
                             price={worker.price}
                             rating={worker.rating ?? 0}

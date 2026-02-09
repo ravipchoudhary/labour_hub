@@ -10,13 +10,12 @@ const Footer = () => {
                             src="/logo.png" 
                             alt="LabourHub Logo"
                             className="h-16 w-auto object-contain"
-                        />
+                        />                       
                     <p className="text-sm mt-2 text-blue-100 max-w-md">
                         Connecting skilled workers with employers quickly and safely.
                     </p>
                     </Link>
                 </div>
-
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                     <div>
                         <h3 className="font-semibold mb-3">Quick Links</h3>
@@ -84,7 +83,7 @@ const Footer = () => {
                 </div>
 
                 <div className="border-t border-blue-700 mt-10 pt-4 text-center text-xs text-blue-200">
-                    © {new Date().getFullYear()} LabourHub. All rights reserved.
+                    © {new Date().getFullYear()} Urban Force. All rights reserved.
                 </div>
             </div>
         </footer>

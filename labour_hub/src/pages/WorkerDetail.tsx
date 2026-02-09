@@ -23,12 +23,32 @@ const WorkerDetail = () => {
         const fetchData = async () => {
             try {
                 const workerData = await getLabourById(id);
+
+                const formattedWorker: Worker = {
+                    _id: workerData._id,
+                    name: workerData.name,
+                    location: workerData.location,
+                    price: workerData.price,
+
+                    skills: workerData.skill ? [workerData.skill] : [],
+
+                    rating: workerData.rating ?? 0,
+                    experience: workerData.experience ?? 0,
+                    available: workerData.available ?? true,
+
+                    reviews: [],
+                    languages: [],
+                    workingHours: "9 AM - 6 PM",
+                    responseTime: "1 hour",
+                    about: "No description available",
+                };
+
                 const allWorkers = await getLabours();
 
-                setWorker(workerData);
+                setWorker(formattedWorker);
                 setWorkers(allWorkers);
             } catch (err) {
-                console.error(err);
+                console.error("Worker detail error:", err);
             } finally {
                 setLoading(false);
             }
