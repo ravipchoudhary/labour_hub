@@ -1,9 +1,34 @@
 import express from "express";
 import { connection } from "../config/db.js";
 import { ObjectId } from "mongodb";
+import { getDashboardStats } from "../controllers/labourController.js";
 
 const router = express.Router();
 
+// GET /labour/dashboard
+router.get("/dashboard", async (req, res) => {
+    try {
+        const db = await connection();
+
+        const allLabours = await db.collection("labour").find({}).toArray();
+
+        const workersContacted = allLabours.length;
+
+        const activeSearches = allLabours.filter((w) => w.available).length;
+
+        const workersHired = allLabours.filter((w) => w.available === false).length;
+
+        res.json({
+            workersContacted,
+            activeSearches,
+            workersHired,
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Failed to fetch dashboard stats" });
+    }
+});
+router.get("/dashboard", getDashboardStats);
 router.get("/", async (req, res) => {
     try {
         const db = await connection();
@@ -19,6 +44,7 @@ router.get("/:id", async (req, res) => {
         const db = await connection();
         const labour = await db.collection("labour").findOne({
             _id: new ObjectId(req.params.id)
+        
         });
 
         if (!labour) {
@@ -30,5 +56,79 @@ router.get("/:id", async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 });
+router.post("/", async (req, res) => {
+    try {
+        const db = await connection();
 
+        const newLabour = {
+            name: req.body.name,
+            phone: req.body.phone,
+            skill: req.body.skill,
+            location: req.body.location,
+            price: req.body.price,
+            createdAt: new Date()
+        };
+
+        const result = await db.collection("labour").insertOne(newLabour);
+
+        res.status(201).json({
+            message: "Labour added successfully",
+            labourId: result.insertedId
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+router.patch("/:id/availability", async (req, res) => {
+    try {
+        const db = await connection();
+        const { available } = req.body;
+
+        const result = await db.collection("labour").updateOne(
+            { _id: new ObjectId(req.params.id) },
+            { $set: { available } }
+        );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ message: "Labour not found" });
+        }
+
+        res.json({
+            message: "Availability updated successfully",
+            available
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+router.post("/:id/review", async (req, res) => {
+    try {
+        const db = await connection();
+        const { rating, comment, name } = req.body;
+
+        const labourId = req.params.id;
+
+        const labour = await db.collection("labour").findOne({ _id: new ObjectId(labourId) });
+
+        if (!labour) {
+            return res.status(404).json({ message: "Labour not found" });
+        }
+
+        const reviews = labour.reviews || [];
+
+        reviews.push({ rating, comment, name, createdAt: new Date() });
+
+        await db.collection("labour").updateOne(
+            { _id: new ObjectId(labourId) },
+            { $set: { reviews } }
+        );
+
+        res.status(200).json({ message: "Review added successfully", reviews });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Failed to add review" });
+    }
+});
 export default router;   

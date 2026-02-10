@@ -12,10 +12,32 @@ import WorkerContactCard from "../components/worker/WorkerContactCard";
 
 const WorkerDetail = () => {
     const { id } = useParams<{ id: string }>();
-
     const [worker, setWorker] = useState<Worker | null>(null);
     const [workers, setWorkers] = useState<Worker[]>([]);
     const [loading, setLoading] = useState(true);
+
+    const markBusy = async () => {
+        if (!worker) return;
+        await fetch(`http://localhost:4000/labour/${worker._id}/availability`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ available: false })
+        });
+        setWorker({ ...worker, available: false });
+    };
+    const addReviewToWorker = (reviews: any[]) => {
+        if (!worker) return;
+
+        const avgRating =
+            reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+
+        setWorker({
+            ...worker,
+            reviews,
+            rating: avgRating,
+        });
+    };
+    
 
     useEffect(() => {
         if (!id) return;
@@ -23,20 +45,16 @@ const WorkerDetail = () => {
         const fetchData = async () => {
             try {
                 const workerData = await getLabourById(id);
-
                 const formattedWorker: Worker = {
                     _id: workerData._id,
                     name: workerData.name,
                     location: workerData.location,
                     price: workerData.price,
-
                     skills: workerData.skill ? [workerData.skill] : [],
-
                     rating: workerData.rating ?? 0,
                     experience: workerData.experience ?? 0,
                     available: workerData.available ?? true,
-
-                    reviews: [],
+                    reviews: workerData.reviews || [],
                     languages: [],
                     workingHours: "9 AM - 6 PM",
                     responseTime: "1 hour",
@@ -44,7 +62,6 @@ const WorkerDetail = () => {
                 };
 
                 const allWorkers = await getLabours();
-
                 setWorker(formattedWorker);
                 setWorkers(allWorkers);
             } catch (err) {
@@ -66,11 +83,11 @@ const WorkerDetail = () => {
                 <div className="lg:col-span-2">
                     <WorkerHeader worker={worker} />
                     <WorkerAbout worker={worker} />
-                    <WorkerReviews worker={worker} />
+                    <WorkerReviews worker={worker} onReviewAdded={addReviewToWorker} />
                 </div>
 
                 <div>
-                    <WorkerContactCard worker={worker} />
+                    <WorkerContactCard worker={worker} onMarkBusy={markBusy} />
                     <SimilarWorkers currentWorker={worker} workers={workers} />
                     <SafetyTips />
                 </div>
