@@ -2,32 +2,8 @@ import express from "express";
 import { connection } from "../config/db.js";
 import { ObjectId } from "mongodb";
 import { getDashboardStats } from "../controllers/labourController.js";
-
 const router = express.Router();
 
-// GET /labour/dashboard
-router.get("/dashboard", async (req, res) => {
-    try {
-        const db = await connection();
-
-        const allLabours = await db.collection("labour").find({}).toArray();
-
-        const workersContacted = allLabours.length;
-
-        const activeSearches = allLabours.filter((w) => w.available).length;
-
-        const workersHired = allLabours.filter((w) => w.available === false).length;
-
-        res.json({
-            workersContacted,
-            activeSearches,
-            workersHired,
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Failed to fetch dashboard stats" });
-    }
-});
 router.get("/dashboard", getDashboardStats);
 router.get("/", async (req, res) => {
     try {
@@ -64,6 +40,7 @@ router.post("/", async (req, res) => {
             name: req.body.name,
             phone: req.body.phone,
             skill: req.body.skill,
+            available: true,
             location: req.body.location,
             price: req.body.price,
             createdAt: new Date()

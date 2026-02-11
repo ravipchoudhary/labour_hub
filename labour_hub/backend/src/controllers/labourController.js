@@ -1,3 +1,4 @@
+import { connection } from "../config/db.js";
 export const getAllLabours = async (req, res) => {
     try {
         const db = await connection();
