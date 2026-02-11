@@ -1,4 +1,3 @@
-// import { WorkerStatus } from "../../data/worker";
 import { useNavigate } from "react-router-dom";
 type Props = {
     _id?: string;

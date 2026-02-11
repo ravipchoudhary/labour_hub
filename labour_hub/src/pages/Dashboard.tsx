@@ -3,6 +3,7 @@ import { useState,useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
+    const [distance, setDistance] = useState(10);
     const [selectedSkill, setSelectedSkill] = useState("All");
     const [location, setLocation] = useState("");
     const navigate = useNavigate();
@@ -13,9 +14,10 @@ const Dashboard = () => {
         workersHired: 0,
     });
     useEffect(() => {
+        
         const fetchStats = async () => {
             try {
-                const res = await fetch("http://localhost:4000/api/labour/dashboard");
+                const res = await fetch("http://localhost:4000/labour/dashboard");
                 const data = await res.json();
                 setStats(data);
             } catch (err) {
@@ -59,8 +61,15 @@ const Dashboard = () => {
                     />
 
                     <div>
-                        <p className="mb-2 text-sm text-gray-500">Distance: 10 km</p>
-                        <input type="range" className="w-full accent-orange-500" />
+                        <p className="mb-2 text-sm text-gray-500">Distance: {distance} km</p>
+                        <input
+                            type="range"
+                            min="1"
+                            max="50"
+                            value={distance}
+                            onChange={(e) => setDistance(Number(e.target.value))}
+                            className="w-full accent-orange-500"
+                        />
                     </div>
                 </div>
 

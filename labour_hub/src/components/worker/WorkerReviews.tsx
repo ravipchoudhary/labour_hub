@@ -57,7 +57,7 @@ const WorkerReviews = ({ worker, onReviewAdded }: Props) => {
                     onClick={() => setShowForm(!showForm)}
                     className="text-sm bg-orange-500 text-white px-3 py-1 rounded"
                 >
-                    ✍️ Add Review
+                    Add Review
                 </button>
             </div>
 
