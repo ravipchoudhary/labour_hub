@@ -46,7 +46,7 @@ function HowItWorks() {
           className="text-center mb-20"
         >
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold">
-            How <span className="text-orange-500">LabourHub</span> Works
+            How <span className="text-orange-500">Urban Force</span> Works
           </h2>
           <p className="mt-4 text-blue-100 max-w-2xl mx-auto">
             Hire trusted local workers in just four simple steps.

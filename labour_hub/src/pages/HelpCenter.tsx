@@ -5,8 +5,45 @@ import { useState } from "react";
 const HelpCenter = () => {
     const [searchQuery, setSearchQuery] = useState("");
 
+    const query = searchQuery.toLowerCase();
+
+    const cards = [
+        {
+            id: "call",
+            title: "Call Us",
+            keywords: ["call", "phone", "contact"],
+            icon: <Phone className="text-orange-500" />,
+            subtitle: "Mon–Sat, 9AM–6PM",
+            value: "+91 9431607346",
+            action: () => window.open("tel:+919431607346"),
+        },
+        {
+            id: "email",
+            title: "Email Us",
+            keywords: ["email", "mail", "support"],
+            icon: <Mail className="text-orange-500" />,
+            subtitle: "We reply within 24 hrs",
+            value: "support@Urban Force.com",
+            action: () => window.open("mailto:support@Urban Force.com"),
+        },
+        {
+            id: "whatsapp",
+            title: "WhatsApp",
+            keywords: ["whatsapp", "chat", "message"],
+            icon: <MessageCircle className="text-orange-500" />,
+            subtitle: "Quick responses",
+            value: "Chat Now",
+            action: () => window.open("https://wa.me/919431607346"),
+        },
+    ];
+
+    const filteredCards = cards.filter(card =>
+        card.keywords.some(k => k.includes(query))
+    );
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#fdf4ec] via-[#f8f9fb] to-[#eaf2ff]">
+
 
             <section className="py-20">
                 <div className="max-w-5xl mx-auto px-4 text-center">
@@ -37,41 +74,23 @@ const HelpCenter = () => {
             </section>
 
             <section className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-6xl mx-auto mb-24 px-4">
-
-                <div className="bg-white p-8 rounded-xl shadow hover:shadow-lg transition text-center">
-                    <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                        <Phone className="text-orange-500" />
+                {(query ? filteredCards : cards).map((card) => (
+                    <div
+                        key={card.id}
+                        onClick={card.action}
+                        className="bg-white p-8 rounded-xl shadow hover:shadow-lg transition text-center cursor-pointer"
+                    >
+                        <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                            {card.icon}
+                        </div>
+                        <h2 className="font-semibold text-lg mb-1">{card.title}</h2>
+                        <p className="text-gray-500 text-sm">{card.subtitle}</p>
+                        <p className="font-semibold mt-3 text-orange-500">{card.value}</p>
                     </div>
-                    <h2 className="font-semibold text-lg mb-1">Call Us</h2>
-                    <p className="text-gray-500 text-sm">Mon–Sat, 9AM–6PM</p>
-                    <p className="font-semibold mt-3 text-orange-500">
-                        +91 9431607346
-                    </p>
-                </div>
-
-                <div className="bg-white p-8 rounded-xl shadow hover:shadow-lg transition text-center">
-                    <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                        <Mail className="text-orange-500" />
-                    </div>
-                    <h2 className="font-semibold text-lg mb-1">Email Us</h2>
-                    <p className="text-gray-500 text-sm">We reply within 24 hrs</p>
-                    <p className="font-semibold mt-3 text-orange-500">
-                        support@labourhub.com
-                    </p>
-                </div>
-
-                <div className="bg-white p-8 rounded-xl shadow hover:shadow-lg transition text-center">
-                    <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                        <MessageCircle className="text-orange-500" />
-                    </div>
-                    <h2 className="font-semibold text-lg mb-1">WhatsApp</h2>
-                    <p className="text-gray-500 text-sm">Quick responses</p>
-                    <p className="font-semibold mt-3 text-orange-500 cursor-pointer">
-                        Chat Now
-                    </p>
-                </div>
-
+                ))}
             </section>
+
+
             <section className="max-w-6xl mx-auto px-4 mb-24">
                 <div className="bg-white rounded-2xl shadow border overflow-hidden">
 
@@ -84,7 +103,7 @@ const HelpCenter = () => {
 
                     <div className="w-full h-[420px]">
                         <iframe
-                            title="LabourHub Location"
+                            title="Urban Force Location"
                             src="https://www.google.com/maps?q=National+Institute+of+Technology+Patna&output=embed"
                             className="w-full h-full border-0"
                             loading="lazy"
@@ -95,7 +114,7 @@ const HelpCenter = () => {
                     <div className="px-6 py-4 flex items-start gap-3 bg-gray-50">
                         <MapPin className="text-orange-500 mt-1" />
                         <div>
-                            <p className="font-semibold">LabourHub Office</p>
+                            <p className="font-semibold">Urban Force Office</p>
                             <p className="text-sm text-gray-500">
                                 Gaur City Center, Greater Noida, UP, IN
                             </p>
@@ -104,8 +123,8 @@ const HelpCenter = () => {
 
                 </div>
             </section>
-            <ChatBot />
 
+            <ChatBot />
         </div>
     );
 };

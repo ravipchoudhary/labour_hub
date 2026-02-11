@@ -1,21 +1,20 @@
 // import { WorkerStatus } from "../../data/worker";
 import { useNavigate } from "react-router-dom";
 type Props = {
-    id: number;
+    _id?: string;
     name: string;
     skills: string[];
     location: string;
     rating: number;
     available: boolean;
     price: number;
-
 };
 
-const WorkerCard = ({ id,name, price, rating, available, location, skills }: Props) => {
+const WorkerCard = ({ _id, name, price, rating, available, location, skills }: Props) => {
     const navigate = useNavigate();
     return (
         <div
-            onClick={() => navigate(`/worker/${id}`)}
+            onClick={() => navigate(`/worker/${_id}`)}
             className="bg-white p-5 rounded-xl border cursor-pointer
     hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
         >
@@ -25,7 +24,7 @@ const WorkerCard = ({ id,name, price, rating, available, location, skills }: Pro
                     {available ? "Available" : "Busy"}
                 </span>
             </div>
-            <p className="text-sm text-gray-500">⭐ {rating}</p>
+            <p className="text-sm text-gray-500">⭐ {rating.toFixed(1)}</p>
             <p className="mt-2 text-lg font-normal  text-gray-800">₹{price} / day</p>
             <p className="text-sm text-gray-500">{location}</p>
             <div className="flex items-center gap-2 mt-2">
@@ -37,9 +36,9 @@ const WorkerCard = ({ id,name, price, rating, available, location, skills }: Pro
                 <button 
                 onClick={(e) =>{e.stopPropagation();}}
                 className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded">
-                    Call Now
+                    <a href="">Call Now</a>
                 </button>
-                <button className="border px-3 py-1 rounded hover:bg-orange-500 hover:text-white">WhatsApp</button>
+                <button className="border px-3 py-1 rounded hover:bg-orange-500 hover:text-white"><a href=""></a> WhatsApp</button>
             </div>
         </div>
     );

@@ -18,6 +18,7 @@ import Landing from "./pages/Landing";
 import HowItWorks from "./pages/HowItWorks";
 import AboutUs from "./pages/AboutUs";
 import EditLabourDetails from "./pages/EditLabourDetails";
+// import EditLabourDetails from "./pages/EditLabourDetails";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NewRegister from "./Admin/NewRegister"
 import ForgotPassword from "./Admin/ForgotPassword";
