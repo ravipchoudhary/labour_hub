@@ -14,18 +14,17 @@ const WorkerHeader = ({ worker }: Props) => {
 
                 <span
                     className={`px-3 py-1 text-sm rounded-full font-medium ${isAvailable
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
                         }`}
                 >
                     {isAvailable ? "Available" : "Busy"}
                 </span>
             </div>
-
             <p className="text-gray-500">{worker.location}</p>
             <p className="mt-1">⭐ {worker.rating}</p>
             <p className="mt-1 font-semibold">₹{worker.price} / day</p>
-
+            
             <div className="flex gap-2 mt-3 flex-wrap">
                 {Array.isArray(worker.skills) && worker.skills.map((skill, index) => (
                     <span
@@ -36,27 +35,27 @@ const WorkerHeader = ({ worker }: Props) => {
                     </span>
                 ))}
             </div>
-
             <div className="flex gap-4 mt-6">
-                <button
+                <a href={`tel:${worker.phone}`}><button
                     disabled={!isAvailable}
                     className={`px-5 py-2 rounded text-white ${isAvailable
-                            ? "bg-orange-500 hover:bg-orange-600"
-                            : "bg-gray-400 cursor-not-allowed"
+                        ? "bg-orange-500 hover:bg-orange-600"
+                        : "bg-gray-400 cursor-not-allowed"
                         }`}
                 >
-                    Call Now
+                    📞 Call Now
                 </button>
-
-                <button
+                </a>
+                <a href={`https://wa.me/${worker.phone}`}> <button
                     disabled={!isAvailable}
                     className={`border px-5 py-2 rounded ${isAvailable
-                            ? "hover:bg-orange-500 hover:text-white"
-                            : "text-gray-400 cursor-not-allowed"
+                        ? "hover:bg-orange-500 hover:text-white"
+                        : "text-gray-400 cursor-not-allowed"
                         }`}
                 >
-                    WhatsApp
+                    💬 WhatsApp
                 </button>
+                </a>
             </div>
         </div>
     );
