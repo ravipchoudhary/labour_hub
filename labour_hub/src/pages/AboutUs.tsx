@@ -6,7 +6,7 @@ const AboutUs = () => {
             <section className="bg-gradient-to-b from-blue-900 to-blue-700 py-16 text-white">
                 <div className="max-w-4xl mx-auto px-6 text-center">
                     <h1 className="text-4xl sm:text-5xl font-bold mb-4">
-                        About <span className="text-orange-500">LabourHub</span>
+                        About <span className="text-orange-500">Urban Force</span>
                     </h1>
                     <p className="text-blue-100 text-lg max-w-2xl mx-auto">
                         Connecting skilled workers with employers quickly and safely.
