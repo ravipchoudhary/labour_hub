@@ -1,26 +1,39 @@
 import StatCard from "../components/cards/StatCard";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { workers } from "../data/worker";
 
 const Dashboard = () => {
+    const [distance, setDistance] = useState(10);
     const [selectedSkill, setSelectedSkill] = useState("All");
     const [location, setLocation] = useState("");
     const navigate = useNavigate();
-    const filteredWorkers = workers.filter((worker) => {
-        const skillMatch = selectedSkill === "All" || worker.skills.includes(selectedSkill);
-        const locationMatch = worker.location.toLowerCase().includes(location.toLowerCase());
-        return skillMatch && locationMatch;
+    
+    const [stats, setStats] = useState({
+        workersContacted: 0,
+        activeSearches: 0,
+        workersHired: 0,
     });
-
+    useEffect(() => {
+        
+        const fetchStats = async () => {
+            try {
+                const res = await fetch("http://localhost:4000/labour/dashboard");
+                const data = await res.json();
+                setStats(data);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+        fetchStats();
+    }, []);
     return (
         <div className="bg-gray-50 p-8 min-h-screen">
             <h2 className="text-2xl font-semibold mb-6">Welcome back, Employer!</h2>
 
             <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                <StatCard value={filteredWorkers.length} title="Workers Contacted" icon={<span className="text-xl">👥</span>} />
-                <StatCard value={filteredWorkers.filter(w => w.available).length} title="Active Searches" icon={<span className="text-xl">🔍</span>} />
-                <StatCard value={filteredWorkers.filter(w => w.available === false).length} title="Workers Hired" icon={<span className="text-xl">✅</span>} />
+                <StatCard value={stats.workersContacted} title="Workers Contacted" icon={<span className="text-xl">👥</span>} />
+                <StatCard value={stats.activeSearches} title="Active Searches" icon={<span className="text-xl">🔍</span>} />
+                <StatCard value={stats.workersHired} title="Workers Hired" icon={<span className="text-xl">✅</span>} />
                 <StatCard value="2h" title="Avg Response Time" icon={<span className="text-xl">⏱️</span>} />
             </div>
 
@@ -48,8 +61,15 @@ const Dashboard = () => {
                     />
 
                     <div>
-                        <p className="mb-2 text-sm text-gray-500">Distance: 10 km</p>
-                        <input type="range" className="w-full accent-orange-500" />
+                        <p className="mb-2 text-sm text-gray-500">Distance: {distance} km</p>
+                        <input
+                            type="range"
+                            min="1"
+                            max="50"
+                            value={distance}
+                            onChange={(e) => setDistance(Number(e.target.value))}
+                            className="w-full accent-orange-500"
+                        />
                     </div>
                 </div>
 

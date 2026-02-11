@@ -24,7 +24,8 @@ export const adminRegister = async (req, resp) => {
       return resp.status(400).send({
         message: "All fields are required",
         success: false,
-    })
+      })
+
     }
 
     if (!mobile) {

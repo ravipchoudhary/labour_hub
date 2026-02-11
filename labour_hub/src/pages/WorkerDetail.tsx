@@ -12,10 +12,33 @@ import WorkerContactCard from "../components/worker/WorkerContactCard";
 
 const WorkerDetail = () => {
     const { id } = useParams<{ id: string }>();
-
     const [worker, setWorker] = useState<Worker | null>(null);
     const [workers, setWorkers] = useState<Worker[]>([]);
     const [loading, setLoading] = useState(true);
+
+    const markBusy = async () => {
+        if (!worker) return;
+        await fetch(`http://localhost:4000/labour/${worker._id}/availability`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ available: false })
+        });
+        setWorker({ ...worker, available: false });
+    };
+    const addReviewToWorker = (reviews: any[]) => {
+        if (!worker) return;
+
+        const avgRating =
+            reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+
+        setWorker({
+            ...worker,
+            reviews,
+            rating: avgRating,
+        });
+    };
+    
+    
 
     useEffect(() => {
         if (!id) return;
@@ -23,30 +46,51 @@ const WorkerDetail = () => {
         const fetchData = async () => {
             try {
                 const workerData = await getLabourById(id);
-
+                const calculatedRating =
+                    workerData.reviews && workerData.reviews.length > 0
+                        ? workerData.reviews.reduce(
+                            (sum: number, r: any) => sum + r.rating,
+                            0
+                        ) / workerData.reviews.length
+                        : 0;
                 const formattedWorker: Worker = {
                     _id: workerData._id,
                     name: workerData.name,
+                    phone: workerData.phone || "N/A",
                     location: workerData.location,
                     price: workerData.price,
-
                     skills: workerData.skill ? [workerData.skill] : [],
-
-                    rating: workerData.rating ?? 0,
+                    rating: calculatedRating,
                     experience: workerData.experience ?? 0,
                     available: workerData.available ?? true,
-
-                    reviews: [],
+                    reviews: workerData.reviews || [],
                     languages: [],
                     workingHours: "9 AM - 6 PM",
                     responseTime: "1 hour",
                     about: "No description available",
                 };
 
-                const allWorkers = await getLabours();
+                const allWorkersRaw = await getLabours();
+
+                const formattedWorkers: Worker[] = allWorkersRaw.map((w: any) => ({
+                    _id: w._id,
+                    name: w.name,
+                    location: w.location,
+                    price: w.price,
+                    skills: w.skill ? [w.skill] : [],
+                    rating: w.rating ?? 0,
+                    experience: w.experience ?? 0,
+                    available: w.available ?? true,
+                    reviews: w.reviews || [],
+                    languages: [],
+                    phone: w.phone || "N/A",
+                    workingHours: "9 AM - 6 PM",
+                    responseTime: "1 hour",
+                    about: "No description available",
+                }));
 
                 setWorker(formattedWorker);
-                setWorkers(allWorkers);
+                setWorkers(formattedWorkers);
             } catch (err) {
                 console.error("Worker detail error:", err);
             } finally {
@@ -66,11 +110,11 @@ const WorkerDetail = () => {
                 <div className="lg:col-span-2">
                     <WorkerHeader worker={worker} />
                     <WorkerAbout worker={worker} />
-                    <WorkerReviews worker={worker} />
+                    <WorkerReviews worker={worker} onReviewAdded={addReviewToWorker} />
                 </div>
 
                 <div>
-                    <WorkerContactCard worker={worker} />
+                    <WorkerContactCard worker={worker} onMarkBusy={markBusy} />
                     <SimilarWorkers currentWorker={worker} workers={workers} />
                     <SafetyTips />
                 </div>

@@ -6,6 +6,7 @@ export interface Worker {
     skills: string[];
     location: string;
     price: number;
+    phone: string;
     rating?: number;
     available?: boolean;
     about: string;
@@ -26,6 +27,7 @@ export const workers: Worker[] = [
         location: "Noida, UP",
         skills: ["Electrician", "Wiring", "AC Repair"],
         rating: 4.8,
+        phone: "9876543210",
         price: 600,
         available: true,
         experience: 6,
@@ -45,6 +47,7 @@ export const workers: Worker[] = [
         skills: ["Wiring", "AC Repair"],
         rating: 4.5,
         price: 550,
+        phone: "9876543211",
         available: false,
         experience: 4,
         languages: ["Hindi", "English"],
