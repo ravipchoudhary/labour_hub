@@ -14,11 +14,22 @@ const FindLabour = () => {
             try {
                 const data = await getLabours();
 
-                const transformedData = data.map((labour: any) => ({
-                    ...labour,
-                    skills: labour.skill ? [labour.skill] : [],
-                    available: labour.available ?? true,
-                }));
+                const transformedData = data.map((labour: any) => {
+                    const reviews = labour.reviews || [];
+
+                    const rating =
+                        reviews.length > 0
+                            ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) /
+                            reviews.length
+                            : 0;
+
+                    return {
+                        ...labour,
+                        skills: labour.skill ? [labour.skill] : [],
+                        available: labour.available ?? true,
+                        rating,
+                    };
+                });
 
                 console.log("Fetched labours:", transformedData);
                 setLabours(transformedData);
