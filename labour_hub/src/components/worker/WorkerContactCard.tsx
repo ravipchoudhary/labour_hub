@@ -20,13 +20,16 @@ const WorkerContactCard = ({ worker, onMarkBusy }: Props) => {
                 {worker.available ? "🟢 Available" : "🔴 Busy"}
             </p>
 
-            <button className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded mb-3">
-                📞 Call Now
+          <a href={`tel:${worker.phone}`}>  <button className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded mb-3">
+               📞 Call Now
             </button>
+               </a>
 
-            <button className="w-full border py-2 rounded mb-3 hover:bg-orange-500 hover:text-white">
-                💬 Send Message
-            </button>
+            <a href={`sms:${worker.phone}`}>
+                <button className="w-full border py-2 rounded mb-3 hover:bg-orange-500 hover:text-white">
+                    💬 Send Message
+                </button>
+            </a>
 
             {worker.available && (
                 <button
@@ -37,7 +40,7 @@ const WorkerContactCard = ({ worker, onMarkBusy }: Props) => {
                 </button>
             )}
 
-            <button className="w-full text-sm text-gray-600 hover:underline">
+            <button onClick={() => navigator.clipboard.writeText(window.location.href)} className="w-full text-sm text-gray-600 hover:underline">
                 🔗 Share Profile
             </button>
 
