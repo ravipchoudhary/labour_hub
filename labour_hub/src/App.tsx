@@ -22,6 +22,8 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NewRegister from "./Admin/NewRegister"
 import ForgotPassword from "./Admin/ForgotPassword";
 import ResetPasswordDirect from "./Admin/ResetPasswordDirect";
+import AdminProfile from "./Admin/pages/AdminProfile";
+import ChangePassword from "./Admin/components/ChangePasswordModal";
 
 
 function App() {
@@ -53,6 +55,8 @@ function App() {
         <Route path="/admin/labours" element={<LabourVerification />}/>
         <Route path="/admin/forget-password" element={<ForgotPassword />}/>
         <Route path="/admin/reset-password-direct" element={<ResetPasswordDirect />}/>
+        <Route path="/admin/profile" element={<AdminProfile />}/>
+        <Route path="/admin/change-password" element={<ChangePassword />}/>
         
 
       
