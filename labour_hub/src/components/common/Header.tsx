@@ -25,7 +25,6 @@ const Header = () => {
           {open ? "✕" : "☰"}
         </button>
 
-        {/* Desktop Menu */}
         <nav className="hidden sm:flex gap-6 text-gray-600">
           <Link to="/" className="hover:text-orange-500">Home</Link>
           <Link to="/find-labour" className="hover:text-orange-500">
@@ -56,7 +55,6 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {open && (
         <div className="sm:hidden flex flex-col gap-4 px-4 pb-4 text-gray-600">
           <Link to="/" onClick={() => setOpen(false)}>Home</Link>

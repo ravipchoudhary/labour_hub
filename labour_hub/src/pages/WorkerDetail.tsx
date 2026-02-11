@@ -38,6 +38,7 @@ const WorkerDetail = () => {
         });
     };
     
+    
 
     useEffect(() => {
         if (!id) return;
@@ -45,13 +46,20 @@ const WorkerDetail = () => {
         const fetchData = async () => {
             try {
                 const workerData = await getLabourById(id);
+                const calculatedRating =
+                    workerData.reviews && workerData.reviews.length > 0
+                        ? workerData.reviews.reduce(
+                            (sum: number, r: any) => sum + r.rating,
+                            0
+                        ) / workerData.reviews.length
+                        : 0;
                 const formattedWorker: Worker = {
                     _id: workerData._id,
                     name: workerData.name,
                     location: workerData.location,
                     price: workerData.price,
                     skills: workerData.skill ? [workerData.skill] : [],
-                    rating: workerData.rating ?? 0,
+                    rating: calculatedRating,
                     experience: workerData.experience ?? 0,
                     available: workerData.available ?? true,
                     reviews: workerData.reviews || [],
@@ -61,9 +69,26 @@ const WorkerDetail = () => {
                     about: "No description available",
                 };
 
-                const allWorkers = await getLabours();
+                const allWorkersRaw = await getLabours();
+
+                const formattedWorkers: Worker[] = allWorkersRaw.map((w: any) => ({
+                    _id: w._id,
+                    name: w.name,
+                    location: w.location,
+                    price: w.price,
+                    skills: w.skill ? [w.skill] : [],
+                    rating: w.rating ?? 0,
+                    experience: w.experience ?? 0,
+                    available: w.available ?? true,
+                    reviews: w.reviews || [],
+                    languages: [],
+                    workingHours: "9 AM - 6 PM",
+                    responseTime: "1 hour",
+                    about: "No description available",
+                }));
+
                 setWorker(formattedWorker);
-                setWorkers(allWorkers);
+                setWorkers(formattedWorkers);
             } catch (err) {
                 console.error("Worker detail error:", err);
             } finally {

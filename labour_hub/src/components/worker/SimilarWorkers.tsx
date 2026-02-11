@@ -11,7 +11,7 @@ const SimilarWorkers = ({ currentWorker, workers }: Props) => {
 
     const similar = workers.filter(
         (w) =>
-            w.id !== currentWorker.id &&
+            w._id !== currentWorker._id &&
             w.skills.some((skill) =>
                 currentWorker.skills.includes(skill)
             )
@@ -26,8 +26,8 @@ const SimilarWorkers = ({ currentWorker, workers }: Props) => {
             <div className="space-y-4">
                 {similar.map((worker) => (
                     <div
-                        key={worker.id}
-                        onClick={() => navigate(`/worker/${worker.id}`)}
+                        key={worker._id}
+                        onClick={() => navigate(`/worker/${worker._id}`)}
                         className="cursor-pointer border rounded p-3 hover:bg-gray-50 transition"
                     >
                         <p className="font-medium">{worker.name}</p>
