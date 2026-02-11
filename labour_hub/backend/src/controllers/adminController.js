@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { error } from "console";
 import bcrypt from "bcrypt";
 import nodemailer from 'nodemailer';
+import { ObjectId } from "mongodb";
 
 
 dotenv.config();
@@ -23,11 +24,7 @@ export const adminRegister = async (req, resp) => {
       return resp.status(400).send({
         message: "All fields are required",
         success: false,
-      })
-// <<<<<<< HEAD
-
-// =======
-// >>>>>>> 0f60916eeeb6889fd211adbbcd98ec9083b95523
+    })
     }
 
     if (!mobile) {
@@ -87,7 +84,7 @@ export const adminRegister = async (req, resp) => {
     const result = await db.collection(collectionName).insertOne(userData);
 
 
-    const token = jwt.sign({ email: userData.email }, secretKey, { expiresIn: "50d" })
+    const token = jwt.sign({ id: result.insertedId, email: userData.email }, secretKey, { expiresIn: "50d" })
     resp.status(201).send({
       success: true,
       message: "signup success",
@@ -111,7 +108,7 @@ export const adminLogin = async (req, resp) => {
   if (user) {
     const isMatch = await bcrypt.compare(password, user.password);
     if (isMatch) {
-      const token = jwt.sign({ email: user.email }, secretKey, { expiresIn: "50d" })
+      const token = jwt.sign({ id:user._id, email: user.email }, secretKey, { expiresIn: "50d" })
       resp.status(200).send({
         success: true,
         message: "login success",
@@ -130,12 +127,7 @@ export const adminLogin = async (req, resp) => {
   }
 }
 
-// const token = jwt.sign(userData, secretKey, { expiresIn: "50d" })
-// resp.status(201).send({
-//     success: true,
-//     message: "login success",
-//     token
-// })
+
 
 
 export const verifyForgotPassword = async (req, resp) => {
@@ -231,9 +223,131 @@ export const resetPasswordDirect = async (req, resp) => {
 };
 
 
+export const getAdminProfile = async (req, resp) => {
+  try {
+    const db = await connection();
+    const adminId = req.admin.id;
+
+    const admin = await db.collection(collectionName).findOne(
+      { _id: new ObjectId(adminId) },
+      { projection: { password: 0 } }
+    );
+
+    if (!admin) {
+      return resp.status(404).send({
+        success: false,
+        message: "Admin not found",
+      });
+    }
+
+    resp.send({
+      success: true,
+      data: admin,
+    });
+  } catch (err) {
+    resp.status(500).send({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
 
 
+export const updateAdminProfile = async (req, resp) => {
+  try {
+    const db = await connection();
+    const adminId = req.admin.id;
+    const { name, mobile } = req.body;
 
+    await db.collection(collectionName).updateOne(
+      { _id: new ObjectId(adminId) },
+      {
+        $set: {
+          name,
+          mobile,
+        },
+      }
+    );
 
+    resp.send({
+      success: true,
+      message: "Profile updated successfully",
+    });
+  } catch (err) {
+    resp.status(500).send({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
 
+export const changeAdminPassword = async (req, resp) => {
+  try {
+    const db = await connection();
+    const adminId = req.admin.id;
 
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return resp.status(400).send({
+        success: false,
+        message: "All fields are required",
+      });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return resp.status(400).send({
+        success: false,
+        message: "Passwords do not match",
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return resp.status(400).send({
+        success: false,
+        message: "Password must be at least 6 characters",
+      });
+    }
+
+    const admin = await db
+      .collection(collectionName)
+      .findOne({ _id: new ObjectId(adminId) });
+
+    if (!admin) {
+      return resp.status(404).send({
+        success: false,
+        message: "Admin not found",
+      });
+    }
+
+    const isMatch = await bcrypt.compare(
+      currentPassword,
+      admin.password
+    );
+
+    if (!isMatch) {
+      return resp.status(401).send({
+        success: false,
+        message: "Current password is incorrect",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await db.collection(collectionName).updateOne(
+      { _id: new ObjectId(adminId) },
+      { $set: { password: hashedPassword } }
+    );
+
+    resp.send({
+      success: true,
+      message: "Password updated successfully",
+    });
+
+  } catch (err) {
+    resp.status(500).send({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
