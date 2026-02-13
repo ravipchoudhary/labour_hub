@@ -7,25 +7,35 @@ const Login = () => {
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
-    // navigate("/admin/dashboard");
-    const response = await fetch('http://localhost:4000/admin/login', {
-      method: "post",
-      body: JSON.stringify(form),
-      headers: { 'Content-Type': "application/json" }
-    })
 
-    const data = await response.json()
+    const response = await fetch(
+      "http://localhost:4000/auth/login",
+      {
+        method: "POST",
+        body: JSON.stringify(form),
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+
+    const data = await response.json();
+
     if (response.ok) {
-      localStorage.setItem("token",data.token)
-      navigate("/admin/dashboard");
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("role", data.role);
+
+      if (data.role === "admin") {
+        navigate("/admin/dashboard");
+      }
+      else if (data.role === "labour") {
+        navigate("/labour-dashboard");
+      }
+      else if (data.role === "employer") {
+        navigate("/dashboard");
+      }
+
     } else {
-      alert(data.message || "Login failed")
+      alert(data.message || "Login failed");
     }
-
-    // console.log("Registered User:", form);
-
-
-  
   };
 
   return (

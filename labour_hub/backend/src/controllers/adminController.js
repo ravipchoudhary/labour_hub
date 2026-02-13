@@ -226,11 +226,3 @@ export const resetPasswordDirect = async (req, resp) => {
     });
   }
 };
-
-
-
-
-
-
-
-

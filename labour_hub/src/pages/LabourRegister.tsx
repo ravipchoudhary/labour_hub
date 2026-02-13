@@ -1,11 +1,28 @@
-import React from 'react';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-import { Link, useNavigate } from 'react-router-dom';
-import { User, Phone, MapPin, Lock, Eye, ArrowLeft } from 'lucide-react';
+type FormData = {
+  fullName: string;
+  email: string;
+  phone: string;
+  gender: string;
+  address: string;
+  skills: string;
+  experience: string;
+  rate: string;
+  rateType: string;
+  about: string;
+  password: string;
+  confirmPassword: string;
+  photo: File | null;
+};
 
 const Register = () => {
-  const [formData, setFormData] = useState({
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState<FormData>({
     fullName: "",
+    email: "",
     phone: "",
     gender: "",
     address: "",
@@ -19,14 +36,19 @@ const Register = () => {
     photo: null,
   });
 
-  const [preview, setPreview] = useState(null);
+  const [preview, setPreview] = useState<string | null>(null);
 
-  const handleChange = (e) => {
+
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handlePhotoUpload = (e) => {
-    const file = e.target.files[0];
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
@@ -38,17 +60,19 @@ const Register = () => {
     setPreview(URL.createObjectURL(file));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (
       !formData.fullName ||
+      !formData.email ||
       !formData.phone ||
       !formData.gender ||
       !formData.skills ||
       !formData.experience ||
       !formData.rate ||
-      !formData.password
+      !formData.password ||
+      !formData.confirmPassword
     ) {
       alert("Please fill all required fields");
       return;
@@ -59,28 +83,48 @@ const Register = () => {
       return;
     }
 
-    console.log("FORM DATA:", formData);
-    alert("Worker registered successfully ✅");
+    try {
+      const response = await fetch("http://localhost:4000/labour/profile", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          phone: formData.phone,
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.message);
+        return;
+      }
+
+      alert("Worker registered successfully ✅");
+      navigate("/login");
+
+    } catch (error) {
+      alert("Something went wrong");
+    }
   };
+
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-
       <div className="w-full max-w-6xl bg-white rounded-2xl shadow-lg overflow-hidden grid grid-cols-1 lg:grid-cols-2">
 
-        {/* FORM */}
         <div className="flex items-center justify-center py-10 px-6">
-          <form className="w-full max-w-md space-y-4" onSubmit={handleSubmit}>
+          <form
+            className="w-full max-w-md space-y-4"
+            onSubmit={handleSubmit}
+          >
+            <h2 className="text-2xl font-bold text-gray-800 text-center">
+              Register as a Worker
+            </h2>
 
-           {/* BACK TEXT */}
-            <button
-              type="button"
-              className="text-sm text-gray-600 hover:text-orange-500"
-            >
-              ← Back to role selection
-            </button>
-
-            {/* PHOTO UPLOAD */}
             <div className="flex justify-center pt-4">
               <label className="cursor-pointer text-center">
                 <input
@@ -90,7 +134,7 @@ const Register = () => {
                   className="hidden"
                 />
 
-                <div className="w-24 h-24 rounded-full border-4 border-orange-500 flex items-center justify-center overflow-hidden bg-gradient-to-br from-orange-400 to-orange-600 text-white text-2xl font-bold">
+                <div className="w-24 h-24 rounded-full border-4 border-orange-500 flex items-center justify-center overflow-hidden bg-orange-500 text-white text-2xl font-bold">
                   {preview ? (
                     <img
                       src={preview}
@@ -112,116 +156,102 @@ const Register = () => {
               </label>
             </div>
 
-            <h2 className="text-2xl font-bold text-gray-800 text-center">
-              Register as a Worker
-            </h2>
+            <input
+              type="text"
+              name="fullName"
+              placeholder="Full Name"
+              value={formData.fullName}
+              onChange={handleChange}
+              className="w-full border rounded-lg px-4 py-2"
+            />
 
-            <p className="text-sm text-gray-500 text-center">
-              Create your profile and start finding work
-            </p>
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full border rounded-lg px-4 py-2"
+            />
 
-            {/* FULL NAME */}
-            <div>
-              <label className="text-sm font-medium">Full Name</label>
+            <input
+              type="tel"
+              name="phone"
+              placeholder="Phone"
+              value={formData.phone}
+              onChange={handleChange}
+              className="w-full border rounded-lg px-4 py-2"
+            />
+
+            <select
+              name="gender"
+              value={formData.gender}
+              onChange={handleChange}
+              className="w-full border rounded-lg px-4 py-2"
+            >
+              <option value="">Select Gender</option>
+              <option>Male</option>
+              <option>Female</option>
+              <option>Other</option>
+            </select>
+
+            <input
+              type="text"
+              name="skills"
+              placeholder="Skills"
+              value={formData.skills}
+              onChange={handleChange}
+              className="w-full border rounded-lg px-4 py-2"
+            />
+
+            <input
+              type="number"
+              name="experience"
+              placeholder="Years of Experience"
+              value={formData.experience}
+              onChange={handleChange}
+              className="w-full border rounded-lg px-4 py-2"
+            />
+
+            <div className="flex gap-2">
               <input
-                type="text"
-                name="fullName"
-                value={formData.fullName}
+                type="number"
+                name="rate"
+                placeholder="Rate (₹)"
+                value={formData.rate}
                 onChange={handleChange}
-                className="w-full border rounded-lg px-4 py-2 mt-1"
+                className="w-full border rounded-lg px-4 py-2"
               />
-            </div>
 
-            {/* PHONE */}
-            <div>
-              <label className="text-sm font-medium">Phone Number</label>
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                className="w-full border rounded-lg px-4 py-2 mt-1"
-              />
-            </div>
-
-            {/* GENDER */}
-            <div>
-              <label className="text-sm font-medium">Gender</label>
               <select
-                name="gender"
-                value={formData.gender}
+                name="rateType"
+                value={formData.rateType}
                 onChange={handleChange}
-                className="w-full border rounded-lg px-4 py-2 mt-1"
+                className="border rounded-lg px-3"
               >
-                <option value="">Select gender</option>
-                <option>Male</option>
-                <option>Female</option>
-                <option>Other</option>
+                <option>Per Day</option>
+                <option>Per Hour</option>
               </select>
             </div>
 
-            {/* SKILLS */}
-            <div>
-              <label className="text-sm font-medium">Skills</label>
-              <input
-                type="text"
-                name="skills"
-                value={formData.skills}
-                onChange={handleChange}
-                className="w-full border rounded-lg px-4 py-2 mt-1"
-              />
-            </div>
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleChange}
+              className="w-full border rounded-lg px-4 py-2"
+            />
 
-            {/* EXPERIENCE */}
-            <div>
-              <label className="text-sm font-medium">
-                Years of Experience
-              </label>
-              <input
-                type="number"
-                name="experience"
-                value={formData.experience}
-                onChange={handleChange}
-                className="w-full border rounded-lg px-4 py-2 mt-1"
-              />
-            </div>
+            <input
+              type="password"
+              name="confirmPassword"
+              placeholder="Confirm Password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              className="w-full border rounded-lg px-4 py-2"
+            />
 
-            {/* RATE */}
-            <div>
-              <label className="text-sm font-medium">Your Rate (₹)</label>
-              <div className="flex gap-2 mt-1">
-                <input
-                  type="number"
-                  name="rate"
-                  value={formData.rate}
-                  onChange={handleChange}
-                  className="w-full border rounded-lg px-4 py-2"
-                />
-                <select
-                  name="rateType"
-                  value={formData.rateType}
-                  onChange={handleChange}
-                  className="border rounded-lg px-3"
-                >
-                  <option>Per Day</option>
-                  <option>Per Hour</option>
-                </select>
-              </div>
-            </div>
-
-            {/* PASSWORD */}
-            <div>
-              <label className="text-sm font-medium">Password</label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full border rounded-lg px-4 py-2 mt-1"
-              />
-            </div>
-
-            {/* REGISTER */}
             <button
               type="submit"
               className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg font-semibold"
@@ -231,16 +261,11 @@ const Register = () => {
           </form>
         </div>
 
-        {/* RIGHT PANEL */}
         <div className="hidden lg:flex items-center justify-center bg-orange-500 text-white px-10">
           <div className="text-center space-y-4 max-w-sm">
-            <div className="w-28 h-28 rounded-full bg-white/20 mx-auto flex items-center justify-center">
-              <div className="w-16 h-16 rounded-full bg-white/30" />
-            </div>
             <h2 className="text-3xl font-bold">Showcase Your Skills</h2>
             <p className="text-orange-100">
-              Create your profile, set your rates, and connect with employers
-              looking for your expertise.
+              Create your profile, set your rates, and connect with employers.
             </p>
           </div>
         </div>
