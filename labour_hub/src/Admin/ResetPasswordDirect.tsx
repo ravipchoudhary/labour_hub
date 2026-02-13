@@ -4,16 +4,23 @@ import { useState } from "react";
 const ResetPasswordDirect = () => {
   const navigate = useNavigate();
   const { state } = useLocation();
+
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [msg, setMsg] = useState("");
 
   const submit = async (e: any) => {
     e.preventDefault();
 
+    if (password !== confirmPassword) {
+      setMsg("Passwords do not match");
+      return;
+    }
+
     const res = await fetch("http://localhost:4000/admin/reset-password-direct", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...state, password }),
+      body: JSON.stringify({ ...state, password, confirmPassword }),
     });
 
     const data = await res.json();
@@ -36,11 +43,18 @@ const ResetPasswordDirect = () => {
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        <button className="w-full bg-[#fb923c] hover:bg-[#fb923c] text-white py-2 rounded-xl font-bold">
+        <input
+          type="password"
+          placeholder="Confirm password"
+          className="w-full border border-gray-300 rounded-xl px-4 py-2 mb-4 outline-none focus:ring-2 focus:ring-gray-200"
+          onChange={(e) => setConfirmPassword(e.target.value)}
+        />
+
+        <button className="w-full bg-[#fb923c] text-white py-2 rounded-xl font-bold">
           Reset Password
         </button>
 
-        {msg && <p className="text-sm mt-3">{msg}</p>}
+        {msg && <p className="text-sm mt-3 text-red-500">{msg}</p>}
       </form>
     </div>
   );

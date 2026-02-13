@@ -4,7 +4,6 @@ import { verifyAdminToken } from "../middlewares/authMiddleware.js";
 
 const adminRouter = express.Router();
 
-adminRouter.post("/signup",adminRegister);
 adminRouter.post("/login",adminLogin);
 adminRouter.post("/verify-forgot-password",verifyForgotPassword);
 adminRouter.post("/reset-password-direct",resetPasswordDirect);

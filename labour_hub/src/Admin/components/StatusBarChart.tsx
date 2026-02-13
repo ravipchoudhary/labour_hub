@@ -1,54 +1,46 @@
-const StatusBarChart = () => {
+interface Props {
+  active: number;
+  pending: number;
+  total: number;
+}
+
+const StatusBarChart = ({ active, pending, total }: Props) => {
+  const blocked = total - active - pending;
+
   const data = [
-    { label: "Approved", value: 2500, fontBold: true, color: "bg-blue-600" },
-    { label: "Pending", value: 470, fontBold: true, color: "bg-pink-500" },
-    { label: "Blocked", value: 79, fontBold: true, color: "bg-emerald-500" },
+    { label: "Approved", value: active, color: "bg-blue-600" },
+    { label: "Pending", value: pending, color: "bg-pink-500" },
+    { label: "Blocked", value: blocked < 0 ? 0 : blocked, color: "bg-emerald-500" },
   ];
 
-  const maxValue = 3000;
-  const xAxis = [0, 500, 1000, 1500, 2000, 2500, 3000];
+  const maxValue = Math.max(...data.map((item) => item.value), 1);
 
   return (
-    <div className="bg-white border rounded-2xl p-6">
+    <div className="bg-white border rounded-2xl p-6 shadow-sm">
       <h2 className="text-sm font-semibold mb-6 text-center">
-        Status Bar Chart
+        Status Overview
       </h2>
 
-      
-      <div className="space-y-8 relative mb-6">
-        <div className="absolute inset-y-0 left-24 right-12 flex justify-between">
-          {xAxis.map((_, i) => (
-            <div key={i} className="w-px bg-gray-200 opacity-40" />
-          ))}
-        </div>
-
+      <div className="space-y-6">
         {data.map((item) => (
           <div key={item.label} className="flex items-center gap-6">
-            <div className="w-24 text-sm font-semibold text-gray-700">
+            <div className="w-24 text-sm font-medium text-gray-700">
               {item.label}
             </div>
 
-            
-            <div className="flex-1">
+            <div className="flex-1 bg-gray-100 rounded-full h-6">
               <div
-                className={`${item.color} h-8`}
+                className={`${item.color} h-6 rounded-full transition-all duration-500`}
                 style={{
                   width: `${(item.value / maxValue) * 100}%`,
                 }}
               />
             </div>
 
-            <div className="w-12 text-sm font-semibold text-gray-600">
+            <div className="w-12 text-sm font-semibold text-gray-600 text-right">
               {item.value}
             </div>
           </div>
-        ))}
-      </div>
-
-      
-      <div className="flex justify-between pl-24 pr-12 text-xs text-gray-500">
-        {xAxis.map((val) => (
-          <span key={val}>{val}</span>
         ))}
       </div>
     </div>
