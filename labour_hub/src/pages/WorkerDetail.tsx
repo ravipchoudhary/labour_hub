@@ -56,6 +56,7 @@ const WorkerDetail = () => {
                 const formattedWorker: Worker = {
                     _id: workerData._id,
                     name: workerData.name,
+                    phone: workerData.phone || "N/A",
                     location: workerData.location,
                     price: workerData.price,
                     skills: workerData.skill ? [workerData.skill] : [],
@@ -82,6 +83,7 @@ const WorkerDetail = () => {
                     available: w.available ?? true,
                     reviews: w.reviews || [],
                     languages: [],
+                    phone: w.phone || "N/A",
                     workingHours: "9 AM - 6 PM",
                     responseTime: "1 hour",
                     about: "No description available",

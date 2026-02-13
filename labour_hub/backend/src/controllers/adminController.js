@@ -2,6 +2,7 @@ import { connection, collectionName } from "../config/db.js"
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import bcrypt from "bcrypt";
+import nodemailer from 'nodemailer';
 import { ObjectId } from "mongodb";
 
 
@@ -73,6 +74,8 @@ export const adminLogin = async (req, resp) => {
     );
 
     return resp.status(200).send({
+    const token = jwt.sign({ id: result.insertedId, email: userData.email }, secretKey, { expiresIn: "50d" })
+    resp.status(201).send({
       success: true,
       message: "Login success",
       token
@@ -85,6 +88,36 @@ export const adminLogin = async (req, resp) => {
     });
   }
 };
+
+
+
+export const adminLogin = async (req, resp) => {
+  const { email, password } = req.body;
+  const db = await connection();
+
+  const user = await db.collection(collectionName).findOne({ email });
+
+  if (user) {
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (isMatch) {
+      const token = jwt.sign({ id:user._id, email: user.email }, secretKey, { expiresIn: "50d" })
+      resp.status(200).send({
+        success: true,
+        message: "login success",
+        token:token
+      })
+    } else {
+      resp.status(401).send({
+        message: "password invalid",
+        success: false
+      })
+    }
+  } else {
+    resp.status(404).send({
+      message: "User not found", success: false
+    })
+  }
+}
 
 
 
