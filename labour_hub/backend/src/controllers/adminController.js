@@ -3,11 +3,13 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import bcrypt from "bcrypt";
 import { ObjectId } from "mongodb";
+import {OAuth2Client} from "google-auth-library";
 
 
 dotenv.config();
 
 const secretKey = process.env.SECRET_KEY;
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const isValidEmail = (email) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };
@@ -86,7 +88,53 @@ export const adminLogin = async (req, resp) => {
   }
 };
 
+export const googleAdminLogin = async (req, resp) => {
+  try {
+    const { token } = req.body;
 
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email, name } = payload;
+
+    const db = await connection();
+
+    let user = await db.collection(collectionName).findOne({ email });
+
+    if (!user) {
+      const result = await db.collection(collectionName).insertOne({
+        name,
+        email,
+        googleLogin: true,
+        createdAt: new Date(),
+      });
+
+      user = {
+        _id: result.insertedId,
+        email,
+      };
+    }
+
+    const jwtToken = jwt.sign(
+      { id: user._id, email: user.email },
+      secretKey,
+      { expiresIn: "50d" }
+    );
+
+    return resp.status(200).send({
+      success: true,
+      token: jwtToken,
+    });
+  } catch (error) {
+    return resp.status(401).send({
+      success: false,
+      message: "Google authentication failed",
+    });
+  }
+};
 
 
 export const verifyForgotPassword = async (req, resp) => {

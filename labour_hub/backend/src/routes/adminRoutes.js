@@ -1,10 +1,11 @@
 import express from "express";
-import { adminLogin, resetPasswordDirect, verifyForgotPassword, getAdminProfile, updateAdminProfile, changeAdminPassword } from "../controllers/adminController.js";
+import { adminLogin, resetPasswordDirect, verifyForgotPassword, getAdminProfile, updateAdminProfile, changeAdminPassword, googleAdminLogin } from "../controllers/adminController.js";
 import { verifyAdminToken } from "../middlewares/authMiddleware.js";
 
 const adminRouter = express.Router();
 
 adminRouter.post("/login",adminLogin);
+adminRouter.post("/google-login",googleAdminLogin);
 adminRouter.post("/verify-forgot-password",verifyForgotPassword);
 adminRouter.post("/reset-password-direct",resetPasswordDirect);
 adminRouter.get("/dashboard",verifyAdminToken,(req,resp)=> {
