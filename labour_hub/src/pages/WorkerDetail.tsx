@@ -59,7 +59,11 @@ const WorkerDetail = () => {
                     phone: workerData.phone || "N/A",
                     location: workerData.location,
                     price: workerData.price,
-                    skills: workerData.skill ? [workerData.skill] : [],
+                    skills: workerData.skills?.length
+                        ? workerData.skills
+                        : workerData.skill
+                            ? [workerData.skill]
+                            : [],
                     rating: calculatedRating,
                     experience: workerData.experience ?? 0,
                     available: workerData.available ?? true,
@@ -77,7 +81,7 @@ const WorkerDetail = () => {
                     name: w.name,
                     location: w.location,
                     price: w.price,
-                    skills: w.skill ? [w.skill] : [],
+                    skills: w.skills?.length ? w.skills : [],
                     rating: w.rating ?? 0,
                     experience: w.experience ?? 0,
                     available: w.available ?? true,

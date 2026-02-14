@@ -1,5 +1,5 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Search,
@@ -19,25 +19,39 @@ import {
 } from "lucide-react";
 
 const Landing: React.FC = () => {
+  const [selectedSkill, setSelectedSkill] = useState("All");
+  const [location, setLocation] = useState("");
+  const navigate = useNavigate();
+
+  const handleSearch = () => {
+    navigate(
+      `/find-labour?skill=${encodeURIComponent(
+        selectedSkill
+      )}&location=${encodeURIComponent(location)}`
+    );
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
   return (
     <main className="w-full font-sans text-gray-800">
 
       {/* ================= HERO ================= */}
       <section className="min-h-screen bg-gradient-to-br from-[#0B3C88] via-[#0E4BA8] to-[#0B3C88] flex items-center px-6 relative overflow-hidden">
 
-        {/* dotted background */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.08)_1px,transparent_0)] bg-[length:22px_22px] opacity-40" />
 
         <div className="relative z-10 max-w-7xl mx-auto text-center text-white">
 
-          {/* 🔥 MAIN HEADING – SLOW & SMOOTH */}
+          {/* Heading */}
           <motion.h1
             initial={{ opacity: 0, y: 60 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 1.6,        // slower
-              ease: "easeOut",
-            }}
+            transition={{ duration: 1.6, ease: "easeOut" }}
             className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-6"
           >
             Find Skilled <span className="text-[#FF7A00]">Workers</span> Near You
@@ -47,37 +61,48 @@ const Landing: React.FC = () => {
           <motion.p
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 1.2,
-              delay: 0.4,
-              ease: "easeOut",
-            }}
+            transition={{ duration: 1.2, delay: 0.4, ease: "easeOut" }}
             className="text-blue-100 max-w-3xl mx-auto text-lg sm:text-xl mb-12"
           >
             Connect with verified local labourers for construction, plumbing,
             electrical work and more. Hire instantly with just a call.
           </motion.p>
 
-          {/* Search */}
+          {/* ================= SEARCH BAR ================= */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 1,
-              delay: 0.7,
-              ease: "easeOut",
-            }}
+            transition={{ duration: 1, delay: 0.7 }}
             className="flex flex-col md:flex-row justify-center items-center gap-4 mb-14"
           >
-            <Input icon={<Search size={18} />} placeholder="Skill required" />
-            <Input icon={<MapPin size={18} />} placeholder="Location" />
+            <select
+              value={selectedSkill}
+              onChange={(e) => setSelectedSkill(e.target.value)}
+              className="px-3 rounded-lg py-3 w-[30%] outline-none text-gray-700"
+            >
+              <option value="All">All Skills</option>
+              <option value="Electrician">Electrician</option>
+              <option value="Plumber">Plumber</option>
+              <option value="Carpenter">Carpenter</option>
+            </select>
 
-            <button className="bg-[#FF7A00] hover:bg-orange-600 transition px-12 py-4 rounded-xl font-semibold flex items-center gap-2 shadow-lg">
+            <Input
+              icon={<MapPin size={18} />}
+              placeholder="Location"
+              value={location}
+              onChange={(e: any) => setLocation(e.target.value)}
+              onKeyPress={handleKeyPress}
+            />
+
+            <button
+              onClick={handleSearch}
+              className="bg-[#FF7A00] hover:bg-orange-600 transition px-10 py-3 rounded-xl font-semibold flex items-center gap-2 shadow-lg"
+            >
               <Search size={18} /> Search
             </button>
           </motion.div>
 
-          {/* Stats */}
+          {/* ================= STATS ================= */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -90,7 +115,7 @@ const Landing: React.FC = () => {
             <HeroStat value="4.8★" label="User Rating" />
           </motion.div>
 
-          {/* Skill Chips */}
+          {/* ================= SKILL CHIPS ================= */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -104,7 +129,7 @@ const Landing: React.FC = () => {
             <HeroChip icon={<Car size={18} />} name="Driver" />
           </motion.div>
 
-          {/* Trust Badges */}
+          {/* ================= TRUST BADGES ================= */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -121,7 +146,6 @@ const Landing: React.FC = () => {
               <Zap size={18} /> Instant Hiring
             </div>
           </motion.div>
-
         </div>
       </section>
 
@@ -190,40 +214,22 @@ const Landing: React.FC = () => {
           </div>
         </div>
       </section>
-
-      {/* Animation Style */}
-      <style>
-        {`
-          @keyframes heroTitle {
-            0% {
-              opacity: 0;
-              transform: translateY(20px);
-            }
-            100% {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-
-          .animate-heroTitle {
-            animation: heroTitle 2.2s ease-out forwards;
-          }
-        `}
-      </style>
-
     </main>
   );
 };
 
 /* ================= REUSABLE COMPONENTS ================= */
 
-const Input = ({ icon, placeholder }: any) => (
+const Input = ({ icon, placeholder, value, onChange, onKeyPress }: any) => (
   <div className="flex items-center bg-white rounded-xl px-5 w-full md:w-72 shadow">
     <span className="text-gray-400 mr-3">{icon}</span>
     <input
       type="text"
       placeholder={placeholder}
-      className="py-4 w-full outline-none text-gray-700"
+      value={value}
+      onChange={onChange}
+      onKeyPress={onKeyPress}
+      className="py-3 w-full outline-none text-gray-700"
     />
   </div>
 );

@@ -17,6 +17,7 @@ app.use("/labour", labourRoutes);
 
 await connectDB();
 
+const PORT = process.env.PORT || 4000;
 
 const PORT = process.env.PORT || 4000;
 

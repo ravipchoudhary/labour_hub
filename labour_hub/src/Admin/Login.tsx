@@ -49,8 +49,6 @@ const Login = () => {
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
-    setEmailError("");
-    setPasswordError("");
 
     const response = await fetch("http://localhost:4000/admin/login", {
       method: "POST",
