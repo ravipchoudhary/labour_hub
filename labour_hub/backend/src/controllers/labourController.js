@@ -3,7 +3,6 @@ import { connection } from "../config/db.js";
 import jwt from "jsonwebtoken";
 import { ObjectId } from "mongodb";
 
-// ================= REGISTER =================
 export const registerLabour = async (req, res) => {
     try {
         const db = await connection();
@@ -32,7 +31,6 @@ export const registerLabour = async (req, res) => {
 };
 
 
-// ================= LOGIN =================
 export const loginLabour = async (req, res) => {
     try {
         const { phone, password } = req.body;
@@ -68,7 +66,6 @@ export const loginLabour = async (req, res) => {
     }
 };
 
-// ================= GET ALL =================
 export const getAllLabours = async (req, res) => {
     try {
         const db = await connection();
@@ -80,7 +77,6 @@ export const getAllLabours = async (req, res) => {
 };
 
 
-// ================= PROFILE =================
 export const getLabourProfile = async (req, res) => {
     try {
         const db = await connection();
@@ -103,7 +99,6 @@ export const getLabourProfile = async (req, res) => {
 };
 
 
-// ================= UPDATE AVAILABILITY =================
 export const updateAvailability = async (req, res) => {
     try {
         const db = await connection();
@@ -122,7 +117,6 @@ export const updateAvailability = async (req, res) => {
 };
 
 
-// ================= DASHBOARD =================
 export const getDashboardStats = async (req, res) => {
     try {
         const db = await connection();

@@ -11,7 +11,7 @@ const Header = () => {
           <img
             src="/logo.png"
             alt="LabourHub Logo"
-            className="h-15 w-12 object-contain"
+            className="h-11 w-11 object-contain"
           />
           <span className="text-xl font-bold text-orange-500">
             Urban Force

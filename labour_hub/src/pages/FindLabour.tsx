@@ -25,7 +25,7 @@ const FindLabour = () => {
 
                     return {
                         ...labour,
-                        skills: labour.skill ? [labour.skill] : [],
+                        skills: labour.skills || [],
                         available: labour.available ?? true,
                         rating,
                     };
@@ -71,6 +71,7 @@ const FindLabour = () => {
                         <option value="Electrician">Electrician</option>
                         <option value="Plumber">Plumber</option>
                         <option value="Carpenter">Carpenter</option>
+                        <option value="Labour">Labour</option>
                     </select>
 
                     <input

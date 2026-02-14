@@ -91,12 +91,16 @@ const Register = () => {
         },
         body: JSON.stringify({
           name: formData.fullName,
+          email: formData.email,
           phone: formData.phone,
-          skill: formData.skills,
+          skills: [formData.skills], 
           location: formData.address,
-          price: formData.rate,
+          price: Number(formData.rate),
+          experience: Number(formData.experience),
+          gender: formData.gender,
           password: formData.password,
         }),
+
 
       });
 
@@ -204,6 +208,14 @@ const Register = () => {
               name="skills"
               placeholder="Skills"
               value={formData.skills}
+              onChange={handleChange}
+              className="w-full border rounded-lg px-4 py-2"
+            />
+            <input
+              type="text"
+              name="address"
+              placeholder="Location"
+              value={formData.address}
               onChange={handleChange}
               className="w-full border rounded-lg px-4 py-2"
             />
