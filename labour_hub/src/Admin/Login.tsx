@@ -1,9 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { FormEvent, useState } from "react";
 
+
 const Login = () => {
   const navigate = useNavigate();
-  const [form,setForm] = useState({email: "",password: ""});
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
@@ -65,24 +68,18 @@ const Login = () => {
           "
         >
           <div className="text-center text-white px-12">
-            <h2 className="text-3xl font-bold mb-3">
+            <h2 className="text-3xl font-bold mb-4 mt-16">
               Hello, Welcome!
             </h2>
-            <p className="text-sm mb-6 opacity-90">
-              Don't have an account?
-            </p>
-            <button 
-              className="
-                border border-white px-8 py-2 rounded-full text-sm
-                hover:bg-white hover:text-[#7a97f5] transition
-              " onClick={() => navigate("/admin/register")}
-            >
-              Register
-            </button>
+            <img
+              src="/logo.png"
+              alt="Urban Force"
+              className="h-22 w-auto object-contain mx-auto -mt-8 "
+            />
           </div>
         </div>
 
-        
+
         <div
           className="
             relative md:absolute right-0 top-0
@@ -95,35 +92,38 @@ const Login = () => {
             Login
           </h2>
 
-          
+
           <div className="mb-4 relative">
             <input
-              type="text"
+              type="email"
               placeholder="email"
               value={form.email}
-              onChange={(e)=> setForm({...form,email:e.target.value})}
-              className="
-                w-full bg-gray-100 px-4 py-3 rounded-lg
-                outline-none focus:ring-2 focus:ring-gray-200
-              "
+              
+              onChange={(e) => {setForm({ ...form, email: e.target.value });
+            setEmailError("")}}
+              className={`w-full bg-gray-100 px-4 py-3 rounded-lg outline-none focus:ring-2
+                ${emailError ? "border border-red-500 focus:ring-red-200" : "focus:ring-gray-200"}`}
             />
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
+            {emailError && (<p className="text-orange-500 text-sm mt-1"> {emailError}</p>)}
+            <span className="absolute right-4 top-1/3 -translate-y-1/2 text-gray-500">
               👤
             </span>
           </div>
 
-          
+
           <div className="mb-2 relative">
             <input
               type="password"
               placeholder="Password"
               value={form.password}
-              onChange={(e)=> setForm({...form,password:e.target.value})}
-              className="
-                w-full bg-gray-100 px-4 py-3 rounded-lg
-                outline-none focus:ring-2 focus:ring-gray-200
-              "
-            />
+              
+              onChange={(e) =>{ setForm({ ...form, password: e.target.value });
+            setPasswordError("")}}
+              className={`w-full bg-gray-100 px-4 py-3 rounded-lg outline-none focus:ring-2
+                ${passwordError ? "border border-red-500 focus:ring-red-200" : "focus:ring-gray-200"}`}
+              />
+              {passwordError && (<p className="text-orange-500 text-sm mt-1"> {passwordError}</p>)}
+            
             {/* <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
               👁️
             </span> */}
@@ -152,7 +152,7 @@ const Login = () => {
             </button>
           </form>
 
-          
+
           <div className="text-center text-sm text-gray-500 mt-6">
             or login with social platforms
           </div>

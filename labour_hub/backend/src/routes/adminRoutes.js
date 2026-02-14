@@ -1,10 +1,9 @@
 import express from "express";
-import { adminLogin, adminRegister, resetPasswordDirect, verifyForgotPassword } from "../controllers/adminController.js";
+import { adminLogin, adminRegister, resetPasswordDirect, verifyForgotPassword, getAdminProfile, updateAdminProfile, changeAdminPassword } from "../controllers/adminController.js";
 import { verifyAdminToken } from "../middlewares/authMiddleware.js";
 
 const adminRouter = express.Router();
 
-adminRouter.post("/signup",adminRegister);
 adminRouter.post("/login",adminLogin);
 adminRouter.post("/verify-forgot-password",verifyForgotPassword);
 adminRouter.post("/reset-password-direct",resetPasswordDirect);
@@ -29,6 +28,10 @@ adminRouter.get("/labours",verifyAdminToken,(req,resp)=> {
         message:"Labours fetched successfully",
     })
 })
+
+adminRouter.get("/profile",verifyAdminToken,getAdminProfile);
+adminRouter.put("/profile",verifyAdminToken,updateAdminProfile);
+adminRouter.put("/change-password",verifyAdminToken,changeAdminPassword)
 
 
 export default adminRouter;

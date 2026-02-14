@@ -1,17 +1,20 @@
-const UserTypePieChart = () => {
-  const employers = 60;
-  const labour = 2500;
-  const total = employers + labour;
-  const employerDeg = (employers / total) * 360;
+interface Props {
+  labour: number;
+  employers: number;
+}
+
+const UserTypePieChart = ({ labour, employers }: Props) => {
+  const total = labour + employers;
+  const employerDeg = total === 0 ? 0 : (employers / total) * 360;
 
   return (
-    <div className="bg-white border rounded-2xl p-6 h-full flex flex-col justify-center">
-      <h2 className="font-semibold text-sm mb-6 text-center">
-        User Type Distribution
+    <div className="bg-white border rounded-2xl p-6 shadow-sm flex flex-col justify-center">
+      <h2 className="text-sm font-semibold mb-6 text-center">
+        User Distribution
       </h2>
 
-      <div className="flex items-center justify-center gap-6">
-        
+      <div className="flex items-center justify-center gap-8">
+
         <div
           className="w-44 h-44 rounded-full"
           style={{
@@ -22,7 +25,6 @@ const UserTypePieChart = () => {
           }}
         />
 
-        
         <div className="space-y-4 text-sm">
           <div className="flex items-center gap-3">
             <span className="w-3 h-3 bg-indigo-500 rounded-full" />
@@ -40,6 +42,7 @@ const UserTypePieChart = () => {
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );
