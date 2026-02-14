@@ -84,16 +84,20 @@ const Register = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:4000/labour/profile", {
+      const response = await fetch("http://localhost:4000/labour/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          fullName: formData.fullName,
+          name: formData.fullName,
           phone: formData.phone,
+          skill: formData.skills,
+          location: formData.address,
+          price: formData.rate,
           password: formData.password,
         }),
+
       });
 
       const data = await response.json();

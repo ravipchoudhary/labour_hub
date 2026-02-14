@@ -3,6 +3,7 @@ import { connection } from "../config/db.js";
 import { ObjectId } from "mongodb";
 import { getDashboardStats, getLabourProfile } from "../controllers/labourController.js";
 import { registerLabour } from "../controllers/labourController.js";
+import { loginLabour } from "../controllers/labourController.js";
 import { verifyAdminToken} from "../middlewares/authMiddleware.js";
 import { updateAvailability } from "../controllers/labourController.js";
 import {protect} from "../middlewares/authMiddleware.js";
@@ -42,6 +43,7 @@ router.get("/:id", async (req, res) => {
     }
 });
 router.post("/register", registerLabour);
+router.post("/login", loginLabour);
 router.post("/", async (req, res) => {
     try {
         const db = await connection();
@@ -131,6 +133,31 @@ router.post("/:id/review", async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Failed to add review" });
+    }
+});
+router.get("/jobs", protect, async (req, res) => {
+    try {
+        const db = await connection();
+
+        // Make sure token me id store hai
+        const labourId = req.user.id;
+
+        const jobs = await db.collection("jobs")
+            .find({ labourId: labourId })
+            .toArray();
+
+        const completedJobs = jobs.filter(job => job.status === "completed");
+        const pendingJobs = jobs.filter(job => job.status === "pending");
+        const rejectedJobs = jobs.filter(job => job.status === "rejected");
+
+        res.json({
+            completedJobs,
+            pendingJobs,
+            rejectedJobs
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 });
 export default router;
