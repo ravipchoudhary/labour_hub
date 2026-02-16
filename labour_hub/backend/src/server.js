@@ -2,7 +2,7 @@ import express from "express";
 import { connection as connectDB } from "./config/db.js";
 import adminRouter from "./routes/adminRoutes.js";
 import labourRoutes from "./routes/labourRoutes.js";
-import authRoutes from "./routes/authRoutes.js";   // ✅ ADD
+import authRoutes from "./routes/authRoutes.js";   
 import cors from "cors";
 import dotenv from "dotenv";
 
@@ -15,7 +15,7 @@ app.use(cors());
 
 app.use("/admin", adminRouter);
 app.use("/api/labour", labourRoutes);
-app.use("/auth", authRoutes);   // ✅ ADD
+app.use("/auth", authRoutes);   
 
 await connectDB();
 

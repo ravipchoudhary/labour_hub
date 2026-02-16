@@ -5,7 +5,7 @@ type Props = {
     onMarkBusy: () => void;
 };
 
-const WorkerContactCard = ({ worker, onMarkBusy }: Props) => {
+const WorkerContactCard = ({ worker }: Props) => {
     return (
         <div className="bg-white p-6 rounded-lg shadow sticky top-24">
             <p className="text-2xl font-semibold mb-1">
@@ -31,14 +31,7 @@ const WorkerContactCard = ({ worker, onMarkBusy }: Props) => {
                 </button>
             </a>
 
-            {worker.available && (
-                <button
-                    onClick={onMarkBusy}
-                    className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded mb-3"
-                >
-                    Mark Busy
-                </button>
-            )}
+            
 
             <button onClick={() => navigator.clipboard.writeText(window.location.href)} className="w-full text-sm text-gray-600 hover:underline">
                 🔗 Share Profile

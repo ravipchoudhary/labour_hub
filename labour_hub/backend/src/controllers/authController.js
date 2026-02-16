@@ -4,14 +4,13 @@ import { connection } from "../config/db.js";
 
 export const loginUser = async (req, res) => {
     try {
-        const { identifier, password } = req.body; // email/phone
+        const { identifier, password } = req.body; 
         if (!identifier || !password) {
             return res.status(400).json({ message: "identifier and password required" });
         }
 
         const db = await connection();
 
-        // ✅ 1) Try Admin collection (agar tumhara admin yahi store hota hai)
         const admin = await db.collection("admin").findOne({ email: identifier });
         if (admin) {
             const ok = await bcrypt.compare(password, admin.password);
@@ -21,7 +20,6 @@ export const loginUser = async (req, res) => {
             return res.json({ token, role: "admin", user: { email: admin.email, name: admin.name } });
         }
 
-        // ✅ 2) Try Labour (tumhare labourController jaisa)
         const labour = await db.collection("labour").findOne({
             $or: [{ phone: identifier }, { email: identifier }],
         });

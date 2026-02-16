@@ -104,10 +104,8 @@ export const getLabourProfile = async (req, res) => {
                 ? 0
                 : reviews.reduce((sum, r) => sum + Number(r.rating || 0), 0) / reviewCount;
 
-        // password remove
         delete labour.password;
 
-        // ✅ send computed rating
         res.json({
             ...labour,
             rating: Number(avgRating.toFixed(1)),

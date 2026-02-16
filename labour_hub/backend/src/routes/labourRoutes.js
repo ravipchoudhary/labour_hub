@@ -16,7 +16,6 @@ const router = express.Router();
 router.post("/register", registerLabour);
 router.post("/login", loginLabour);
 
-/* ================= PROTECTED ================= */
 
 router.get("/profile", protect, getLabourProfile);
 router.patch("/availability", protect, updateAvailability);
@@ -40,7 +39,6 @@ router.get("/jobs", protect, async (req, res) => {
     }
 });
 
-/* ================= FIND PAGE ================= */
 
 router.get("/", async (req, res) => {
     try {
@@ -52,7 +50,6 @@ router.get("/", async (req, res) => {
     }
 });
 
-/* ================= ADD LABOUR ================= */
 
 router.post("/", async (req, res) => {
     try {
@@ -80,7 +77,6 @@ router.post("/", async (req, res) => {
     }
 });
 
-/* ================= REVIEW ================= */
 
 router.post("/:id/review", async (req, res) => {
     try {
@@ -106,7 +102,6 @@ router.post("/:id/review", async (req, res) => {
             createdAt: new Date(),
         });
 
-        // ✅ avg rating
         const avgRating =
             reviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0) / reviews.length;
 
@@ -115,7 +110,7 @@ router.post("/:id/review", async (req, res) => {
             {
                 $set: {
                     reviews,
-                    rating: Number(avgRating.toFixed(1)), // ✅ dashboard ke liye
+                    rating: Number(avgRating.toFixed(1)), 
                 },
             }
         );
