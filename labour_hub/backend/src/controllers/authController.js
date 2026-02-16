@@ -1,32 +1,42 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import Admin from "../models/Admin.js";
-import Labour from "../models/Labour.js";
+import { connection } from "../config/db.js";
+
 export const loginUser = async (req, res) => {
     try {
-        const { email, password } = req.body;
-        let user = await Admin.findOne({ email });
-        if (!user) {
-            user = await Labour.findOne({ email });
+        const { identifier, password } = req.body; // email/phone
+        if (!identifier || !password) {
+            return res.status(400).json({ message: "identifier and password required" });
         }
-        if (!user) {
-            return res.status(400).json({ message: "User not found" });
+
+        const db = await connection();
+
+        // ✅ 1) Try Admin collection (agar tumhara admin yahi store hota hai)
+        const admin = await db.collection("admin").findOne({ email: identifier });
+        if (admin) {
+            const ok = await bcrypt.compare(password, admin.password);
+            if (!ok) return res.status(401).json({ message: "Invalid password" });
+
+            const token = jwt.sign({ id: admin._id, role: "admin" }, process.env.JWT_SECRET, { expiresIn: "7d" });
+            return res.json({ token, role: "admin", user: { email: admin.email, name: admin.name } });
         }
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ message: "Invalid password" });
-        }
-        const token = jwt.sign(
-            { id: user._id, role: user.role },
-            process.env.JWT_SECRET,
-            { expiresIn: "1d" }
-        );
-        res.json({
-            message: "Login successful",
-            token,
-            role: user.role
+
+        // ✅ 2) Try Labour (tumhare labourController jaisa)
+        const labour = await db.collection("labour").findOne({
+            $or: [{ phone: identifier }, { email: identifier }],
         });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+
+        if (labour) {
+            const ok = await bcrypt.compare(password, labour.password);
+            if (!ok) return res.status(401).json({ message: "Invalid password" });
+
+            const token = jwt.sign({ id: labour._id, role: "labour" }, process.env.JWT_SECRET, { expiresIn: "7d" });
+            delete labour.password;
+            return res.json({ token, role: "labour", user: labour });
+        }
+
+        return res.status(404).json({ message: "User not found" });
+    } catch (err) {
+        return res.status(500).json({ message: err.message });
     }
 };

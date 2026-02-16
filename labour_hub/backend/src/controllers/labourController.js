@@ -11,6 +11,7 @@ export const registerLabour = async (req, res) => {
 
         const newLabour = {
             name: req.body.name || "",
+            about: req.body.about || "",
             phone: req.body.phone || "",
             password: await bcrypt.hash(req.body.password, 10),
             email: req.body.email || "",
@@ -33,11 +34,16 @@ export const registerLabour = async (req, res) => {
 
 export const loginLabour = async (req, res) => {
     try {
-        const { phone, password } = req.body;
+        const { identifier, password } = req.body;
 
         const db = await connection();
 
-        const labour = await db.collection("labour").findOne({ phone });
+        const labour = await db.collection("labour").findOne({
+            $or: [
+                { phone: identifier },
+                { email: identifier }
+            ]
+        });
 
         if (!labour) {
             return res.status(400).json({ message: "Labour not found" });
@@ -54,6 +60,8 @@ export const loginLabour = async (req, res) => {
             process.env.JWT_SECRET,
             { expiresIn: "7d" }
         );
+
+        delete labour.password;
 
         res.json({
             message: "Login successful",
@@ -82,17 +90,29 @@ export const getLabourProfile = async (req, res) => {
         const db = await connection();
 
         const labour = await db.collection("labour").findOne({
-            _id: new ObjectId(req.user.id)
+            _id: new ObjectId(req.user.id),
         });
 
         if (!labour) {
             return res.status(404).json({ message: "Labour not found" });
         }
 
+        const reviews = labour.reviews || [];
+        const reviewCount = reviews.length;
+        const avgRating =
+            reviewCount === 0
+                ? 0
+                : reviews.reduce((sum, r) => sum + Number(r.rating || 0), 0) / reviewCount;
+
+        // password remove
         delete labour.password;
 
-        res.json(labour);
-
+        // ✅ send computed rating
+        res.json({
+            ...labour,
+            rating: Number(avgRating.toFixed(1)),
+            reviewCount,
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
