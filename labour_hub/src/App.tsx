@@ -63,6 +63,7 @@ function App() {
         <Route path="/labour-dashboard" element={<LabourDashboard />} />
         <Route path="/help-center" element={<HelpCenter />} />
         <Route path="/worker/:id" element={<WorkerDetail />} />
+        <Route path="/edit-profile" element={<EditLabourDetails/>}/>
       </Routes>
       {!isAdminPage && <Footer />}
       {/* <Footer /> */}
