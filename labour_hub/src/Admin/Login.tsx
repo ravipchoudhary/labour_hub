@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const safeJson = async (res: Response) => {
   const text = await res.text();
@@ -22,7 +22,8 @@ const Login = () => {
     if (!token) return;
 
     if (role === "admin") navigate("/admin/dashboard", { replace: true });
-    else navigate("/labour-dashboard", { replace: true });
+    else if (role === "labour") navigate("/labour-dashboard", { replace: true });
+    else if (role === "employee") navigate("/find-labour", { replace: true });
   }, [navigate]);
 
   const handleLogin = async (e: FormEvent) => {
@@ -58,6 +59,21 @@ const Login = () => {
         localStorage.setItem("token", parsed.data.token);
         localStorage.setItem("role", "labour");
         navigate("/labour-dashboard", { replace: true });
+        return;
+      }
+
+      res = await fetch("http://localhost:4000/api/employees/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: form.email, password: form.password }),
+      });
+
+      parsed = await safeJson(res);
+
+      if (res.ok && parsed.ok && parsed.data?.token) {
+        localStorage.setItem("token", parsed.data.token);
+        localStorage.setItem("role", "employee");
+        navigate("/find-labour", { replace: true });
         return;
       }
 
@@ -124,8 +140,17 @@ const Login = () => {
           </form>
 
           <p className="text-center text-sm text-gray-500 mt-6">
-            (Same login works for Admin + Labour automatically)
+            Admin + Labour + Employee
           </p>
+
+          <div className="flex justify-center gap-4 mt-4 text-sm">
+            <Link to="/register/worker" className="text-orange-600 font-medium">
+              Register Worker
+            </Link>
+            <Link to="/register/employer" className="text-orange-600 font-medium">
+              Register Employer
+            </Link>
+          </div>
         </div>
       </div>
     </div>

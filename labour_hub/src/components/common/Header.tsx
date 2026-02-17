@@ -3,22 +3,50 @@ import { useEffect, useState } from "react";
 
 const Header = () => {
   const [open, setOpen] = useState(false);
-  const [token, setToken] = useState<string | null>(null);
-  const [role, setRole] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
+  const [role, setRole] = useState<string | null>(localStorage.getItem("role"));
   const navigate = useNavigate();
 
-  useEffect(() => {
+  const syncAuth = () => {
     setToken(localStorage.getItem("token"));
     setRole(localStorage.getItem("role"));
+  };
+
+  useEffect(() => {
+    syncAuth();
+
+    const onAuthChanged = () => syncAuth();
+    window.addEventListener("auth-changed", onAuthChanged as EventListener);
+
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "token" || e.key === "role") syncAuth();
+    };
+    window.addEventListener("storage", onStorage);
+
+    return () => {
+      window.removeEventListener("auth-changed", onAuthChanged as EventListener);
+      window.removeEventListener("storage", onStorage);
+    };
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
+
+    window.dispatchEvent(new Event("auth-changed"));
+
     setToken(null);
     setRole(null);
+    setOpen(false);
     navigate("/", { replace: true });
   };
+
+  const dashboardLink =
+    role === "labour"
+      ? "/labour-dashboard"
+      : role === "admin"
+        ? "/admin/dashboard"
+        : "/dashboard";
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow">
@@ -61,21 +89,12 @@ const Header = () => {
             </>
           ) : (
             <>
-              {role === "labour" ? (
-                <Link
-                  to="/labour-dashboard"
-                  className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-1 rounded"
-                >
-                  Dashboard
-                </Link>
-              ) : (
-                <Link
-                  to="/dashboard"
-                  className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-1 rounded"
-                >
-                  Dashboard
-                </Link>
-              )}
+              <Link
+                to={dashboardLink}
+                className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-1 rounded"
+              >
+                Dashboard
+              </Link>
 
               <button
                 onClick={handleLogout}
@@ -101,9 +120,14 @@ const Header = () => {
           {!token ? (
             <Link to="/login" onClick={() => setOpen(false)}>Sign In</Link>
           ) : (
-            <button onClick={handleLogout} className="text-left text-red-600">
-              Logout
-            </button>
+            <>
+              <Link to={dashboardLink} onClick={() => setOpen(false)}>
+                Dashboard
+              </Link>
+              <button onClick={handleLogout} className="text-left text-red-600">
+                Logout
+              </button>
+            </>
           )}
         </div>
       )}

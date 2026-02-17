@@ -2,15 +2,15 @@ import { Worker } from "../../data/worker";
 
 type Props = {
     worker: Worker;
-    onMarkBusy: () => void;
+    onMarkBusy?: () => void;
+    onHire?: () => void;
+    hireLoading?: boolean;
 };
 
-const WorkerContactCard = ({ worker }: Props) => {
+const WorkerContactCard = ({ worker, onHire, hireLoading }: Props) => {
     return (
         <div className="bg-white p-6 rounded-lg shadow sticky top-24">
-            <p className="text-2xl font-semibold mb-1">
-                ₹{worker.price}
-            </p>
+            <p className="text-2xl font-semibold mb-1">₹{worker.price}</p>
             <p className="text-sm text-gray-500 mb-2">per day</p>
 
             <p
@@ -20,10 +20,11 @@ const WorkerContactCard = ({ worker }: Props) => {
                 {worker.available ? "🟢 Available" : "🔴 Busy"}
             </p>
 
-          <a href={`tel:${worker.phone}`}>  <button className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded mb-3">
-               📞 Call Now
-            </button>
-               </a>
+            <a href={`tel:${worker.phone}`}>
+                <button className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded mb-3">
+                    📞 Call Now
+                </button>
+            </a>
 
             <a href={`sms:${worker.phone}`}>
                 <button className="w-full border py-2 rounded mb-3 hover:bg-orange-500 hover:text-white">
@@ -31,9 +32,24 @@ const WorkerContactCard = ({ worker }: Props) => {
                 </button>
             </a>
 
+            <button
+                type="button"
+                disabled={!onHire || hireLoading}
+                onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onHire?.();
+                }}
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg mb-3 disabled:opacity-60"
+            >
+                {hireLoading ? "Sending..." : "Hire Me"}
+            </button>
             
 
-            <button onClick={() => navigator.clipboard.writeText(window.location.href)} className="w-full text-sm text-gray-600 hover:underline">
+            <button
+                onClick={() => navigator.clipboard.writeText(window.location.href)}
+                className="w-full text-sm text-gray-600 hover:underline"
+            >
                 🔗 Share Profile
             </button>
 

@@ -12,10 +12,8 @@ import { protect } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-
 router.post("/register", registerLabour);
 router.post("/login", loginLabour);
-
 
 router.get("/profile", protect, getLabourProfile);
 router.patch("/availability", protect, updateAvailability);
@@ -39,7 +37,6 @@ router.get("/jobs", protect, async (req, res) => {
     }
 });
 
-
 router.get("/", async (req, res) => {
     try {
         const db = await connection();
@@ -49,7 +46,6 @@ router.get("/", async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 });
-
 
 router.post("/", async (req, res) => {
     try {
@@ -76,7 +72,6 @@ router.post("/", async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 });
-
 
 router.post("/:id/review", async (req, res) => {
     try {
@@ -121,7 +116,6 @@ router.post("/:id/review", async (req, res) => {
         res.status(500).json({ message: "Failed to add review" });
     }
 });
-
 
 router.patch("/:id/availability", async (req, res) => {
     try {

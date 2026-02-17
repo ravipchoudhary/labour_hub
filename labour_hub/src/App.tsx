@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import Header from "./components/common/Header";
 import Footer from "./components/common/Footer";
 
@@ -54,12 +54,12 @@ function App() {
         <Route path="/admin/reset-password-direct" element={<ResetPasswordDirect />} />
 
         <Route element={<ProtectedRoute />}>
-          <Route element={<RoleRoute allow={["labour"]} />}>
+          <Route element={<RoleRoute allow={["labour"]} redirectTo="/login" />}>
             <Route path="/labour-dashboard" element={<LabourDashboard />} />
             <Route path="/edit-profile" element={<EditLabourDetails />} />
           </Route>
 
-          <Route element={<RoleRoute allow={["employee"]} />}>
+          <Route element={<RoleRoute allow={["employee"]} redirectTo="/login" />}>
             <Route path="/find-labour" element={<FindLabour />} />
             <Route path="/worker/:id" element={<WorkerDetail />} />
             <Route path="/help-center" element={<HelpCenter />} />
@@ -74,6 +74,8 @@ function App() {
             <Route path="/admin/change-password" element={<ChangePassword />} />
           </Route>
         </Route>
+
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
       {!isAdminPage && <Footer />}
