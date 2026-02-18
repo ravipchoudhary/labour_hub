@@ -59,11 +59,8 @@ const Register = () => {
     setFormData({ ...formData, photo: file });
     setPreview(URL.createObjectURL(file));
   };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    const skillsArray = formData.skills
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
     e.preventDefault();
 
     if (
@@ -87,7 +84,7 @@ const Register = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:4000/api/labour/register", {
+      const response = await fetch("http://localhost:4000/labour/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -96,12 +93,11 @@ const Register = () => {
           name: formData.fullName,
           email: formData.email,
           phone: formData.phone,
-          skills: skillsArray,
+          skills: [formData.skills], 
           location: formData.address,
           price: Number(formData.rate),
           experience: Number(formData.experience),
           gender: formData.gender,
-          about: formData.about,
           password: formData.password,
         }),
 
@@ -115,7 +111,7 @@ const Register = () => {
         return;
       }
 
-      alert("Worker registered successfully");
+      alert("Worker registered successfully ✅");
       navigate("/login");
 
     } catch (error) {
@@ -215,15 +211,6 @@ const Register = () => {
               onChange={handleChange}
               className="w-full border rounded-lg px-4 py-2"
             />
-            <textarea
-              name="about"
-              placeholder="About (Write something about your work)"
-              value={formData.about}
-              onChange={handleChange}
-              className="w-full border rounded-lg px-4 py-2"
-              rows={3}
-            />
-
             <input
               type="text"
               name="address"
@@ -280,7 +267,6 @@ const Register = () => {
               onChange={handleChange}
               className="w-full border rounded-lg px-4 py-2"
             />
-
 
             <button
               type="submit"
