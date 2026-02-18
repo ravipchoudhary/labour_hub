@@ -49,6 +49,10 @@ function App() {
 
         <Route path="/register/worker" element={<Register />} />
         <Route path="/register/employer" element={<Registeremp />} />
+        <Route path="/labour-dashboard" element={<LabourDashboard />} />
+        <Route path="/help-center" element={<HelpCenter />} />
+        <Route path="/worker/:id" element={<WorkerDetail />} />
+        <Route path="/edit-profile" element={<EditLabourDetails/>}/>
 
         <Route path="/admin/forget-password" element={<ForgotPassword />} />
         <Route path="/admin/reset-password-direct" element={<ResetPasswordDirect />} />
