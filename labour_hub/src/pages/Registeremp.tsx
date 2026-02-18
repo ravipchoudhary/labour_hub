@@ -1,5 +1,6 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+
 type InputProps = {
   label: string;
   placeholder: string;
@@ -10,6 +11,8 @@ type InputProps = {
 };
 
 const Registeremp = () => {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -20,12 +23,15 @@ const Registeremp = () => {
     confirmPassword: "",
   });
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
   const isFormValid =
-    formData.name &&
-    formData.email &&
-    formData.phone &&
-    formData.location &&
-    formData.about &&
+    formData.name.trim() &&
+    formData.email.trim() &&
+    formData.phone.trim() &&
+    formData.location.trim() &&
+    formData.about.trim() &&
     formData.password &&
     formData.confirmPassword &&
     formData.password === formData.confirmPassword;
@@ -34,35 +40,62 @@ const Registeremp = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError("");
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isFormValid) return;
 
-    console.log("Employer Registered:", formData);
-    alert("Registration Successful!");
+    if (!isFormValid) {
+      setError("Please fill all fields correctly");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const res = await fetch("http://localhost:4000/api/employee/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          location: formData.location,
+          about: formData.about,
+          password: formData.password,
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok) {
+        alert("Registration Successful!");
+        navigate("/login", { replace: true }); 
+      } else {
+        setError(data?.message || "Registration failed");
+      }
+    } catch (err) {
+      setError("Server error / Backend not running");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-6xl">
-        
-        {/* 🔙 Back to role selection */}
         <Link
-          to="/Home"
+          to="/home"
           className="inline-flex items-center gap-2 text-gray-600 hover:text-orange-500 mb-4 font-medium"
         >
-          ← Back to role selection
+          ← Back
         </Link>
 
         <div className="bg-white rounded-xl shadow-lg grid grid-cols-1 md:grid-cols-2 gap-12 p-6 sm:p-10">
-          
-          {/* LEFT SECTION */}
           <div>
-            <h2 className="text-2xl font-bold mb-2">
-              Register as an Employer
-            </h2>
+            <h2 className="text-2xl font-bold mb-2">Register as an Employer</h2>
             <p className="text-gray-500 mb-6">
               Create your account and start hiring skilled workers
             </p>
@@ -72,7 +105,7 @@ const Registeremp = () => {
                 label="Your Name"
                 placeholder="Enter your full name"
                 value={formData.name}
-                onChange={handleChange}
+                onChange={handleChange as any}
                 name="name"
               />
 
@@ -81,7 +114,7 @@ const Registeremp = () => {
                 placeholder="Enter your email id"
                 type="email"
                 value={formData.email}
-                onChange={handleChange}
+                onChange={handleChange as any}
                 name="email"
               />
 
@@ -90,7 +123,7 @@ const Registeremp = () => {
                 placeholder="Enter your phone number"
                 type="tel"
                 value={formData.phone}
-                onChange={handleChange}
+                onChange={handleChange as any}
                 name="phone"
               />
 
@@ -98,7 +131,7 @@ const Registeremp = () => {
                 label="Address / Location"
                 placeholder="Enter your area/locality"
                 value={formData.location}
-                onChange={handleChange}
+                onChange={handleChange as any}
                 name="location"
               />
 
@@ -121,7 +154,7 @@ const Registeremp = () => {
                 type="password"
                 placeholder="Create your password"
                 value={formData.password}
-                onChange={handleChange}
+                onChange={handleChange as any}
                 name="password"
               />
 
@@ -130,43 +163,38 @@ const Registeremp = () => {
                 type="password"
                 placeholder="Confirm your password"
                 value={formData.confirmPassword}
-                onChange={handleChange}
+                onChange={handleChange as any}
                 name="confirmPassword"
               />
 
               {formData.password &&
                 formData.confirmPassword &&
                 formData.password !== formData.confirmPassword && (
-                  <p className="text-sm text-red-500">
-                    Passwords do not match
-                  </p>
+                  <p className="text-sm text-red-500">Passwords do not match</p>
                 )}
+
+              {error && <p className="text-sm text-red-500">{error}</p>}
 
               <button
                 type="submit"
-                disabled={!isFormValid}
-                className={`w-full py-2.5 rounded-md font-semibold transition ${
-                  isFormValid
+                disabled={!isFormValid || loading}
+                className={`w-full py-2.5 rounded-md font-semibold transition ${isFormValid && !loading
                     ? "bg-orange-500 hover:bg-orange-600 text-white"
                     : "bg-gray-300 cursor-not-allowed text-gray-600"
-                }`}
+                  }`}
               >
-                Sign Up
+                {loading ? "Signing Up..." : "Sign Up"}
               </button>
             </form>
 
             <p className="text-sm text-gray-600 mt-4 text-center">
               Already have an account?{" "}
-              <Link
-                to="/login"
-                className="text-orange-500 font-semibold"
-              >
+              <Link to="/login" className="text-orange-500 font-semibold">
                 Sign In
               </Link>
             </p>
           </div>
 
-          {/* RIGHT SECTION */}
           <div className="hidden md:flex items-center justify-center">
             <img
               src="/employer-illustration.svg"
