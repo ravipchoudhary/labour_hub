@@ -24,7 +24,7 @@ export const protect = (req, resp, next) => {
         if (!authHeader) return resp.status(401).json({ success: false, message: "Token missing" });
 
         const token = authHeader.split(" ")[1];
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, secretKey);
         req.user = decoded; 
         next();
     } catch (err) {

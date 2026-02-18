@@ -20,15 +20,15 @@ const WorkerReviews = ({ worker, onReviewAdded }: Props) => {
 
         try {
             const res = await fetch(
-                `http://localhost:4000/api/labour/${worker._id}/review`,
+                `http://localhost:4000/labour/${worker._id}/review`,
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        name: `${worker.name}`,
+                        name: "Anonymous User",
                         rating,
                         comment,
-                    })
+                    }),
                 }
             );
 
