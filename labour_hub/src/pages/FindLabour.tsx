@@ -2,25 +2,8 @@ import WorkerCard from "../components/cards/WorkerCard";
 import { useEffect, useState } from "react";
 import { getLabours } from "../api/labourApi";
 import type { Worker } from "../data/worker";
-import { useNavigate } from "react-router-dom";
 
 const FindLabour = () => {
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        const role = localStorage.getItem("role");
-        const token = localStorage.getItem("token");
-
-        if (!token) {
-            navigate("/login", { replace: true });
-            return;
-        }
-
-        if (role === "labour") {
-            navigate("/labour-dashboard", { replace: true });
-            return;
-        }
-    }, [navigate]);
     const [labours, setLabours] = useState<Worker[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedSkill, setSelectedSkill] = useState("All");
