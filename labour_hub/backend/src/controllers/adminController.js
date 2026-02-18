@@ -409,7 +409,7 @@ export const updateLabourVerificationStatus=async(req,resp)=> {
     const db = await connection();
 
     await db.collection("labour").updateOne({
-      _is:new ObjectId(id)},
+      _id:new ObjectId(id)},
     {$set:{status}})
 
     resp.status(200).send({
