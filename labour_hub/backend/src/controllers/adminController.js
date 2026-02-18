@@ -2,9 +2,9 @@ import { connection, collectionName } from "../config/db.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
+import nodemailer from "nodemailer";
 import { ObjectId } from "mongodb";
 import { OAuth2Client } from "google-auth-library";
-
 
 dotenv.config();
 
@@ -49,8 +49,7 @@ export const adminLogin = async (req, resp) => {
     if (!isMatch) {
       return resp.status(401).send({
         success: false,
-        field: "password",
-        message: "Wrong Password"
+        message: "Wrong password",
       });
     }
 
@@ -311,114 +310,3 @@ export const changeAdminPassword = async (req, resp) => {
     });
   }
 };
-
-export const recentRegistrations = async (req, resp) => {
-  try {
-    const db = await connection();
-
-    const recentUsers = await db.collection("labour").find({}).sort({ createdAt: -1 }).limit(5).toArray();
-    resp.send({
-      success: true,
-      data: recentUsers
-    });
-  } catch (err) {
-    resp.status(500).send({
-      success: false,
-      message: "server error"
-    })
-  }
-}
-
-export const getAllUsers = async (req, resp) => {
-  try {
-    const { role, status, search } = req.query;
-
-    const db = await connection();
-
-    let filter = {};
-    if (role & role !== "All") {
-      filter.role = role;
-    }
-    else if (status & status !== "All") {
-      filter.status = status;
-    }
-    else if (search) {
-      filter.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { email: { $regex: search, $options: "i" } }
-      ]
-    }
-    const users = await db.collection("labour").find(filter).sort({ createdAt: -1 }).toArray();
-    resp.status(200).send({
-      success: true, users
-    })
-  }
-  catch (error) {
-    resp.status(500).send({
-      success: false,
-      message: "Failed to fetch users"
-    });
-  }
-};
-
-export const updateUserStatus = async (req, resp) => {
-  try {
-    const { id } = req.params;
-    const { status } = req.status;
-
-    const db = await connection();
-
-    await db.collection("labour").updateOne(
-      { _id: new ObjectId(id) },
-      { $set: { status } }
-    );
-    resp.status(200).send({
-      success: true,
-      message: "Status updated"
-    })
-  } catch (error) {
-    resp.status(500).send({
-      success: false,
-      message: "Update failed"
-    })
-  }
-}
-
-export const getLabourVerification = async(req,resp)=> {
-  try {
-    const db = await connection();
-    const labours = await db.collection("labour").find({
-      role:"labour",status:"pending"}).sort({createdAt:-1}).toArray();
-
-      resp.status(200).send({
-        success:true,
-        data:labours
-      })
-  } catch(error)  {
-    resp.status(500).send({
-      success:false
-    })
-  }
-}
-
-export const updateLabourVerificationStatus=async(req,resp)=> {
-  try {
-    const {id} = req.params.id;
-    const {status} = req.body;
-
-    const db = await connection();
-
-    await db.collection("labour").updateOne({
-      _is:new ObjectId(id)},
-    {$set:{status}})
-
-    resp.status(200).send({
-      success:true,
-      message:"Status updated"
-    })
-  } catch (error) {
-    resp.status(500).send({
-      success:false
-    })
-  }
-}
