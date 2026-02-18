@@ -1,50 +1,41 @@
-import { ObjectId } from "mongodb";
 import { connection } from "../config/db.js";
+import { ObjectId } from "mongodb";
 
 export const createHireRequest = async (req, res) => {
     try {
-        const { labourId, employeeId, message } = req.body;
-
-        if (!labourId || !employeeId) {
-            return res.status(400).json({ message: "labourId and employeeId required" });
-        }
-
         const db = await connection();
-        const labours = db.collection("labours");      
-        const employees = db.collection("employees");
-        const requests = db.collection("hire_requests");
+        const { labourId, message } = req.body;
 
-        const labour = await labours.findOne({ _id: new ObjectId(labourId) });
-        const employee = await employees.findOne({ _id: new ObjectId(employeeId) });
+        const employeeId = req.user?.id;
+        if (!employeeId) return res.status(401).json({ message: "Unauthorized" });
 
+        if (!labourId) return res.status(400).json({ message: "labourId required" });
+
+        const labour = await db.collection("labour").findOne({ _id: new ObjectId(labourId) });
         if (!labour) return res.status(404).json({ message: "Labour not found" });
+
+        const employee = await db.collection("employees").findOne({ _id: new ObjectId(employeeId) });
         if (!employee) return res.status(404).json({ message: "Employee not found" });
 
-        const already = await requests.findOne({
-            labourId: new ObjectId(labourId),
-            employeeId: new ObjectId(employeeId),
+        const already = await db.collection("hireRequests").findOne({
+            labourId: String(labourId),
+            employeeId: String(employeeId),
             status: "pending",
         });
 
-        if (already) {
-            return res.status(409).json({ message: "Request already pending" });
-        }
+        if (already) return res.status(409).json({ message: "Already requested (pending)" });
 
         const doc = {
-            labourId: new ObjectId(labourId),
-            labourName: labour.name || "",
-            labourPhone: labour.phone || "",
-            employeeId: new ObjectId(employeeId),
-            employeeName: employee.name || "",
-            employeePhone: employee.phone || "",
-            message: message || "I want to hire you",
+            labourId: String(labourId),
+            employeeId: String(employeeId),
+            message: message || "Hire request",
             status: "pending",
             createdAt: new Date(),
         };
 
-        await requests.insertOne(doc);
+        const result = await db.collection("hireRequests").insertOne(doc);
 
-        return res.status(201).json({ success: true, message: "Hire request sent" });
+        return res.status(201).json({ message: "Request sent", requestId: result.insertedId });
     } catch (err) {
         console.log("createHireRequest error:", err);
         return res.status(500).json({ message: "Server error" });
@@ -53,17 +44,16 @@ export const createHireRequest = async (req, res) => {
 
 export const getLabourRequests = async (req, res) => {
     try {
-        const { labourId } = req.params;
-
         const db = await connection();
-        const requests = db.collection("hire_requests");
+        const labourId = req.user?.id;
 
-        const list = await requests
-            .find({ labourId: new ObjectId(labourId) })
+        const requests = await db
+            .collection("hireRequests")
+            .find({ labourId: String(labourId) })
             .sort({ createdAt: -1 })
             .toArray();
 
-        return res.json({ success: true, requests: list });
+        return res.json(requests);
     } catch (err) {
         console.log("getLabourRequests error:", err);
         return res.status(500).json({ message: "Server error" });
@@ -72,26 +62,35 @@ export const getLabourRequests = async (req, res) => {
 
 export const updateRequestStatus = async (req, res) => {
     try {
-        const { requestId } = req.params;
-        const { status } = req.body; 
+        const db = await connection();
+        const labourId = req.user?.id;
+        const { id } = req.params;
+        const { status } = req.body;
 
         if (!["accepted", "rejected"].includes(status)) {
             return res.status(400).json({ message: "Invalid status" });
         }
 
-        const db = await connection();
-        const requests = db.collection("hire_requests");
+        const request = await db.collection("hireRequests").findOne({ _id: new ObjectId(id) });
+        if (!request) return res.status(404).json({ message: "Request not found" });
 
-        const result = await requests.updateOne(
-            { _id: new ObjectId(requestId) },
-            { $set: { status } }
-        );
-
-        if (!result.matchedCount) {
-            return res.status(404).json({ message: "Request not found" });
+        if (String(request.labourId) !== String(labourId)) {
+            return res.status(403).json({ message: "Not allowed" });
         }
 
-        return res.json({ success: true, message: `Request ${status}` });
+        await db.collection("hireRequests").updateOne(
+            { _id: new ObjectId(id) },
+            { $set: { status, updatedAt: new Date() } }
+        );
+
+        if (status === "accepted") {
+            await db.collection("labour").updateOne(
+                { _id: new ObjectId(labourId) },
+                { $set: { available: false } }
+            );
+        }
+
+        return res.json({ message: `Request ${status}` });
     } catch (err) {
         console.log("updateRequestStatus error:", err);
         return res.status(500).json({ message: "Server error" });

@@ -115,7 +115,7 @@ const Register = () => {
         return;
       }
 
-      alert("Worker registered successfully ✅");
+      alert("Worker registered successfully");
       navigate("/login");
 
     } catch (error) {

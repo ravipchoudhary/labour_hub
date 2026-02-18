@@ -72,7 +72,7 @@ const WorkerDetail = () => {
             setHireLoading(true);
 
             // e.g. "http://localhost:4000/api/hire/create"
-            const res = await fetch("http://localhost:4000/api/hire/request", {
+            const res = await fetch("http://localhost:4000/api/hire/create", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

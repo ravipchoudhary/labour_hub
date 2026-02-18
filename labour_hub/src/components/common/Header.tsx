@@ -1,43 +1,56 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 const Header = () => {
   const [open, setOpen] = useState(false);
-  const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
-  const [role, setRole] = useState<string | null>(localStorage.getItem("role"));
+
+  const [token, setToken] = useState<string | null>(() =>
+    localStorage.getItem("token")
+  );
+  const [role, setRole] = useState<string | null>(() =>
+    localStorage.getItem("role")
+  );
+
   const navigate = useNavigate();
 
-  const syncAuth = () => {
+  const syncAuth = useCallback(() => {
     setToken(localStorage.getItem("token"));
     setRole(localStorage.getItem("role"));
-  };
+  }, []);
 
   useEffect(() => {
+    // initial sync
     syncAuth();
 
-    const onAuthChanged = () => syncAuth();
-    window.addEventListener("auth-changed", onAuthChanged as EventListener);
+    // custom event (same tab)
+    const onAuthChanged = () => {
+      syncAuth();
+    };
+    window.addEventListener("auth-changed", onAuthChanged);
 
+    // storage event (other tab)
     const onStorage = (e: StorageEvent) => {
       if (e.key === "token" || e.key === "role") syncAuth();
     };
     window.addEventListener("storage", onStorage);
 
     return () => {
-      window.removeEventListener("auth-changed", onAuthChanged as EventListener);
+      window.removeEventListener("auth-changed", onAuthChanged);
       window.removeEventListener("storage", onStorage);
     };
-  }, []);
+  }, [syncAuth]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
 
+    // update header instantly in same tab
     window.dispatchEvent(new Event("auth-changed"));
 
     setToken(null);
     setRole(null);
     setOpen(false);
+
     navigate("/", { replace: true });
   };
 
@@ -52,7 +65,11 @@ const Header = () => {
     <header className="sticky top-0 z-50 bg-white shadow">
       <div className="flex justify-between items-center px-4 sm:px-8 h-16">
         <Link to="/" className="flex items-center gap-2">
-          <img src="/logo.png" alt="LabourHub Logo" className="h-11 w-11 object-contain" />
+          <img
+            src="/logo.png"
+            alt="LabourHub Logo"
+            className="h-11 w-11 object-contain"
+          />
           <span className="text-xl font-bold text-orange-500">Urban Force</span>
         </Link>
 
@@ -61,12 +78,20 @@ const Header = () => {
         </button>
 
         <nav className="hidden sm:flex gap-6 text-gray-600">
-          <Link to="/" className="hover:text-orange-500">Home</Link>
-          <Link to="/how-it-works" className="hover:text-orange-500">How It Works</Link>
-          <Link to="/about-us" className="hover:text-orange-500">About</Link>
+          <Link to="/" className="hover:text-orange-500">
+            Home
+          </Link>
+          <Link to="/how-it-works" className="hover:text-orange-500">
+            How It Works
+          </Link>
+          <Link to="/about-us" className="hover:text-orange-500">
+            About
+          </Link>
 
           {token && role !== "labour" && (
-            <Link to="/find-labour" className="hover:text-orange-500">Find Labour</Link>
+            <Link to="/find-labour" className="hover:text-orange-500">
+              Find Labour
+            </Link>
           )}
         </nav>
 
@@ -109,16 +134,26 @@ const Header = () => {
 
       {open && (
         <div className="sm:hidden flex flex-col gap-4 px-4 pb-4 text-gray-600">
-          <Link to="/" onClick={() => setOpen(false)}>Home</Link>
-          <Link to="/how-it-works" onClick={() => setOpen(false)}>How It Works</Link>
-          <Link to="/about-us" onClick={() => setOpen(false)}>About</Link>
+          <Link to="/" onClick={() => setOpen(false)}>
+            Home
+          </Link>
+          <Link to="/how-it-works" onClick={() => setOpen(false)}>
+            How It Works
+          </Link>
+          <Link to="/about-us" onClick={() => setOpen(false)}>
+            About
+          </Link>
 
           {token && role !== "labour" && (
-            <Link to="/find-labour" onClick={() => setOpen(false)}>Find Labour</Link>
+            <Link to="/find-labour" onClick={() => setOpen(false)}>
+              Find Labour
+            </Link>
           )}
 
           {!token ? (
-            <Link to="/login" onClick={() => setOpen(false)}>Sign In</Link>
+            <Link to="/login" onClick={() => setOpen(false)}>
+              Sign In
+            </Link>
           ) : (
             <>
               <Link to={dashboardLink} onClick={() => setOpen(false)}>

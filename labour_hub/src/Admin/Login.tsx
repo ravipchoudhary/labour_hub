@@ -31,11 +31,14 @@ const Login = () => {
     setError("");
     setLoading(true);
 
+    const identifier = form.email.trim(); // Email or Phone
+
     try {
+      // 1) ADMIN
       let res = await fetch("http://localhost:4000/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: form.email, password: form.password }),
+        body: JSON.stringify({ email: identifier, password: form.password }),
       });
 
       let parsed = await safeJson(res);
@@ -43,14 +46,19 @@ const Login = () => {
       if (res.ok && parsed.ok && parsed.data?.token) {
         localStorage.setItem("token", parsed.data.token);
         localStorage.setItem("role", "admin");
+
+        // ✅ header update in same tab
+        window.dispatchEvent(new Event("auth-changed"));
+
         navigate("/admin/dashboard", { replace: true });
         return;
       }
 
+      // 2) LABOUR (email/phone)
       res = await fetch("http://localhost:4000/api/labour/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identifier: form.email, password: form.password }),
+        body: JSON.stringify({ identifier, password: form.password }),
       });
 
       parsed = await safeJson(res);
@@ -58,14 +66,27 @@ const Login = () => {
       if (res.ok && parsed.ok && parsed.data?.token) {
         localStorage.setItem("token", parsed.data.token);
         localStorage.setItem("role", "labour");
+
+        // ✅ optional: labour id save (hire requests me kaam aayega)
+        const labourId = parsed.data?.labour?._id;
+        if (labourId) localStorage.setItem("userId", labourId);
+
+        // ✅ header update in same tab
+        window.dispatchEvent(new Event("auth-changed"));
+
         navigate("/labour-dashboard", { replace: true });
         return;
       }
 
+      // 3) EMPLOYEE (email/phone safe)
       res = await fetch("http://localhost:4000/api/employees/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: form.email, password: form.password }),
+        body: JSON.stringify({
+          email: identifier,      // backend expects email
+          identifier: identifier, // safe if backend supports email/phone
+          password: form.password,
+        }),
       });
 
       parsed = await safeJson(res);
@@ -73,10 +94,19 @@ const Login = () => {
       if (res.ok && parsed.ok && parsed.data?.token) {
         localStorage.setItem("token", parsed.data.token);
         localStorage.setItem("role", "employee");
+
+        // ✅ employee id save (hire request me MUST hai)
+        const employeeId = parsed.data?.user?._id || parsed.data?.employee?._id;
+        if (employeeId) localStorage.setItem("userId", employeeId);
+
+        // ✅ header update in same tab
+        window.dispatchEvent(new Event("auth-changed"));
+
         navigate("/find-labour", { replace: true });
         return;
       }
 
+      // if no login succeeded
       setError(parsed.data?.message || "Invalid credentials");
     } catch (err) {
       console.error(err);
