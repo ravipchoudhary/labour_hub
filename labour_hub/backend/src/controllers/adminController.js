@@ -1,6 +1,6 @@
-import { connection, collectionName } from "../config/db.js"
-import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
+import { connection, collectionName } from "../config/db.js";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
 import bcrypt from "bcrypt";
 import { ObjectId } from "mongodb";
 import { OAuth2Client } from "google-auth-library";
@@ -10,10 +10,10 @@ dotenv.config();
 
 const secretKey = process.env.SECRET_KEY;
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
 const isValidEmail = (email) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };
-
 
 
 export const adminLogin = async (req, resp) => {
@@ -21,31 +21,17 @@ export const adminLogin = async (req, resp) => {
     const { email, password } = req.body;
     const db = await connection();
 
-    if (!email) {
+    if (!email || !password) {
       return resp.status(400).send({
         success: false,
-        message: "Email is required"
-      });
-    }
-
-    if (!password) {
-      return resp.status(401).send({
-        success: false,
-        message: "Password is required"
+        message: "Email and password are required",
       });
     }
 
     if (!isValidEmail(email)) {
       return resp.status(400).send({
         success: false,
-        message: "Invalid email format"
-      });
-    }
-
-    if (password.length < 6) {
-      return resp.status(401).send({
-        success: false,
-        message: "Password must be at least 6 characters"
+        message: "Invalid email format",
       });
     }
 
@@ -54,7 +40,7 @@ export const adminLogin = async (req, resp) => {
     if (!user) {
       return resp.status(404).send({
         success: false,
-        message: "User not found"
+        message: "User not found",
       });
     }
 
@@ -77,16 +63,16 @@ export const adminLogin = async (req, resp) => {
     return resp.status(200).send({
       success: true,
       message: "Login success",
-      token
+      token,
     });
-
   } catch (error) {
     return resp.status(500).send({
       success: false,
-      message: "Server error"
+      message: "Server error",
     });
   }
 };
+
 
 export const googleAdminLogin = async (req, resp) => {
   try {
@@ -101,7 +87,6 @@ export const googleAdminLogin = async (req, resp) => {
     const { email, name } = payload;
 
     const db = await connection();
-
     let user = await db.collection(collectionName).findOne({ email });
 
     if (!user) {
@@ -137,7 +122,6 @@ export const googleAdminLogin = async (req, resp) => {
 };
 
 
-
 export const verifyForgotPassword = async (req, resp) => {
   try {
     const { email, mobile } = req.body;
@@ -145,37 +129,28 @@ export const verifyForgotPassword = async (req, resp) => {
     if (!email || !mobile) {
       return resp.status(400).send({
         success: false,
-        message: "Email and mobile number are required"
+        message: "Email and mobile are required",
       });
     }
 
     const db = await connection();
-
     const admin = await db.collection(collectionName).findOne({ email });
 
-    if (!admin) {
-      return resp.status(404).send({
-        success: false,
-        message: "Admin not found"
-      });
-    }
-
-    if (admin.mobile !== mobile) {
+    if (!admin || admin.mobile !== mobile) {
       return resp.status(400).send({
         success: false,
-        message: "Email and mobile number do not match"
+        message: "Verification failed",
       });
     }
 
     resp.send({
       success: true,
-      message: "Verification successful"
+      message: "Verification successful",
     });
-
   } catch (err) {
     resp.status(500).send({
       success: false,
-      message: err.message
+      message: err.message,
     });
   }
 };
@@ -188,33 +163,24 @@ export const resetPasswordDirect = async (req, resp) => {
     if (!email || !mobile || !password || !confirmPassword) {
       return resp.status(400).send({
         success: false,
-        message: "All fields are required"
-      });
-    }
-
-    if (password.length < 6) {
-      return resp.status(400).send({
-        success: false,
-        message: "Password must be at least 6 characters"
+        message: "All fields are required",
       });
     }
 
     if (password !== confirmPassword) {
       return resp.status(400).send({
         success: false,
-        message: "Password do not match "
+        message: "Passwords do not match",
       });
     }
 
-
     const db = await connection();
-
     const admin = await db.collection(collectionName).findOne({ email });
 
     if (!admin || admin.mobile !== mobile) {
       return resp.status(400).send({
         success: false,
-        message: "Verification failed"
+        message: "Verification failed",
       });
     }
 
@@ -227,13 +193,12 @@ export const resetPasswordDirect = async (req, resp) => {
 
     resp.send({
       success: true,
-      message: "Password reset successful"
+      message: "Password reset successful",
     });
-
   } catch (err) {
     resp.status(500).send({
       success: false,
-      message: err.message
+      message: err.message,
     });
   }
 };
@@ -277,12 +242,7 @@ export const updateAdminProfile = async (req, resp) => {
 
     await db.collection(collectionName).updateOne(
       { _id: new ObjectId(adminId) },
-      {
-        $set: {
-          name,
-          mobile,
-        },
-      }
+      { $set: { name, mobile } }
     );
 
     resp.send({
@@ -301,7 +261,6 @@ export const changeAdminPassword = async (req, resp) => {
   try {
     const db = await connection();
     const adminId = req.admin.id;
-
     const { currentPassword, newPassword, confirmPassword } = req.body;
 
     if (!currentPassword || !newPassword || !confirmPassword) {
@@ -318,23 +277,9 @@ export const changeAdminPassword = async (req, resp) => {
       });
     }
 
-    if (newPassword.length < 6) {
-      return resp.status(400).send({
-        success: false,
-        message: "Password must be at least 6 characters",
-      });
-    }
-
-    const admin = await db
-      .collection(collectionName)
-      .findOne({ _id: new ObjectId(adminId) });
-
-    if (!admin) {
-      return resp.status(404).send({
-        success: false,
-        message: "Admin not found",
-      });
-    }
+    const admin = await db.collection(collectionName).findOne({
+      _id: new ObjectId(adminId),
+    });
 
     const isMatch = await bcrypt.compare(
       currentPassword,
@@ -344,7 +289,7 @@ export const changeAdminPassword = async (req, resp) => {
     if (!isMatch) {
       return resp.status(401).send({
         success: false,
-        message: "Current password is incorrect",
+        message: "Current password incorrect",
       });
     }
 
@@ -359,7 +304,6 @@ export const changeAdminPassword = async (req, resp) => {
       success: true,
       message: "Password updated successfully",
     });
-
   } catch (err) {
     resp.status(500).send({
       success: false,

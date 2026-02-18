@@ -2,8 +2,11 @@ import express from "express";
 import { connection as connectDB } from "./config/db.js";
 import adminRouter from "./routes/adminRoutes.js";
 import labourRoutes from "./routes/labourRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
+import hireRequestRoutes from "./routes/hireRequstRoutes.js";
 import cors from "cors";
 import dotenv from "dotenv";
+import employeeRoutes from "./routes/employeeRoutes.js";
 
 dotenv.config();
 
@@ -13,7 +16,10 @@ app.use(express.json());
 app.use(cors());
 
 app.use("/admin", adminRouter);
-app.use("/labour", labourRoutes);
+app.use("/api/labour", labourRoutes);
+app.use("/auth", authRoutes);   
+app.use("/api/employees", employeeRoutes);
+app.use("/api/hire", hireRequestRoutes);
 
 await connectDB();
 
