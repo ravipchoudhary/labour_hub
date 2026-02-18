@@ -6,9 +6,7 @@ import { ObjectId } from "mongodb";
 export const registerLabour = async (req, res) => {
     try {
         const db = await connection();
-
         console.log("BODY DATA:", req.body);
-
         const {
             name,
             about,
@@ -22,14 +20,12 @@ export const registerLabour = async (req, res) => {
             gender,
         } = req.body;
 
-        // ✅ basic validation
         if (!name || !email || !phone || !password) {
             return res
                 .status(400)
                 .json({ message: "Name, email, phone, password required" });
         }
 
-        // ✅ duplicate check (email/phone)
         const exist = await db.collection("labour").findOne({
             $or: [{ email }, { phone }],
         });
@@ -50,11 +46,9 @@ export const registerLabour = async (req, res) => {
             location: location || "",
             price: Number(price) || 0,
 
-            // ✅ extra fields (frontend se aa rahe hai)
             experience: Number(experience) || 0,
             gender: gender || "",
 
-            // ✅ MAIN FIX
             role: "labour",
 
             available: true,

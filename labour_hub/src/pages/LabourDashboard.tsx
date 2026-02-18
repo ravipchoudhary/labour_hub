@@ -12,7 +12,6 @@ import {
   BarChart,
   Bar,
 } from "recharts";
-
 type TabType = "dashboard" | "completed" | "pending";
 
 interface Job {
@@ -283,11 +282,17 @@ export default function LabourDashboard() {
             0,
             updated[pendingIndex].value - 1
           );
+
         if (status === "rejected" && rejectedIndex >= 0)
           updated[rejectedIndex].value += 1;
 
         return updated;
       });
+
+      if (status === "accepted") {
+        setAvailable(false);
+      }
+
     } catch (err) {
       console.error("updateHireStatus error:", err);
       alert("Request update failed (backend issue)");
@@ -295,7 +300,6 @@ export default function LabourDashboard() {
       setHireActionLoadingId(null);
     }
   };
-
   return (
     <div className="min-h-screen bg-gray-50 p-6 space-y-8">
       <div className="bg-white rounded-2xl shadow p-6 flex justify-between flex-wrap gap-6">

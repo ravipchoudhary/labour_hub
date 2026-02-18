@@ -1,7 +1,6 @@
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import Header from "./components/common/Header";
 import Footer from "./components/common/Footer";
-
 import Home from "./pages/Home";
 import Termsofservice from "./pages/Termsofservice";
 import Dashboard from "./pages/Dashboard";
@@ -52,7 +51,7 @@ function App() {
         <Route path="/labour-dashboard" element={<LabourDashboard />} />
         <Route path="/help-center" element={<HelpCenter />} />
         <Route path="/worker/:id" element={<WorkerDetail />} />
-        <Route path="/edit-profile" element={<EditLabourDetails/>}/>
+        <Route path="/edit-profile" element={<EditLabourDetails />} />
 
         <Route path="/admin/forget-password" element={<ForgotPassword />} />
         <Route path="/admin/reset-password-direct" element={<ResetPasswordDirect />} />

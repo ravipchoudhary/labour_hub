@@ -7,7 +7,9 @@ type InputProps = {
   type?: string;
   value: string;
   name: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => void;
 };
 
 const Registeremp = () => {
@@ -55,15 +57,15 @@ const Registeremp = () => {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:4000/api/employee/register", {
+      const res = await fetch("http://localhost:4000/api/employees/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          location: formData.location,
-          about: formData.about,
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          location: formData.location.trim(),
+          about: formData.about.trim(),
           password: formData.password,
         }),
       });
@@ -72,7 +74,7 @@ const Registeremp = () => {
 
       if (res.ok) {
         alert("Registration Successful!");
-        navigate("/login", { replace: true }); 
+        navigate("/login", { replace: true });
       } else {
         setError(data?.message || "Registration failed");
       }
@@ -87,7 +89,7 @@ const Registeremp = () => {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-6xl">
         <Link
-          to="/home"
+          to="/Home"
           className="inline-flex items-center gap-2 text-gray-600 hover:text-orange-500 mb-4 font-medium"
         >
           ← Back
@@ -105,7 +107,7 @@ const Registeremp = () => {
                 label="Your Name"
                 placeholder="Enter your full name"
                 value={formData.name}
-                onChange={handleChange as any}
+                onChange={handleChange}
                 name="name"
               />
 
@@ -114,7 +116,7 @@ const Registeremp = () => {
                 placeholder="Enter your email id"
                 type="email"
                 value={formData.email}
-                onChange={handleChange as any}
+                onChange={handleChange}
                 name="email"
               />
 
@@ -123,7 +125,7 @@ const Registeremp = () => {
                 placeholder="Enter your phone number"
                 type="tel"
                 value={formData.phone}
-                onChange={handleChange as any}
+                onChange={handleChange}
                 name="phone"
               />
 
@@ -131,7 +133,7 @@ const Registeremp = () => {
                 label="Address / Location"
                 placeholder="Enter your area/locality"
                 value={formData.location}
-                onChange={handleChange as any}
+                onChange={handleChange}
                 name="location"
               />
 
@@ -154,7 +156,7 @@ const Registeremp = () => {
                 type="password"
                 placeholder="Create your password"
                 value={formData.password}
-                onChange={handleChange as any}
+                onChange={handleChange}
                 name="password"
               />
 
@@ -163,7 +165,7 @@ const Registeremp = () => {
                 type="password"
                 placeholder="Confirm your password"
                 value={formData.confirmPassword}
-                onChange={handleChange as any}
+                onChange={handleChange}
                 name="confirmPassword"
               />
 

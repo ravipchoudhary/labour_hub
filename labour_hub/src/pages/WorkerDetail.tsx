@@ -10,6 +10,8 @@ import SimilarWorkers from "../components/worker/SimilarWorkers";
 import SafetyTips from "../components/worker/SafetyTips";
 import WorkerContactCard from "../components/worker/WorkerContactCard";
 
+const API_BASE = "http://localhost:4000";
+
 const WorkerDetail = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
@@ -26,8 +28,7 @@ const WorkerDetail = () => {
         if (!worker) return;
 
         try {
-            // e.g. /api/labour/:id/availability
-            await fetch(`http://localhost:4000/api/labour/${worker._id}/availability`, {
+            await fetch(`${API_BASE}/api/labour/${worker._id}/availability`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ available: false }),
@@ -44,13 +45,14 @@ const WorkerDetail = () => {
 
         const avgRating =
             reviews.length > 0
-                ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+                ? reviews.reduce((sum, r) => sum + Number(r.rating || 0), 0) /
+                reviews.length
                 : 0;
 
         setWorker({
             ...worker,
             reviews,
-            rating: avgRating,
+            rating: Number(avgRating.toFixed(1)),
         });
     };
 
@@ -64,15 +66,14 @@ const WorkerDetail = () => {
         const role = localStorage.getItem("role");
 
         if (!token || role !== "employee") {
-            navigate("/login", { replace: true });
+            navigate("/login");
             return;
         }
 
         try {
             setHireLoading(true);
 
-            // e.g. "http://localhost:4000/api/hire/create"
-            const res = await fetch("http://localhost:4000/api/hire/create", {
+            const res = await fetch(`${API_BASE}/api/hire/create`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -87,10 +88,17 @@ const WorkerDetail = () => {
             const data = await res.json().catch(() => ({}));
 
             if (res.ok) {
-                setHireSuccess("Hire request sent successfully!");
+                alert("Hire request sent!");
+                setWorker((prev) => (prev ? { ...prev, alreadyRequested: true } as any : prev));
+            } else if (res.status === 409) {
+                setHireError(data.message || "Already requested. Wait for response.");
             } else {
-                setHireError(data?.message || "Hire request failed");
+                setHireError(data.message || "Hire request failed");
             }
+
+            setHireSuccess("Hire request sent successfully");
+
+
         } catch (err) {
             console.error("Hire request error:", err);
             setHireError("Server error / Backend not running");
@@ -110,7 +118,7 @@ const WorkerDetail = () => {
 
                 const calculatedRating =
                     workerData.reviews && workerData.reviews.length > 0
-                        ? workerData.reviews.reduce((sum: number, r: any) => sum + r.rating, 0) /
+                        ? workerData.reviews.reduce((sum: number, r: any) => sum + Number(r.rating || 0), 0) /
                         workerData.reviews.length
                         : 0;
 
@@ -119,15 +127,15 @@ const WorkerDetail = () => {
                     name: workerData.name,
                     phone: workerData.phone || "N/A",
                     location: workerData.location,
-                    price: workerData.price,
+                    price: Number(workerData.price) || 0,
                     skills: workerData.skills?.length
                         ? workerData.skills
                         : workerData.skill
                             ? [workerData.skill]
                             : [],
-                    rating: calculatedRating,
-                    experience: workerData.experience ?? 0,
-                    available: workerData.available ?? true,
+                    rating: Number(calculatedRating.toFixed(1)),
+                    experience: Number(workerData.experience ?? 0),
+                    available: Boolean(workerData.available ?? true),
                     reviews: workerData.reviews || [],
                     languages: [],
                     workingHours: "9 AM - 6 PM",
@@ -141,11 +149,11 @@ const WorkerDetail = () => {
                     _id: w._id,
                     name: w.name,
                     location: w.location,
-                    price: w.price,
+                    price: Number(w.price) || 0,
                     skills: w.skills?.length ? w.skills : w.skill ? [w.skill] : [],
-                    rating: w.rating ?? 0,
-                    experience: w.experience ?? 0,
-                    available: w.available ?? true,
+                    rating: Number(w.rating ?? 0),
+                    experience: Number(w.experience ?? 0),
+                    available: Boolean(w.available ?? true),
                     reviews: w.reviews || [],
                     languages: [],
                     phone: w.phone || "N/A",
@@ -186,20 +194,31 @@ const WorkerDetail = () => {
                             Request a job from this worker.
                         </p>
 
+                        {worker.available === false && (
+                            <p className="text-sm text-red-500 mb-3">
+                                Worker is busy right now
+                            </p>
+                        )}
+
                         {hireError && <p className="text-sm text-red-500 mb-3">{hireError}</p>}
                         {hireSuccess && <p className="text-sm text-green-600 mb-3">{hireSuccess}</p>}
-
                         <button
                             type="button"
-                            disabled={hireLoading}
+                            disabled={hireLoading || worker.available === false || (worker as any).alreadyRequested === true}
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                handleHireRequest(); 
+                                handleHireRequest();
                             }}
                             className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg disabled:opacity-60"
                         >
-                            {hireLoading ? "Sending..." : "Hire Me"}
+                            {(worker as any).alreadyRequested
+                                ? "Request Sent"
+                                : worker.available === false
+                                    ? "Worker Busy"
+                                    : hireLoading
+                                    ? "Sending..."
+                                    : "Hire Me"}
                         </button>
                     </div>
 

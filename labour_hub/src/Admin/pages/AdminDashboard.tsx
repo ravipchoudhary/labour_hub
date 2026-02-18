@@ -24,7 +24,7 @@ const AdminDashboard = () => {
       return;
     }
 
-    fetch("http://localhost:4000/labour")
+    fetch("http://localhost:40004000/api/labour")
       .then((res) => res.json())
       .then((data) => {
         setTotalUsers(data.length);
@@ -65,7 +65,6 @@ const AdminDashboard = () => {
           <StatCard title="Employers" value={employers} badge="+5%" icon="💼" />
           <StatCard title="Pending Approvals" value={pendingApprovals} badge="+4%" icon="⚠️" />
         </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           <div className="lg:col-span-3">
             <StatusBarChart

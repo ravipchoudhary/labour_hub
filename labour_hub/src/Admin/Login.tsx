@@ -1,5 +1,11 @@
-import { FormEvent, useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { FormEvent, useEffect, useState } from "react";
+
+declare global {
+  interface Window {
+    google: any;
+  }
+}
 
 const safeJson = async (res: Response) => {
   const text = await res.text();
@@ -12,29 +18,80 @@ const safeJson = async (res: Response) => {
 
 const Login = () => {
   const navigate = useNavigate();
+
   const [form, setForm] = useState({ email: "", password: "" });
-  const [error, setError] = useState("");
+
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [commonError, setCommonError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const handleCredentialResponse = async (response: any) => {
+    try {
+      setCommonError("");
+      setLoading(true);
+
+      const res = await fetch("http://localhost:4000/admin/google-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: response.credential }),
+      });
+
+      const parsed = await safeJson(res);
+
+      if (res.ok && parsed.ok && parsed.data?.success && parsed.data?.token) {
+        localStorage.setItem("token", parsed.data.token);
+        localStorage.setItem("role", "admin");
+        window.dispatchEvent(new Event("auth-changed"));
+        navigate("/admin/dashboard", { replace: true });
+        return;
+      }
+
+      setCommonError(parsed.data?.message || "Google login failed");
+    } catch (err) {
+      console.error(err);
+      setCommonError("Backend not running / CORS issue");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
-    if (!token) return;
+    if (token && role) {
+      if (role === "admin") navigate("/admin/dashboard", { replace: true });
+      else if (role === "labour") navigate("/labour-dashboard", { replace: true });
+      else if (role === "employee") navigate("/find-labour", { replace: true });
+    }
 
-    if (role === "admin") navigate("/admin/dashboard", { replace: true });
-    else if (role === "labour") navigate("/labour-dashboard", { replace: true });
-    else if (role === "employee") navigate("/find-labour", { replace: true });
+    if (window.google) {
+      window.google.accounts.id.initialize({
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+        callback: handleCredentialResponse,
+      });
+    }
   }, [navigate]);
+
+  const handleGoogleLogin = () => {
+    if (!window.google) {
+      setCommonError("Google SDK not loaded");
+      return;
+    }
+    window.google.accounts.id.prompt();
+  };
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
-    setError("");
+
+    setEmailError("");
+    setPasswordError("");
+    setCommonError("");
     setLoading(true);
 
-    const identifier = form.email.trim(); // Email or Phone
+    const identifier = form.email.trim(); 
 
     try {
-      // 1) ADMIN
       let res = await fetch("http://localhost:4000/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -46,15 +103,11 @@ const Login = () => {
       if (res.ok && parsed.ok && parsed.data?.token) {
         localStorage.setItem("token", parsed.data.token);
         localStorage.setItem("role", "admin");
-
-        // ✅ header update in same tab
         window.dispatchEvent(new Event("auth-changed"));
-
         navigate("/admin/dashboard", { replace: true });
         return;
       }
 
-      // 2) LABOUR (email/phone)
       res = await fetch("http://localhost:4000/api/labour/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -67,24 +120,20 @@ const Login = () => {
         localStorage.setItem("token", parsed.data.token);
         localStorage.setItem("role", "labour");
 
-        // ✅ optional: labour id save (hire requests me kaam aayega)
         const labourId = parsed.data?.labour?._id;
         if (labourId) localStorage.setItem("userId", labourId);
 
-        // ✅ header update in same tab
         window.dispatchEvent(new Event("auth-changed"));
-
         navigate("/labour-dashboard", { replace: true });
         return;
       }
 
-      // 3) EMPLOYEE (email/phone safe)
       res = await fetch("http://localhost:4000/api/employees/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: identifier,      // backend expects email
-          identifier: identifier, // safe if backend supports email/phone
+          email: identifier,
+          identifier: identifier,
           password: form.password,
         }),
       });
@@ -95,83 +144,125 @@ const Login = () => {
         localStorage.setItem("token", parsed.data.token);
         localStorage.setItem("role", "employee");
 
-        // ✅ employee id save (hire request me MUST hai)
-        const employeeId = parsed.data?.user?._id || parsed.data?.employee?._id;
+        const employeeId =
+          parsed.data?.user?._id || parsed.data?.employee?._id;
+
         if (employeeId) localStorage.setItem("userId", employeeId);
 
-        // ✅ header update in same tab
         window.dispatchEvent(new Event("auth-changed"));
-
         navigate("/find-labour", { replace: true });
         return;
       }
+      const msg = parsed.data?.message || "Invalid credentials";
 
-      // if no login succeeded
-      setError(parsed.data?.message || "Invalid credentials");
+      if (res.status === 400 || res.status === 404) setEmailError(msg);
+      else if (res.status === 401) setPasswordError(msg);
+      else setCommonError(msg);
     } catch (err) {
       console.error(err);
-      setError("Backend not running / CORS issue");
+      setCommonError("Backend not running / CORS issue");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-[#c7e7ff] via-[#ffd6a5] to-[#ffb4c6] flex items-center justify-center px-4 py-10">
-      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-xl overflow-hidden grid grid-cols-1 md:grid-cols-2">
-        <div className="hidden md:flex bg-orange-400 rounded-r-[120px] items-center justify-center p-12">
-          <div className="text-center text-white">
-            <h2 className="text-4xl font-bold mb-6">Hello, Welcome!</h2>
+    <div className="min-h-screen w-full bg-gradient-to-br from-[#c7e7ff] via-[#ffd6a5] to-[#ffb4c6] flex items-center justify-center px-4">
+      <div className="relative bg-white rounded-2xl shadow-xl overflow-hidden w-full max-w-[900px] h-auto md:h-[480px]">
+        <div className="hidden md:block absolute left-0 top-0 h-full w-[55%] bg-[#fb923c] rounded-r-[180px]" />
+
+        <div className="hidden md:flex absolute left-0 top-0 h-full w-[55%] items-center justify-center">
+          <div className="text-center text-white px-12">
+            <h2 className="text-3xl font-bold mb-4 mt-16">Hello, Welcome!</h2>
             <img
               src="/logo.png"
               alt="Urban Force"
-              className="h-40 w-auto object-contain mx-auto"
+              className="h-23 w-22 object-contain mx-auto -mt-8"
             />
           </div>
         </div>
 
-        <div className="p-8 md:p-12 flex flex-col justify-center">
-          <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
+        <div className="relative md:absolute right-0 top-0 w-full md:w-[45%] h-full flex flex-col justify-center px-6 md:px-14 py-10 md:py-0">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-8 text-center">
             Login
           </h2>
 
-          <form onSubmit={handleLogin} className="space-y-4">
-            <input
-              type="text"
-              placeholder="Email or Phone"
-              value={form.email}
-              onChange={(e) => {
-                setForm({ ...form, email: e.target.value });
-                setError("");
-              }}
-              className="w-full bg-gray-100 px-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-orange-300"
-            />
+          <form onSubmit={handleLogin}>
+            <div className="mb-4 relative">
+              <input
+                type="text"
+                placeholder="Email or Phone"
+                value={form.email}
+                onChange={(e) => {
+                  setForm({ ...form, email: e.target.value });
+                  setEmailError("");
+                  setCommonError("");
+                }}
+                className={`w-full bg-gray-100 px-4 py-3 rounded-lg outline-none focus:ring-2 ${emailError ? "border border-red-500 focus:ring-red-200" : "focus:ring-gray-200"
+                  }`}
+              />
+              {emailError && <p className="text-red-500 text-sm mt-1">{emailError}</p>}
+              <span className="absolute right-4 top-1/3 -translate-y-1/2 text-gray-500">
+                👤
+              </span>
+            </div>
 
-            <input
-              type="password"
-              placeholder="Password"
-              value={form.password}
-              onChange={(e) => {
-                setForm({ ...form, password: e.target.value });
-                setError("");
-              }}
-              className="w-full bg-gray-100 px-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-orange-300"
-            />
+            <div className="mb-2 relative">
+              <input
+                type="password"
+                placeholder="Password"
+                value={form.password}
+                onChange={(e) => {
+                  setForm({ ...form, password: e.target.value });
+                  setPasswordError("");
+                  setCommonError("");
+                }}
+                className={`w-full bg-gray-100 px-4 py-3 rounded-lg outline-none focus:ring-2 ${passwordError ? "border border-red-500 focus:ring-red-200" : "focus:ring-gray-200"
+                  }`}
+              />
+              {passwordError && <p className="text-red-500 text-sm mt-1">{passwordError}</p>}
+            </div>
 
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+            {commonError && <p className="text-red-500 text-sm mt-2">{commonError}</p>}
+
+            <div
+              className="text-center mt-2 text-sm text-gray-900 mb-6 cursor-pointer hover:font-bold"
+              onClick={() => navigate("/admin/forget-password")}
+            >
+              Forgot Password?
+            </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-semibold transition disabled:opacity-60"
+              className="w-full bg-[#fb923c] text-white py-3 rounded-lg font-semibold hover:font-bold transition disabled:opacity-60"
             >
               {loading ? "Logging in..." : "Login"}
             </button>
           </form>
 
-          <p className="text-center text-sm text-gray-500 mt-6">
-            Admin + Labour + Employee
-          </p>
+          <div className="flex justify-center gap-4 mt-4">
+            <div
+              onClick={handleGoogleLogin}
+              className="w-10 h-10 text-black font-bold flex items-center justify-center border rounded-lg cursor-pointer hover:bg-gray-100"
+            >
+              G
+            </div>
+
+            <div className="w-10 h-10 text-black font-bold flex items-center justify-center border rounded-lg cursor-pointer hover:bg-gray-100">
+              f
+            </div>
+
+            <div className="w-10 h-10 text-black font-bold flex items-center justify-center border rounded-lg cursor-pointer hover:bg-gray-100">
+              Ø
+            </div>
+
+            <div className="w-10 h-10 text-black font-bold flex items-center justify-center border rounded-lg cursor-pointer hover:bg-gray-100">
+              in
+            </div>
+          </div>
+
+          
 
           <div className="flex justify-center gap-4 mt-4 text-sm">
             <Link to="/register/worker" className="text-orange-600 font-medium">
