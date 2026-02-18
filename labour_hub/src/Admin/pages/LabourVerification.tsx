@@ -1,64 +1,33 @@
 import { useEffect, useState } from "react";
 import TopBar from "../components/Topbar";
-
-type Labour = {
-  _id: string;
-  name: string;
-  skill: string;
-  document: string;
-  status: "pending" | "approved" | "blocked";
-};
+import { labours } from "../datas/labours";
 
 const LabourVerification = () => {
-  const [data, setData] = useState<Labour[]>([]);
+  const [data, setData] = useState(labours);
   const [globalSearch, setGlobalSearch] = useState("");
 
   useEffect(() => {
-    fetchLabours();
     const handler = (e: any) => setGlobalSearch(e.detail || "");
     window.addEventListener("admin-search", handler);
     return () => window.removeEventListener("admin-search", handler);
   }, []);
 
-  const fetchLabours = async () => {
-    const res = await fetch("http://localhost:4000/admin/labour-verification");
-    const result = await res.json();
-    if (result.success) {
-      setData(result.labours);
-    }
-  };
+  const filteredLabours = data.filter((l) =>
+    l.name.toLowerCase().includes(globalSearch.toLowerCase())
+  );
 
-  const updateStatus = async (id: string, status: "approved" | "blocked") => {
-    const res = await fetch(
-      `http://localhost:4000/admin/labour-verification-status/${id}`,
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
-      }
+  const updateStatus = (id: number, status: string) => {
+    setData((prev) =>
+      prev.map((l) => (l.id === id ? { ...l, status } : l))
     );
-
-    const result = await res.json();
-
-    if (result.success) {
-      setData((prev) => prev.filter((l) => l._id !== id));
-    }
   };
-
-  const filteredLabours = data
-    .filter((l) => l.status === "pending")
-    .filter((l) =>
-      l.name.toLowerCase().includes(globalSearch.toLowerCase())
-    );
 
   return (
     <div className="min-h-screen bg-[#FAF6F5]">
       <TopBar />
 
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <h1 className="text-2xl font-semibold mb-6">
-          Labour Verification
-        </h1>
+        <h1 className="text-2xl font-semibold mb-6">Labour Verification</h1>
 
         <div className="bg-white border rounded-2xl overflow-hidden">
           <div className="overflow-x-auto">
@@ -73,56 +42,73 @@ const LabourVerification = () => {
                 </tr>
               </thead>
 
+              
               <tbody>
                 {filteredLabours.map((l) => (
                   <tr
-                    key={l._id}
-                    className="border-t h-[64px] hover:bg-gray-50"
-                  >
-                    <td className="px-6 align-middle font-medium">
-                      {l.name}
-                    </td>
-
+                    key={l.id}
+                    className="border-t h-[64px] hover:bg-gray-50">
+                    
                     <td className="px-6 align-middle">
-                      {l.skill}
+                      <div className="flex items-center h-full">
+                        <span className="font-medium">{l.name}</span>
+                      </div>
                     </td>
 
+                    
                     <td className="px-6 align-middle">
-                      <a
-                        href={l.document}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-indigo-600 hover:underline text-sm"
-                      >
-                        View Document
-                      </a>
+                      <div className="flex items-center h-full">
+                        {l.skill}
+                      </div>
+                    </td>
+                    <td className="px-6 align-middle">
+                      <div className="flex items-center h-full">
+                        {l.document}
+                      </div>
+                    </td>
+                    <td className="px-6 align-middle text-center">
+                      <div className="flex justify-center items-center h-full">
+                        <span
+                          className={`px-4 py-1 rounded-full text-xs 
+                            text-white ${
+                            l.status === "pending"
+                              ? "bg-indigo-600"
+                              : l.status === "approved"
+                              ? "bg-green-600"
+                              : "bg-red-500"
+                          }`}
+                        >
+                          {l.status}
+                        </span>
+                      </div>
                     </td>
 
+                    
                     <td className="px-6 align-middle text-center">
-                      <span className="px-4 py-1 rounded-full text-xs text-white bg-indigo-600">
-                        pending
-                      </span>
-                    </td>
-
-                    <td className="px-6 align-middle text-center">
-                      <div className="flex justify-center items-center gap-4">
-                        <button
-                          onClick={() =>
-                            updateStatus(l._id, "approved")
-                          }
-                          className="text-green-600 font-bold text-xl"
-                        >
-                          ✔
-                        </button>
-
-                        <button
-                          onClick={() =>
-                            updateStatus(l._id, "blocked")
-                          }
-                          className="text-red-600 font-bold text-xl"
-                        >
-                          ✖
-                        </button>
+                      <div className="flex justify-center items-center
+                       h-full gap-4">
+                        {l.status === "pending" && (
+                          <>
+                            <button
+                              onClick={() =>
+                                updateStatus(l.id, "approved")
+                              }
+                              className="text-green-600 font-bold text-xl"
+                              title="Approve"
+                            >
+                              ✔
+                            </button>
+                            <button
+                              onClick={() =>
+                                updateStatus(l.id, "blocked")
+                              }
+                              className="text-red-600 font-bold text-xl"
+                              title="Block"
+                            >
+                              ✖
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>
