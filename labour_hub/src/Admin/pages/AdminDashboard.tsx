@@ -24,7 +24,7 @@ const AdminDashboard = () => {
       return;
     }
 
-    fetch("http://localhost:4000/labour")
+    fetch("http://localhost:4000/api/labour")
       .then((res) => res.json())
       .then((data) => {
         setTotalUsers(data.length);
