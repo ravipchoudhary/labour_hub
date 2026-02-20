@@ -115,7 +115,37 @@ export const loginLabour = async (req, res) => {
         return res.status(500).json({ message: error.message });
     }
 };
+export const labourDashboardStats = async (req, res) => {
+    try {
+        const db = await connection();
 
+        const labourId = req.user.id;
+
+        const contacted = await db.collection("hireRequests").countDocuments({
+            employeeId: new ObjectId(labourId)
+        });
+
+        const hired = await db.collection("hireRequests").countDocuments({
+            employeeId: new ObjectId(labourId),
+            status: "accepted"
+        });
+
+        const active = await db.collection("hireRequests").countDocuments({
+            employeeId: new ObjectId(labourId),
+            status: "pending"
+        });
+
+        res.json({
+            workersContacted: contacted,
+            activeSearches: active,
+            workersHired: hired
+        });
+
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: "Server error" });
+    }
+};
 export const getAllLabours = async (req, res) => {
     try {
         const db = await connection();

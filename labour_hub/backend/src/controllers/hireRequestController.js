@@ -1,6 +1,51 @@
 import { ObjectId } from "mongodb";
 import { connection } from "../config/db.js";
 
+export const getEmployeeHiredWorkers = async (req, res) => {
+    try {
+        const db = await connection();
+
+        const employeeId = new ObjectId(req.user.id);
+
+        const hired = await db.collection("hireRequests").aggregate([
+            { $match: { employeeId, status: "accepted" } },
+            {
+                $lookup: {
+                    from: "labour",
+                    localField: "labourId",
+                    foreignField: "_id",
+                    as: "labour",
+                },
+            },
+            { $unwind: { path: "$labour", preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    _id: 1,
+                    status: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    message: 1,
+                    labour: {
+                        _id: "$labour._id",
+                        name: "$labour.name",
+                        phone: "$labour.phone",
+                        location: "$labour.location",
+                        profession: "$labour.profession",
+                        rating: "$labour.rating",
+                        available: "$labour.available",
+                    },
+                },
+            },
+            { $sort: { updatedAt: -1 } },
+        ]).toArray();
+
+        return res.json({ hired });
+    } catch (err) {
+        console.log("getEmployeeHiredWorkers error:", err);
+        return res.status(500).json({ message: "Server error" });
+    }
+};
+
 export const getHireStats = async (req, res) => {
     try {
         const db = await connection();
@@ -144,6 +189,14 @@ export const updateHireRequestStatus = async (req, res) => {
         );
 
         if (status === "accepted") {
+            await db.collection("jobs").insertOne({
+                labourId: hireReq.labourId,
+                employeeId: hireReq.employeeId,
+                requestId: hireReq._id,
+                status: "pending",
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            });
             await db.collection("labour").updateOne(
                 { _id: new ObjectId(req.user.id) },
                 { $set: { available: false, updatedAt: new Date() } }

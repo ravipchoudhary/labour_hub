@@ -193,7 +193,6 @@ const WorkerDetail = () => {
                         <p className="text-sm text-gray-600 mb-4">
                             Request a job from this worker.
                         </p>
-
                         {worker.available === false && (
                             <p className="text-sm text-red-500 mb-3">
                                 Worker is busy right now
@@ -222,7 +221,7 @@ const WorkerDetail = () => {
                         </button>
                     </div>
 
-                    <WorkerContactCard worker={worker} onMarkBusy={markBusy} />
+                    <WorkerContactCard worker={worker} onMarkBusy={markBusy} onHire={handleHireRequest} />
                     <SimilarWorkers currentWorker={worker} workers={workers} />
                     <SafetyTips />
                 </div>

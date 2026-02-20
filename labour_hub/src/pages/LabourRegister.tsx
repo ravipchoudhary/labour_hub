@@ -145,7 +145,6 @@ const Register = () => {
                   onChange={handlePhotoUpload}
                   className="hidden"
                 />
-
                 <div className="w-24 h-24 rounded-full border-4 border-orange-500 flex items-center justify-center overflow-hidden bg-orange-500 text-white text-2xl font-bold">
                   {preview ? (
                     <img

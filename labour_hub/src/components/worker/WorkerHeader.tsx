@@ -56,6 +56,7 @@ const WorkerHeader = ({ worker }: Props) => {
                     💬 WhatsApp
                 </button>
                 </a>
+                
             </div>
         </div>
     );

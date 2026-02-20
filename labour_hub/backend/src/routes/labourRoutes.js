@@ -43,7 +43,7 @@ router.get("/jobs", protect, async (req, res) => {
     }
 });
 
-
+router.get("/dashboard", protect, getDashboardStats);
 router.get("/", async (req, res) => {
     try {
         const db = await connection();

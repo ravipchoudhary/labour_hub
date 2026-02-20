@@ -26,32 +26,31 @@ const WorkerContactCard = ({ worker, onHire, hireLoading }: Props) => {
                 </button>
             </a>
 
-            <a href={`sms:${worker.phone}`}>
-                <button className="w-full border py-2 rounded mb-3 hover:bg-orange-500 hover:text-white">
-                    💬 Send Message
+            <div className="flex gap-3 mb-3">
+                <a
+                    href={`https://wa.me/91${worker.phone}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-1/2"
+                >
+                    <button className="w-full border py-2 rounded hover:bg-green-500 hover:text-white">
+                        💬 WhatsApp
+                    </button>
+                </a>
+
+                <button
+                    type="button"
+                    disabled={!onHire || hireLoading || worker.available === false}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onHire?.();
+                    }}
+                    className="w-1/2 bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg disabled:opacity-60"
+                >
+                    {hireLoading ? "Sending..." : "Hire Me"}
                 </button>
-            </a>
-
-            <button
-                type="button"
-                disabled={!onHire || hireLoading}
-                onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onHire?.();
-                }}
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg mb-3 disabled:opacity-60"
-            >
-                {hireLoading ? "Sending..." : "Hire Me"}
-            </button>
-            
-
-            <button
-                onClick={() => navigator.clipboard.writeText(window.location.href)}
-                className="w-full text-sm text-gray-600 hover:underline"
-            >
-                🔗 Share Profile
-            </button>
+            </div>
 
             <p className="text-xs text-gray-500 mt-4 text-center">
                 Usually responds within {worker.responseTime}
