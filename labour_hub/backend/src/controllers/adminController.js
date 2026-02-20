@@ -336,13 +336,13 @@ export const getAllUsers = async (req, resp) => {
     const db = await connection();
 
     let filter = {};
-    if (role & role !== "All") {
-      filter.role = role;
+    if (role && role !== "all") {
+      filter.role = role.toLowerCase();
     }
-    else if (status & status !== "All") {
+    if (status && status !== "all") {
       filter.status = status;
     }
-    else if (search) {
+    if (search) {
       filter.$or = [
         { name: { $regex: search, $options: "i" } },
         { email: { $regex: search, $options: "i" } }
@@ -364,7 +364,7 @@ export const getAllUsers = async (req, resp) => {
 export const updateUserStatus = async (req, resp) => {
   try {
     const { id } = req.params;
-    const { status } = req.status;
+    const { status } = req.body;
 
     const db = await connection();
 
@@ -403,7 +403,7 @@ export const getLabourVerification = async(req,resp)=> {
 
 export const updateLabourVerificationStatus=async(req,resp)=> {
   try {
-    const {id} = req.params.id;
+    const {id} = req.params;
     const {status} = req.body;
 
     const db = await connection();

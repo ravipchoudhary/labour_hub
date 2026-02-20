@@ -23,6 +23,7 @@ import ForgotPassword from "./Admin/ForgotPassword";
 import ResetPasswordDirect from "./Admin/ResetPasswordDirect";
 import AdminProfile from "./Admin/pages/AdminProfile";
 import ChangePassword from "./Admin/components/ChangePasswordModal";
+import UserProfile from "./Admin/pages/UserProfile";
 
 
 function App() {
@@ -55,6 +56,7 @@ function App() {
         <Route path="/admin/reset-password-direct" element={<ResetPasswordDirect />}/>
         <Route path="/admin/profile" element={<AdminProfile />}/>
         <Route path="/admin/change-password" element={<ChangePassword />}/>
+        <Route path="/admin/users/:id" element={<UserProfile />}/>
         
 
       
