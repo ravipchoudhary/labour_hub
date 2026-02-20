@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import {
   LineChart,
   Line,
@@ -13,27 +12,23 @@ import {
   Bar,
 } from "recharts";
 
+
 type TabType = "dashboard" | "completed" | "pending";
 
 interface Job {
-  id?: string;
-  _id?: string;
+  id: string;
   work: string;
   location: string;
   amount: number;
-  month?: string;
 }
 
 interface LabourProfile {
-  _id?: string;
-  name?: string;
-  role?: string;
-  rating?: number;
-  city?: string;
-  profession?: string;
-  available?: boolean;
-  location?: string;
-  skills?: string[];
+  name: string;
+  role: string;
+  rating: number;
+  city: string;
+  profession: string;
+  available: boolean;
 }
 
 interface StatProps {
@@ -42,22 +37,6 @@ interface StatProps {
   onClick?: () => void;
 }
 
-interface HireRequest {
-  _id: string;
-  status: "pending" | "accepted" | "rejected";
-  createdAt?: string;
-  message?: string;
-
-  employee?: {
-    _id?: string;
-    name?: string;
-    email?: string;
-    phone?: string;
-    location?: string;
-  };
-}
-
-const API_BASE = "http://localhost:4000";
 
 const Stat: React.FC<StatProps> = ({ title, value, onClick }) => (
   <div
@@ -80,82 +59,24 @@ const JobCard: React.FC<{ job: Job }> = ({ job }) => (
   </div>
 );
 
-const HireRequestCard: React.FC<{
-  req: HireRequest;
-  onAccept: () => void;
-  onReject: () => void;
-  loading?: boolean;
-}> = ({ req, onAccept, onReject, loading }) => {
-  return (
-    <div className="border rounded-xl p-4 hover:shadow-md transition bg-white">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="font-semibold text-gray-800">
-            {req.employee?.name || "Unknown Employer"}
-          </p>
-
-          <p className="text-sm text-gray-500">
-            {req.employee?.location || "-"}
-            {req.employee?.phone ? ` • ${req.employee.phone}` : ""}
-          </p>
-
-          {req.message && (
-            <p className="text-sm text-gray-700 mt-2">
-              <span className="font-medium">Message:</span> {req.message}
-            </p>
-          )}
-
-          {req.createdAt && (
-            <p className="text-xs text-gray-400 mt-2">
-              {new Date(req.createdAt).toLocaleString()}
-            </p>
-          )}
-        </div>
-
-        <div className="flex flex-col gap-2 min-w-[140px]">
-          <button
-            disabled={loading}
-            onClick={onAccept}
-            className="px-4 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white text-sm font-semibold disabled:opacity-60"
-          >
-            {loading ? "..." : "Accept"}
-          </button>
-
-          <button
-            disabled={loading}
-            onClick={onReject}
-            className="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white text-sm font-semibold disabled:opacity-60"
-          >
-            {loading ? "..." : "Reject"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 export default function LabourDashboard() {
-  const navigate = useNavigate();
-
   const [activeTab, setActiveTab] = useState<TabType>("dashboard");
   const [profile, setProfile] = useState<LabourProfile | null>(null);
-
   const [completedJobs, setCompletedJobs] = useState<Job[]>([]);
+  const [pendingJobs, setPendingJobs] = useState<Job[]>([]);
   const [available, setAvailable] = useState<boolean>(true);
 
-  const [hireRequests, setHireRequests] = useState<HireRequest[]>([]);
-  const [hireActionLoadingId, setHireActionLoadingId] = useState<string | null>(
-    null
+  const [earningsData, setEarningsData] = useState(
+    [
+      { month: "Jan", earning: 0 },
+      { month: "Feb", earning: 0 },
+      { month: "Mar", earning: 0 },
+      { month: "Apr", earning: 0 },
+      { month: "May", earning: 0 },
+      { month: "Jun", earning: 0 },
+    ]
   );
-
-  const [earningsData, setEarningsData] = useState([
-    { month: "Jan", earning: 0 },
-    { month: "Feb", earning: 0 },
-    { month: "Mar", earning: 0 },
-    { month: "Apr", earning: 0 },
-    { month: "May", earning: 0 },
-    { month: "Jun", earning: 0 },
-  ]);
 
   const [jobStats, setJobStats] = useState([
     { name: "Completed", value: 0 },
@@ -163,141 +84,63 @@ export default function LabourDashboard() {
     { name: "Rejected", value: 0 },
   ]);
 
-  const authHeader = () => {
-    const token = localStorage.getItem("token");
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  };
-
-  const totalEarnings = useMemo(
-    () => completedJobs.reduce((acc, job) => acc + (Number(job.amount) || 0), 0),
-    [completedJobs]
-  );
-
-  const fetchAll = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-
-      const profileRes = await axios.get(`${API_BASE}/api/labour/profile`, {
-        headers: authHeader(),
-      });
-      setProfile(profileRes.data);
-      setAvailable(Boolean(profileRes.data?.available));
-
-      const jobsRes = await axios.get(`${API_BASE}/api/labour/jobs`, {
-        headers: authHeader(),
-      });
-      const completed: Job[] = jobsRes.data?.completedJobs || [];
-      setCompletedJobs(completed);
-
-      const hireRes = await axios.get(`${API_BASE}/api/hire/pending`, {
-        headers: authHeader(),
-      });
-
-      const raw = hireRes.data;
-
-      const pendingReqs: HireRequest[] = Array.isArray(raw)
-        ? raw
-        : raw?.requests || raw?.pendingRequests || [];
-
-      setHireRequests(pendingReqs);
-
-      const rejectedCount =
-        Number(raw?.rejectedCount) || Number(raw?.rejected?.length) || 0;
-
-      setJobStats([
-        { name: "Completed", value: completed.length },
-        { name: "Pending", value: pendingReqs.length },
-        { name: "Rejected", value: rejectedCount },
-      ]);
-
-      const monthlyEarnings = [
-        { month: "Jan", earning: 0 },
-        { month: "Feb", earning: 0 },
-        { month: "Mar", earning: 0 },
-        { month: "Apr", earning: 0 },
-        { month: "May", earning: 0 },
-        { month: "Jun", earning: 0 },
-      ];
-
-      completed.forEach((job) => {
-        const month = job.month;
-        if (!month) return;
-        const idx = monthlyEarnings.findIndex((m) => m.month === month);
-        if (idx >= 0) monthlyEarnings[idx].earning += Number(job.amount) || 0;
-      });
-
-      setEarningsData(monthlyEarnings);
-    } catch (err) {
-      console.error("Failed to fetch profile/jobs/requests:", err);
-    }
-  };
-
   useEffect(() => {
-    fetchAll();
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const profileRes = await axios.get(
+          "http://localhost:4000/api/labour/profile",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setProfile(profileRes.data);
+        setAvailable(profileRes.data.available);
+
+        const jobsRes = await axios.get(
+          "http://localhost:4000/api/labour/jobs",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        setCompletedJobs(jobsRes.data.completedJobs);
+        setPendingJobs(jobsRes.data.pendingJobs);
+
+        setJobStats([
+          { name: "Completed", value: jobsRes.data.completedJobs.length },
+          { name: "Pending", value: jobsRes.data.pendingJobs.length },
+          { name: "Rejected", value: jobsRes.data.rejectedJobs?.length || 0 },
+        ]);
+
+        const monthlyEarnings = [
+          { month: "Jan", earning: 0 },
+          { month: "Feb", earning: 0 },
+          { month: "Mar", earning: 0 },
+          { month: "Apr", earning: 0 },
+          { month: "May", earning: 0 },
+          { month: "Jun", earning: 0 },
+        ];
+
+        jobsRes.data.completedJobs.forEach((job: Job & { month: string }) => {
+          const monthIndex = monthlyEarnings.findIndex(
+            (m) => m.month === job.month
+          );
+          if (monthIndex >= 0) {
+            monthlyEarnings[monthIndex].earning += job.amount;
+          }
+        });
+
+        setEarningsData(monthlyEarnings);
+      } catch (err) {
+        console.error("Failed to fetch profile/jobs:", err);
+      }
+    };
+
+    fetchProfile();
   }, []);
 
-  const toggleAvailability = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-
-      await axios.patch(
-        `${API_BASE}/api/labour/availability`,
-        { available: !available },
-        { headers: authHeader() }
-      );
-
-      setAvailable((prev) => !prev);
-    } catch (err) {
-      console.error("toggleAvailability error:", err);
-      alert("Availability update failed");
-    }
-  };
-
-  const updateHireStatus = async (
-    requestId: string,
-    status: "accepted" | "rejected"
-  ) => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-
-      setHireActionLoadingId(requestId);
-
-      await axios.patch(
-        `${API_BASE}/api/hire/${requestId}/status`,
-        { status },
-        { headers: authHeader() }
-      );
-
-      setHireRequests((prev) => prev.filter((r) => r._id !== requestId));
-
-      setJobStats((prev) => {
-        const updated = prev.map((s) => ({ ...s }));
-        const pendingIndex = updated.findIndex((x) => x.name === "Pending");
-        const rejectedIndex = updated.findIndex((x) => x.name === "Rejected");
-
-        if (pendingIndex >= 0)
-          updated[pendingIndex].value = Math.max(
-            0,
-            updated[pendingIndex].value - 1
-          );
-        if (status === "rejected" && rejectedIndex >= 0)
-          updated[rejectedIndex].value += 1;
-
-        return updated;
-      });
-    } catch (err) {
-      console.error("updateHireStatus error:", err);
-      alert("Request update failed (backend issue)");
-    } finally {
-      setHireActionLoadingId(null);
-    }
-  };
+  const jobsToRender = activeTab === "completed" ? completedJobs : pendingJobs;
 
   return (
     <div className="min-h-screen bg-gray-50 p-6 space-y-8">
+
       <div className="bg-white rounded-2xl shadow p-6 flex justify-between flex-wrap gap-6">
         <div className="flex gap-5">
           <div className="w-20 h-20 rounded-xl bg-orange-100 flex items-center justify-center text-3xl">
@@ -305,40 +148,41 @@ export default function LabourDashboard() {
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold">
-              {profile?.name || "Loading..."}
-            </h2>
-            <p className="text-gray-500">
-              {profile?.profession || "-"} •{" "}
-              {profile?.city || profile?.location || "-"}
-            </p>
+            <h2 className="text-2xl font-semibold">{profile?.name || "Loading..."}</h2>
+            <p className="text-gray-500">{profile?.profession} • {profile?.city}</p>
             <p className="text-yellow-500">⭐ {profile?.rating || 0} Rating</p>
           </div>
         </div>
 
         <div className="flex gap-4 items-center">
           <button
-            onClick={toggleAvailability}
+            onClick={async () => {
+              try {
+                const token = localStorage.getItem("token");
+                await axios.patch(
+                  "http://localhost:4000/api/labour/availability",
+                  { available: !available },
+                  { headers: { Authorization: `Bearer ${token}` } }
+                );
+                setAvailable(!available);
+              } catch (err) {
+                console.error(err);
+              }
+            }}
             className={`px-4 py-2 rounded-full text-sm font-medium
             ${available ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
           >
             {available ? "Available for Work" : "Unavailable"}
           </button>
 
-          <button
-            onClick={() => navigate("/edit-profile")}
-            className="px-5 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
-          >
+          <button className="px-5 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition">
             Edit Profile
           </button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Stat
-          title="Total Jobs"
-          value={`${completedJobs.length + hireRequests.length}`}
-        />
+        <Stat title="Total Jobs" value={`${completedJobs.length + pendingJobs.length}`} />
         <Stat
           title="Completed Jobs"
           value={`${completedJobs.length}`}
@@ -346,14 +190,18 @@ export default function LabourDashboard() {
         />
         <Stat
           title="Pending Requests"
-          value={`${hireRequests.length}`}
+          value={`${pendingJobs.length}`}
           onClick={() => setActiveTab("pending")}
         />
-        <Stat title="Total Earnings" value={`₹${totalEarnings}`} />
+        <Stat
+          title="Total Earnings"
+          value={`₹${completedJobs.reduce((acc, job) => acc + job.amount, 0)}`}
+        />
       </div>
 
       {activeTab === "dashboard" && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
           <div className="bg-white rounded-2xl shadow p-6">
             <h3 className="font-semibold mb-4">Monthly Earnings</h3>
             <ResponsiveContainer width="100%" height={280}>
@@ -384,13 +232,16 @@ export default function LabourDashboard() {
               </BarChart>
             </ResponsiveContainer>
           </div>
+
         </div>
       )}
 
-      {activeTab === "completed" && (
+      {activeTab !== "dashboard" && (
         <div className="bg-white rounded-2xl shadow p-6">
           <div className="flex justify-between mb-6">
-            <h3 className="font-semibold text-lg">Completed Jobs History</h3>
+            <h3 className="font-semibold text-lg">
+              {activeTab === "completed" ? "Completed Jobs History" : "Pending Jobs History"}
+            </h3>
 
             <button
               onClick={() => setActiveTab("dashboard")}
@@ -401,47 +252,9 @@ export default function LabourDashboard() {
           </div>
 
           <div className="space-y-4">
-            {completedJobs.length === 0 ? (
-              <p className="text-gray-500">No completed jobs yet.</p>
-            ) : (
-              completedJobs.map((job) => (
-                <JobCard
-                  key={(job.id || job._id || Math.random()).toString()}
-                  job={job}
-                />
-              ))
-            )}
-          </div>
-        </div>
-      )}
-
-      {activeTab === "pending" && (
-        <div className="bg-white rounded-2xl shadow p-6">
-          <div className="flex justify-between mb-6">
-            <h3 className="font-semibold text-lg">Pending Hire Requests</h3>
-
-            <button
-              onClick={() => setActiveTab("dashboard")}
-              className="text-orange-600 font-medium"
-            >
-              ← Back
-            </button>
-          </div>
-
-          <div className="space-y-4">
-            {hireRequests.length === 0 ? (
-              <p className="text-gray-500">No pending requests right now.</p>
-            ) : (
-              hireRequests.map((req) => (
-                <HireRequestCard
-                  key={req._id}
-                  req={req}
-                  loading={hireActionLoadingId === req._id}
-                  onAccept={() => updateHireStatus(req._id, "accepted")}
-                  onReject={() => updateHireStatus(req._id, "rejected")}
-                />
-              ))
-            )}
+            {jobsToRender.map((job) => (
+              <JobCard key={job.id} job={job} />
+            ))}
           </div>
         </div>
       )}
