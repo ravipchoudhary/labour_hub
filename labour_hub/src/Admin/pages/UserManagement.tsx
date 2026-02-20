@@ -118,6 +118,9 @@ const UserManagement = () => {
               <tbody>
                 {filteredUsers.map((u) => (
                   <tr
+                    key={u._id}
+                    className="border-t h-[68px] hover:bg-gray-50 cursor-pointer"
+                    onClick={() => navigate(`/admin/users/${u._id}`)}
                     key={u.email}
                     className="border-t h-[68px] hover:bg-gray-50"
                   >
@@ -151,13 +154,12 @@ const UserManagement = () => {
                     
                     <td className="px-6 text-center align-middle">
                       <span
-                        className={`inline-flex items-center justify-center min-w-[110px] h-[28px] text-white text-xs rounded-full ${
-                          u.status === "pending"
+                        className={`inline-flex min-w-[110px] h-[28px] text-white text-xs rounded-full items-center justify-center ${u.status === "pending"
                             ? "bg-indigo-600"
                             : u.status === "approved"
-                            ? "bg-green-600"
-                            : "bg-orange-500"
-                        }`}
+                              ? "bg-green-600"
+                              : "bg-orange-500"
+                          }`}
                       >
                         {u.status}
                       </span>

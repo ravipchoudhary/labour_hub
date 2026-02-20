@@ -395,6 +395,39 @@ export const changeAdminPassword = async (req, resp) => {
   } catch (err) {
     resp.status(500).send({
       success: false,
+      message: "server error"
+    })
+  }
+}
+
+export const getAllUsers = async (req, resp) => {
+  try {
+    const { role, status, search } = req.query;
+
+    const db = await connection();
+
+    let filter = {};
+    if (role && role !== "all") {
+      filter.role = role.toLowerCase();
+    }
+    if (status && status !== "all") {
+      filter.status = status;
+    }
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } }
+      ]
+    }
+    const users = await db.collection("labour").find(filter).sort({ createdAt: -1 }).toArray();
+    resp.status(200).send({
+      success: true, users
+    })
+  }
+  catch (error) {
+    resp.status(500).send({
+      success: false,
+      message: "Failed to fetch users"
       message: "Server error",
     });
   }
@@ -403,7 +436,7 @@ export const changeAdminPassword = async (req, resp) => {
 export const updateUserStatus = async (req, resp) => {
   try {
     const { id } = req.params;
-    const { status } = req.status;
+    const { status } = req.body;
 
     const db = await connection();
 
@@ -442,7 +475,7 @@ export const getLabourVerification = async(req,resp)=> {
 
 export const updateLabourVerificationStatus=async(req,resp)=> {
   try {
-    const {id} = req.params.id;
+    const {id} = req.params;
     const {status} = req.body;
 
     const db = await connection();

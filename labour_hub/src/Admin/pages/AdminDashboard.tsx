@@ -24,7 +24,7 @@ const AdminDashboard = () => {
       return;
     }
 
-    fetch("http://localhost:4000/labour")
+    fetch("http://localhost:4000/api/labour")
       .then((res) => res.json())
       .then((data) => {
         setTotalUsers(data.length);
@@ -60,7 +60,9 @@ const AdminDashboard = () => {
       <div className="max-w-[1500px] mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8">
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <StatCard title="Total Users" value={totalUsers} badge="+12%" icon="👤" />
+          <div onClick={() => navigate("/admin/users")} className="cursor-pointer">
+            <StatCard title="Total Users" value={totalUsers} badge="+12%" icon="👤" />
+          </div>
           <StatCard title="Active Workers" value={activeWorkers} badge="+8%" icon="👥" />
           <StatCard title="Employers" value={employers} badge="+5%" icon="💼" />
           <StatCard title="Pending Approvals" value={pendingApprovals} badge="+4%" icon="⚠️" />
