@@ -1,22 +1,23 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState, useCallback } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import TopBar from "../components/Topbar";
 
 type Status = "pending" | "approved" | "blocked";
-type UserType = "Labour" | "Employer";
 
 const UserManagement = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [users, setUsers] = useState<any[]>([]);
   const [globalSearch, setGlobalSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<Status | "all">("all");
-  const [typeFilter, setTypeFilter] = useState<UserType | "all">("all");
 
   const token = localStorage.getItem("token");
 
-  const fetchUsers = async () => {
+  const statusFromUrl = searchParams.get("status") || "all";
+  const roleFromUrl = searchParams.get("role") || "all";
+
+  const fetchUsers = useCallback(async () => {
     try {
       const res = await axios.get(
         "http://localhost:4000/admin/all-users",
@@ -25,9 +26,9 @@ const UserManagement = () => {
             Authorization: `Bearer ${token}`,
           },
           params: {
-            role: typeFilter,
-            status: statusFilter,
-            search: globalSearch,
+            status: statusFromUrl !== "all" ? statusFromUrl : undefined,
+            role: roleFromUrl !== "all" ? roleFromUrl : undefined,
+            search: globalSearch || undefined,
           },
         }
       );
@@ -38,11 +39,11 @@ const UserManagement = () => {
     } catch (error) {
       console.log("Fetch error", error);
     }
-  };
+  }, [token, statusFromUrl, roleFromUrl, globalSearch]);
 
   useEffect(() => {
     fetchUsers();
-  }, [statusFilter, typeFilter]);
+  }, [fetchUsers]);
 
   const updateStatus = async (id: string, status: Status) => {
     try {
@@ -60,6 +61,14 @@ const UserManagement = () => {
     } catch (error) {
       console.log("Update error", error);
     }
+  };
+
+  const handleStatusChange = (value: string) => {
+    navigate(`/admin/users?status=${value}&role=${roleFromUrl}`);
+  };
+
+  const handleRoleChange = (value: string) => {
+    navigate(`/admin/users?status=${statusFromUrl}&role=${value}`);
   };
 
   return (
@@ -88,14 +97,13 @@ const UserManagement = () => {
           <input
             value={globalSearch}
             onChange={(e) => setGlobalSearch(e.target.value)}
-            onKeyUp={fetchUsers}
             placeholder="Search by name or email..."
             className="border border-gray-300 rounded-xl px-4 py-2 w-full md:w-[35%] outline-none"
           />
 
           <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as any)}
+            value={statusFromUrl}
+            onChange={(e) => handleStatusChange(e.target.value)}
             className="border border-gray-200 rounded-xl px-4 py-2"
           >
             <option value="all">All Status</option>
@@ -105,13 +113,13 @@ const UserManagement = () => {
           </select>
 
           <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value as any)}
+            value={roleFromUrl}
+            onChange={(e) => handleRoleChange(e.target.value)}
             className="border border-gray-200 rounded-xl px-4 py-2"
           >
             <option value="all">All Types</option>
-            <option value="Labour">Labour</option>
-            <option value="Employer">Employer</option>
+            <option value="labour">Labour</option>
+            <option value="employer">Employer</option>
           </select>
         </div>
 
@@ -139,8 +147,7 @@ const UserManagement = () => {
                       <div>
                         <span className="font-medium">{u.name}</span>
                         <div className="text-xs text-gray-500">
-                          Registered{" "}
-                          {new Date(u.createdAt).toLocaleString()}
+                          Registered {new Date(u.createdAt).toLocaleString()}
                         </div>
                       </div>
                     </td>
@@ -160,34 +167,33 @@ const UserManagement = () => {
 
                     <td className="px-6 text-center">
                       <span
-                        className={`inline-flex min-w-[110px] h-[28px] text-white text-xs rounded-full items-center justify-center ${u.status === "pending"
+                        className={`inline-flex min-w-[110px] h-[28px] text-white text-xs rounded-full items-center justify-center ${
+                          u.status === "pending"
                             ? "bg-indigo-600"
                             : u.status === "approved"
-                              ? "bg-green-600"
-                              : "bg-orange-500"
-                          }`}
+                            ? "bg-green-600"
+                            : "bg-orange-500"
+                        }`}
                       >
                         {u.status}
                       </span>
                     </td>
 
-                    <td className="px-6 text-center">
+                    <td
+                      className="px-6 text-center"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className="flex justify-center gap-3">
-
                         {u.status === "pending" && (
                           <>
                             <button
-                              onClick={() =>
-                                updateStatus(u._id, "approved")
-                              }
+                              onClick={() => updateStatus(u._id, "approved")}
                               className="text-green-600 font-bold text-xl"
                             >
                               ✔
                             </button>
                             <button
-                              onClick={() =>
-                                updateStatus(u._id, "blocked")
-                              }
+                              onClick={() => updateStatus(u._id, "blocked")}
                               className="text-red-600 font-bold text-xl"
                             >
                               ✖
@@ -197,9 +203,7 @@ const UserManagement = () => {
 
                         {u.status === "approved" && (
                           <button
-                            onClick={() =>
-                              updateStatus(u._id, "blocked")
-                            }
+                            onClick={() => updateStatus(u._id, "blocked")}
                             className="bg-orange-500 text-white text-xs px-4 py-1 rounded-full"
                           >
                             Block
@@ -208,15 +212,12 @@ const UserManagement = () => {
 
                         {u.status === "blocked" && (
                           <button
-                            onClick={() =>
-                              updateStatus(u._id, "approved")
-                            }
+                            onClick={() => updateStatus(u._id, "approved")}
                             className="bg-green-600 text-white text-xs px-4 py-1 rounded-full"
                           >
                             Unblock
                           </button>
                         )}
-
                       </div>
                     </td>
                   </tr>

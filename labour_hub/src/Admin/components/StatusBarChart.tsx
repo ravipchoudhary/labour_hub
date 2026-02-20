@@ -1,11 +1,11 @@
 interface Props {
   active: number;
   pending: number;
+  blocked: number;
   total: number;
 }
 
-const StatusBarChart = ({ active, pending, total }: Props) => {
-  const blocked = total - active - pending;
+const StatusBarChart = ({ active, pending,blocked, total }: Props) => {
 
   const data = [
     { label: "Approved", value: active, color: "bg-blue-600" },

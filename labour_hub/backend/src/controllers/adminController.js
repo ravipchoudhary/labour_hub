@@ -336,17 +336,20 @@ export const getAllUsers = async (req, resp) => {
     const db = await connection();
 
     let filter = {};
+
     if (role && role !== "all") {
-      filter.role = role.toLowerCase();
+      filter.role = { $regex: `^${role}$`, $options: "i" };
     }
+
     if (status && status !== "all") {
-      filter.status = status;
+      filter.status = { $regex: `^${status}$`, $options: "i" };
     }
+
     if (search) {
       filter.$or = [
         { name: { $regex: search, $options: "i" } },
         { email: { $regex: search, $options: "i" } }
-      ]
+      ];
     }
     const users = await db.collection("labour").find(filter).sort({ createdAt: -1 }).toArray();
     resp.status(200).send({
@@ -384,41 +387,86 @@ export const updateUserStatus = async (req, resp) => {
   }
 }
 
-export const getLabourVerification = async(req,resp)=> {
+export const getLabourVerification = async (req, resp) => {
   try {
     const db = await connection();
     const labours = await db.collection("labour").find({
-      role:"labour",status:"pending"}).sort({createdAt:-1}).toArray();
+      role: "labour", status: "pending"
+    }).sort({ createdAt: -1 }).toArray();
 
-      resp.status(200).send({
-        success:true,
-        data:labours
-      })
-  } catch(error)  {
+    resp.status(200).send({
+      success: true,
+      data: labours
+    })
+  } catch (error) {
     resp.status(500).send({
-      success:false
+      success: false
     })
   }
 }
 
-export const updateLabourVerificationStatus=async(req,resp)=> {
+export const updateLabourVerificationStatus = async (req, resp) => {
   try {
-    const {id} = req.params;
-    const {status} = req.body;
+    const { id } = req.params;
+    const { status } = req.body;
 
     const db = await connection();
 
     await db.collection("labour").updateOne({
-      _id:new ObjectId(id)},
-    {$set:{status}})
+      _id: new ObjectId(id)
+    },
+      { $set: { status } })
 
     resp.status(200).send({
-      success:true,
-      message:"Status updated"
+      success: true,
+      message: "Status updated"
     })
   } catch (error) {
     resp.status(500).send({
-      success:false
+      success: false
     })
   }
 }
+
+export const getDashboardStats = async (req, resp) => {
+  try {
+    const db = await connection();
+
+    const totalUsers = await db.collection("labour").countDocuments();
+
+    const activeWorkers = await db.collection("labour").countDocuments({
+      role: { $regex: "^labour$", $options: "i" },
+      status: { $regex: "^approved$", $options: "i" }
+    });
+
+    const employers = await db.collection("labour").countDocuments({
+      role: { $regex: "^employer$", $options: "i" },
+      status: { $regex: "^approved$", $options: "i" }
+    });
+
+    const pending = await db.collection("labour").countDocuments({
+      status: { $regex: "^pending$", $options: "i" }
+    });
+
+    const blocked = await db.collection("labour").countDocuments({
+      status: { $regex: "^blocked$", $options: "i" }
+    });
+
+    resp.status(200).send({
+      success: true,
+      data: {
+        totalUsers,
+        approved: activeWorkers,
+        pending,
+        blocked,
+        employers
+      }
+    });
+
+  } catch (error) {
+    resp.status(500).send({
+      success: false,
+      message: "Dashboard stats failed"
+    });
+  }
+};
