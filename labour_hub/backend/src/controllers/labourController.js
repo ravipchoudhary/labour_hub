@@ -9,116 +9,60 @@ export const registerLabour = async (req, res) => {
 
         console.log("BODY DATA:", req.body);
 
-        const {
-            name,
-            about,
-            phone,
-            password,
-            email,
-            skills,
-            location,
-            price,
-            experience,
-            gender,
-        } = req.body;
-
-        // ✅ basic validation
-        if (!name || !email || !phone || !password) {
-            return res
-                .status(400)
-                .json({ message: "Name, email, phone, password required" });
-        }
-
-        // ✅ duplicate check (email/phone)
-        const exist = await db.collection("labour").findOne({
-            $or: [{ email }, { phone }],
-        });
-
-        if (exist) {
-            return res
-                .status(409)
-                .json({ message: "Email or phone already exists" });
-        }
-
         const newLabour = {
-            name: name || "",
-            about: about || "",
-            phone: phone || "",
-            password: await bcrypt.hash(password, 10),
-            email: email || "",
-            skills: Array.isArray(skills) ? skills : [],
-            location: location || "",
-            price: Number(price) || 0,
-
-            // ✅ extra fields (frontend se aa rahe hai)
-            experience: Number(experience) || 0,
-            gender: gender || "",
-
-            // ✅ MAIN FIX
-            role: "labour",
-
+            name: req.body.name || "",
+            phone: req.body.phone || "",
+            password: await bcrypt.hash(req.body.password, 10),
+            email: req.body.email || "",
+            skills: req.body.skills || [],
+            location: req.body.location || "",
+            price: Number(req.body.price) || 0,
             available: true,
-            reviews: [],
             createdAt: new Date(),
         };
 
         await db.collection("labour").insertOne(newLabour);
 
-        return res.status(201).json({
-            message: "Registered successfully",
-            role: "labour",
-        });
+        res.status(201).json({ message: "Registered successfully" });
+
     } catch (error) {
-        console.log("registerLabour error:", error);
-        return res.status(500).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
 };
 
+
 export const loginLabour = async (req, res) => {
     try {
-        const { identifier, password } = req.body;
-
-        if (!identifier || !password) {
-            return res
-                .status(400)
-                .json({ message: "Identifier and password required" });
-        }
+        const { phone, password } = req.body;
 
         const db = await connection();
 
-        const labour = await db.collection("labour").findOne({
-            $or: [{ phone: identifier }, { email: identifier }],
-        });
+        const labour = await db.collection("labour").findOne({ phone });
 
         if (!labour) {
-            return res.status(404).json({ message: "Labour not found" });
+            return res.status(400).json({ message: "Labour not found" });
         }
 
         const isMatch = await bcrypt.compare(password, labour.password);
 
         if (!isMatch) {
-            return res.status(401).json({ message: "Invalid password" });
+            return res.status(400).json({ message: "Invalid password" });
         }
 
-        const role = labour.role || "labour";
-
         const token = jwt.sign(
-            { id: labour._id, role }, 
-            process.env.JWT_SECRET || "secret",
+            { id: labour._id },
+            process.env.JWT_SECRET,
             { expiresIn: "7d" }
         );
 
-        const { password: _, ...safeLabour } = labour;
-
-        return res.json({
+        res.json({
             message: "Login successful",
             token,
-            role, 
-            labour: safeLabour,
+            labour
         });
+
     } catch (error) {
-        console.log("loginLabour error:", error);
-        return res.status(500).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
 };
 
@@ -126,49 +70,34 @@ export const getAllLabours = async (req, res) => {
     try {
         const db = await connection();
         const labours = await db.collection("labour").find().toArray();
-
-        const safe = labours.map((l) => {
-            const { password, ...rest } = l;
-            return rest;
-        });
-
-        return res.json(safe);
+        res.json(labours);
     } catch (error) {
-        return res.status(500).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
 };
+
 
 export const getLabourProfile = async (req, res) => {
     try {
         const db = await connection();
 
         const labour = await db.collection("labour").findOne({
-            _id: new ObjectId(req.user.id),
+            _id: new ObjectId(req.user.id)
         });
 
         if (!labour) {
             return res.status(404).json({ message: "Labour not found" });
         }
 
-        const reviews = labour.reviews || [];
-        const reviewCount = reviews.length;
-        const avgRating =
-            reviewCount === 0
-                ? 0
-                : reviews.reduce((sum, r) => sum + Number(r.rating || 0), 0) /
-                reviewCount;
+        delete labour.password;
 
-        const { password, ...safeLabour } = labour;
+        res.json(labour);
 
-        return res.json({
-            ...safeLabour,
-            rating: Number(avgRating.toFixed(1)),
-            reviewCount,
-        });
     } catch (error) {
-        return res.status(500).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
 };
+
 
 export const updateAvailability = async (req, res) => {
     try {
@@ -177,14 +106,16 @@ export const updateAvailability = async (req, res) => {
 
         await db.collection("labour").updateOne(
             { _id: new ObjectId(req.user.id) },
-            { $set: { available: !!available } }
+            { $set: { available } }
         );
 
-        return res.json({ message: "Availability updated", available: !!available });
+        res.json({ message: "Availability updated", available });
+
     } catch (err) {
-        return res.status(500).json({ message: err.message });
+        res.status(500).json({ message: err.message });
     }
 };
+
 
 export const getDashboardStats = async (req, res) => {
     try {
@@ -192,11 +123,12 @@ export const getDashboardStats = async (req, res) => {
         const labours = await db.collection("labour").find().toArray();
 
         const workersContacted = labours.length;
-        const activeSearches = labours.filter((l) => l.available).length;
-        const workersHired = labours.filter((l) => !l.available).length;
+        const activeSearches = labours.filter(l => l.available).length;
+        const workersHired = labours.filter(l => !l.available).length;
 
-        return res.json({ workersContacted, activeSearches, workersHired });
+        res.json({ workersContacted, activeSearches, workersHired });
+
     } catch (err) {
-        return res.status(500).json({ message: "Failed to get dashboard stats" });
+        res.status(500).json({ message: "Failed to get dashboard stats" });
     }
 };
