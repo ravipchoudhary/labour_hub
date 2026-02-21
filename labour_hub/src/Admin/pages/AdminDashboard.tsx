@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import TopBar from "../components/Topbar";
 import StatCard from "../components/StatCard";
 import RecentRegistrations from "../components/RecentRegistrations";
@@ -14,36 +14,73 @@ const AdminDashboard = () => {
   const [activeWorkers, setActiveWorkers] = useState(0);
   const [pendingApprovals, setPendingApprovals] = useState(0);
   const [employers, setEmployers] = useState(0);
+  const [blockedUsers, setBlockedUsers] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
-    if (!token) {
-      navigate("/admin/login");
-      return;
-    }
+  const totalPercent = 100;
 
-    fetch("http://localhost:4000/api/labour")
-      .then((res) => res.json())
-      .then((data) => {
-        setTotalUsers(data.length);
+  const activePercent = totalUsers
+    ? ((activeWorkers / totalUsers) * 100).toFixed(0)
+    : 0;
 
-        const approved = data.filter((item: any) => item.status === "approved");
-        const pending = data.filter((item: any) => item.status === "pending");
-        const employerUsers = data.filter(
-          (item: any) => item.role === "employer"
-        );
+  const employerPercent = totalUsers
+    ? ((employers / totalUsers) * 100).toFixed(0)
+    : 0;
 
-        setActiveWorkers(approved.length);
-        setPendingApprovals(pending.length);
-        setEmployers(employerUsers.length);
-        setLoading(false);
-      })
-      .catch(() => {
+  const pendingPercent = totalUsers
+    ? ((pendingApprovals / totalUsers) * 100).toFixed(0)
+    : 0;
+
+  const fetchDashboard = useCallback(async () => {
+    try {
+      if (!token) {
         navigate("/admin/login");
-      });
-  }, [navigate]);
+        return;
+      }
+
+      const response = await fetch(
+        "http://localhost:4000/admin/dashboard-stats",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!data.success) {
+        navigate("/admin/login");
+        return;
+      }
+
+      setTotalUsers(data.data.totalUsers);
+      setActiveWorkers(data.data.approved);
+      setPendingApprovals(data.data.pending);
+      setEmployers(data.data.employers);
+      setBlockedUsers(data.data.blocked);
+
+    } catch (error) {
+      console.log("Dashboard fetch error:", error);
+      navigate("/admin/login");
+    } finally {
+      setLoading(false);
+    }
+  }, [token, navigate]);
+
+  useEffect(() => {
+    fetchDashboard();
+  }, [fetchDashboard]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchDashboard();
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [fetchDashboard]);
 
   if (loading) {
     return (
@@ -60,12 +97,55 @@ const AdminDashboard = () => {
       <div className="max-w-[1500px] mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8">
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <div onClick={() => navigate("/admin/users")} className="cursor-pointer">
-            <StatCard title="Total Users" value={totalUsers} badge="+12%" icon="👤" />
+
+          <div
+            onClick={() => navigate("/admin/users")}
+            className="cursor-pointer"
+          >
+            <StatCard
+              title="Total Users"
+              value={totalUsers}
+              badge={`${totalPercent}%`}
+              icon="👤"
+            />
           </div>
-          <StatCard title="Active Workers" value={activeWorkers} badge="+8%" icon="👥" />
-          <StatCard title="Employers" value={employers} badge="+5%" icon="💼" />
-          <StatCard title="Pending Approvals" value={pendingApprovals} badge="+4%" icon="⚠️" />
+
+          <div
+            onClick={() => navigate("/admin/users?status=approved&role=labour")}
+            className="cursor-pointer"
+          >
+            <StatCard
+              title="Active Workers"
+              value={activeWorkers}
+              badge={`${activePercent}%`}
+              icon="👥"
+            />
+          </div>
+
+          <div
+            onClick={() => navigate("/admin/users?status=approved&role=employer")}
+            className="cursor-pointer"
+          >
+            <StatCard
+              title="Employers"
+              value={employers}
+              badge={`${employerPercent}%`}
+              icon="💼"
+            />
+          </div>
+
+          <div
+            onClick={() => navigate("/admin/users?status=pending&role=labour")}
+            className="cursor-pointer"
+          >
+            <StatCard
+              title="Pending Approvals"
+              value={pendingApprovals}
+              badge={`${pendingPercent}%`}
+              icon="⚠️"
+            />
+          </div>
+
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -73,6 +153,7 @@ const AdminDashboard = () => {
             <StatusBarChart
               active={activeWorkers}
               pending={pendingApprovals}
+              blocked={blockedUsers}
               total={totalUsers}
             />
           </div>

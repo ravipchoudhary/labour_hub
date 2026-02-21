@@ -1,5 +1,12 @@
 import express from "express";
-import { adminLogin, resetPasswordDirect, verifyForgotPassword, getAdminProfile, updateAdminProfile, changeAdminPassword, googleAdminLogin } from "../controllers/adminController.js";
+import {
+    adminLogin, resetPasswordDirect, verifyForgotPassword,
+    getAdminProfile, updateAdminProfile, changeAdminPassword,
+    googleAdminLogin, recentRegistrations, getAllUsers, updateUserStatus,
+    getLabourVerification,
+    updateLabourVerificationStatus,
+    getDashboardStats
+} from "../controllers/adminController.js";
 import { verifyAdminToken } from "../middlewares/authMiddleware.js";
 
 const adminRouter = express.Router();
@@ -30,9 +37,15 @@ adminRouter.get("/labours",verifyAdminToken,(req,resp)=> {
     })
 })
 
-adminRouter.get("/profile",verifyAdminToken,getAdminProfile);
-adminRouter.put("/profile",verifyAdminToken,updateAdminProfile);
-adminRouter.put("/change-password",verifyAdminToken,changeAdminPassword)
+adminRouter.get("/profile", verifyAdminToken, getAdminProfile);
+adminRouter.put("/profile", verifyAdminToken, updateAdminProfile);
+adminRouter.put("/change-password", verifyAdminToken, changeAdminPassword);
+adminRouter.get("/recent-users", verifyAdminToken, recentRegistrations);
+adminRouter.get("/all-users", verifyAdminToken, getAllUsers);
+adminRouter.put("/all-users/:id/status", verifyAdminToken, updateUserStatus);
+adminRouter.get("/admin/labour-verification",verifyAdminToken,getLabourVerification);
+adminRouter.put("/admin/labour-verification-status/:id",verifyAdminToken,updateLabourVerificationStatus);
+adminRouter.get("/dashboard-stats",verifyAdminToken,getDashboardStats);
 
 
 export default adminRouter;

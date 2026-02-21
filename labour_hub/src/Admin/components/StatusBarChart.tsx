@@ -1,19 +1,33 @@
 interface Props {
   active: number;
   pending: number;
+  blocked: number;
   total: number;
 }
 
-const StatusBarChart = ({ active, pending, total }: Props) => {
-  const blocked = total - active - pending;
+const StatusBarChart = ({ active, pending, blocked, total }: Props) => {
+  const safeBlocked = blocked < 0 ? 0 : blocked;
 
   const data = [
-    { label: "Approved", value: active, color: "bg-blue-600" },
-    { label: "Pending", value: pending, color: "bg-pink-500" },
-    { label: "Blocked", value: blocked < 0 ? 0 : blocked, color: "bg-emerald-500" },
+    {
+      label: "Approved",
+      value: active,
+      percent: total ? (active / total) * 100 : 0,
+      color: "bg-blue-600",
+    },
+    {
+      label: "Pending",
+      value: pending,
+      percent: total ? (pending / total) * 100 : 0,
+      color: "bg-pink-500",
+    },
+    {
+      label: "Blocked",
+      value: safeBlocked,
+      percent: total ? (safeBlocked / total) * 100 : 0,
+      color: "bg-emerald-500",
+    },
   ];
-
-  const maxValue = Math.max(...data.map((item) => item.value), 1);
 
   return (
     <div className="bg-white border rounded-2xl p-6 shadow-sm">
@@ -32,13 +46,13 @@ const StatusBarChart = ({ active, pending, total }: Props) => {
               <div
                 className={`${item.color} h-6 rounded-full transition-all duration-500`}
                 style={{
-                  width: `${(item.value / maxValue) * 100}%`,
+                  width: `${item.percent}%`,
                 }}
               />
             </div>
 
-            <div className="w-12 text-sm font-semibold text-gray-600 text-right">
-              {item.value}
+            <div className="w-20 text-sm font-semibold text-gray-600 text-right">
+              {item.value} ({item.percent.toFixed(1)}%)
             </div>
           </div>
         ))}
