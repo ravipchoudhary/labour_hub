@@ -12,7 +12,7 @@ import {
   BarChart,
   Bar,
 } from "recharts";
-type TabType = "dashboard" | "completed" | "pending";
+type TabType = "dashboard" | "completed" | "pending" |"allRequests";
 
 interface Job {
   id?: string;
@@ -143,6 +143,7 @@ export default function LabourDashboard() {
   const [available, setAvailable] = useState<boolean>(true);
 
   const [hireRequests, setHireRequests] = useState<HireRequest[]>([]);
+  const [allRequests, setAllRequests] = useState<HireRequest[]>([]);
   const [hireActionLoadingId, setHireActionLoadingId] = useState<string | null>(
     null
   );
@@ -171,7 +172,12 @@ export default function LabourDashboard() {
     () => completedJobs.reduce((acc, job) => acc + (Number(job.amount) || 0), 0),
     [completedJobs]
   );
-
+  const [hireStats, setHireStats] = useState({
+    pending: 0,
+    accepted: 0,
+    rejected: 0,
+    totalRequests: 0,
+  });
   const fetchAll = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -192,24 +198,33 @@ export default function LabourDashboard() {
       const hireRes = await axios.get(`${API_BASE}/api/hire/pending`, {
         headers: authHeader(),
       });
-
       const raw = hireRes.data;
-
+      
       const pendingReqs: HireRequest[] = Array.isArray(raw)
-        ? raw
-        : raw?.requests || raw?.pendingRequests || [];
-
+      ? raw
+      : raw?.requests || raw?.pendingRequests || [];
+      
       setHireRequests(pendingReqs);
+      const allRes = await axios.get(`${API_BASE}/api/hire/labour/requests`, {
+        headers: authHeader(),
+      });
+      const allRaw = allRes.data;
+      const allReqs: HireRequest[] = Array.isArray(allRaw)
+      ? allRaw
+      : allRaw?.requests || allRaw?.hireRequests || [];
+      setAllRequests(allReqs);
+      const statsRes = await axios.get(`${API_BASE}/api/hire/stats`, {
+        headers: authHeader(),
+      });
+      const { pending, accepted, rejected, totalRequests } = statsRes.data;
 
-      const rejectedCount =
-        Number(raw?.rejectedCount) || Number(raw?.rejected?.length) || 0;
+      setHireStats({ pending, accepted, rejected, totalRequests });
 
       setJobStats([
         { name: "Completed", value: completed.length },
-        { name: "Pending", value: pendingReqs.length },
-        { name: "Rejected", value: rejectedCount },
+        { name: "Pending", value: pending },
+        { name: "Rejected", value: rejected },
       ]);
-
       const monthlyEarnings = [
         { month: "Jan", earning: 0 },
         { month: "Feb", earning: 0 },
@@ -254,10 +269,7 @@ export default function LabourDashboard() {
     }
   };
 
-  const updateHireStatus = async (
-    requestId: string,
-    status: "accepted" | "rejected"
-  ) => {
+  const updateHireStatus = async (requestId: string, status: "accepted" | "rejected") => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
@@ -272,27 +284,15 @@ export default function LabourDashboard() {
 
       setHireRequests((prev) => prev.filter((r) => r._id !== requestId));
 
-      setJobStats((prev) => {
-        const updated = prev.map((s) => ({ ...s }));
-        const pendingIndex = updated.findIndex((x) => x.name === "Pending");
-        const rejectedIndex = updated.findIndex((x) => x.name === "Rejected");
-
-        if (pendingIndex >= 0)
-          updated[pendingIndex].value = Math.max(
-            0,
-            updated[pendingIndex].value - 1
-          );
-
-        if (status === "rejected" && rejectedIndex >= 0)
-          updated[rejectedIndex].value += 1;
-
-        return updated;
-      });
+      setAllRequests((prev) =>
+        prev.map((r) => (r._id === requestId ? { ...r, status } : r))
+      );
 
       if (status === "accepted") {
         setAvailable(false);
       }
 
+      await fetchAll();
     } catch (err) {
       console.error("updateHireStatus error:", err);
       alert("Request update failed (backend issue)");
@@ -341,7 +341,8 @@ export default function LabourDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Stat
           title="Total Jobs"
-          value={`${completedJobs.length + hireRequests.length}`}
+          value={`${hireStats.totalRequests }`}
+          onClick={() => setActiveTab("allRequests")}
         />
         <Stat
           title="Completed Jobs"
@@ -355,7 +356,43 @@ export default function LabourDashboard() {
         />
         <Stat title="Total Earnings" value={`₹${totalEarnings}`} />
       </div>
+      {activeTab === "allRequests" && (
+        <div className="bg-white rounded-2xl shadow p-6">
+          <div className="flex justify-between mb-6">
+            <h3 className="font-semibold text-lg">All Requests (Pending/Accepted/Rejected)</h3>
 
+            <button
+              onClick={() => setActiveTab("dashboard")}
+              className="text-orange-600 font-medium"
+            >
+              ← Back
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            {allRequests.length === 0 ? (
+              <p className="text-gray-500">No requests found.</p>
+            ) : (
+              allRequests.map((req) => (
+                <div key={req._id} className="border rounded-xl p-4 bg-white">
+                  <p className="font-semibold">{req.employee?.name || "Unknown Employer"}</p>
+                  <p className="text-sm text-gray-500">
+                    Status: <span className="font-medium">{req.status}</span>
+                  </p>
+                  {req.createdAt && (
+                    <p className="text-xs text-gray-400 mt-1">
+                      {new Date(req.createdAt).toLocaleString()}
+                    </p>
+                  )}
+                  {req.message && (
+                    <p className="text-sm mt-2">{req.message}</p>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
       {activeTab === "dashboard" && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white rounded-2xl shadow p-6">

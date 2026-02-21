@@ -1,4 +1,4 @@
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate} from "react-router-dom";
 import { FormEvent, useEffect, useState } from "react";
 
 declare global {
@@ -89,7 +89,7 @@ const Login = () => {
     setCommonError("");
     setLoading(true);
 
-    const identifier = form.email.trim(); 
+    const identifier = form.email.trim();
 
     try {
       let res = await fetch("http://localhost:4000/admin/login", {
@@ -177,8 +177,16 @@ const Login = () => {
             <img
               src="/logo.png"
               alt="Urban Force"
-              className="h-23 w-22 object-contain mx-auto -mt-8"
+              className="w-40 object-contain mx-auto -mt-8"
             />
+            <div className="mt-6 hidden lg:flex justify-center">
+              <button
+                type="button"
+                onClick={() => navigate("/Home")}
+                className="bg-orange-700 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-semibold">
+                Register
+              </button>
+            </div>
           </div>
         </div>
 
@@ -261,16 +269,13 @@ const Login = () => {
               in
             </div>
           </div>
-
-          
-
-          <div className="flex justify-center gap-4 mt-4 text-sm">
-            <Link to="/register/worker" className="text-orange-600 font-medium">
-              Register Worker
-            </Link>
-            <Link to="/register/employer" className="text-orange-600 font-medium">
-              Register Employer
-            </Link>
+          <div className="mt-4 flex lg:hidden justify-center">
+            <button type="button"
+              onClick={() => navigate("/Home")}
+              className="text-orange-500 font-semibold hover:underline"
+            >
+              Register
+            </button>
           </div>
         </div>
       </div>

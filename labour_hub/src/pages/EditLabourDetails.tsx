@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import type React from "react";
+import axios from "axios";
 
 export default function EditLabourProfile() {
   const navigate = useNavigate();
-
   const [photo, setPhoto] = useState<string | null>(null);
   const [skills, setSkills] = useState<string[]>([
     "Electrician",
@@ -22,6 +23,41 @@ export default function EditLabourProfile() {
     about:
       "Experienced electrician with expertise in residential and commercial wiring, AC installation and repair.",
   });
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const role = localStorage.getItem("role");
+        if (!token || role !== "labour") return;
+
+        const res = await fetch("http://localhost:4000/api/labour/profile", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) return;
+
+        setProfile((p) => ({
+          ...p,
+          name: data?.name || "",
+          phone: data?.phone || "",
+          experience: Number(data?.experience || 0),
+          rate: Number(data?.price || 0),
+          location: data?.location || "",
+          about: data?.about || "",
+        }));
+
+        if (Array.isArray(data?.skills)) setSkills(data.skills);
+      } catch (e) {
+        console.error("loadProfile error:", e);
+      }
+    };
+
+    loadProfile();
+  }, []);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -47,15 +83,34 @@ export default function EditLabourProfile() {
     setSkills(skills.filter((s) => s !== skill));
   };
 
-  const handleSave = () => {
-    console.log("Saved profile:", profile);
-    console.log("Saved skills:", skills);
-    console.log("Photo:", photo);
+  const handleSave = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return alert("Token missing,login again")
 
-    alert("Profile saved ");
-    navigate("/labour-dashboard");
+      await axios.patch(
+        "http://localhost:4000/api/labour/profile",
+        {
+          name: profile.name,
+          phone: profile.phone,
+          experience: profile.experience,
+          price: profile.rate,
+          location: profile.location,
+          about: profile.about,
+          skills: skills,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      alert("Profile saved ✅");
+      navigate("/labour-dashboard");
+    } catch (err) {
+      console.error(err);
+      alert("Profile update failed ❌");
+    }
   };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white py-12 px-4">
       <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden">
@@ -74,7 +129,6 @@ export default function EditLabourProfile() {
         </div>
 
         <div className="p-10">
-          {/* PHOTO */}
           <div className="flex items-center gap-6 mb-10">
             <div className="w-28 h-28 rounded-2xl bg-orange-100 overflow-hidden flex items-center justify-center shadow">
               {photo ? (
@@ -104,7 +158,6 @@ export default function EditLabourProfile() {
             </div>
           </div>
 
-          {/* FORM */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
               <label className="text-sm font-medium text-gray-600">
@@ -180,7 +233,6 @@ export default function EditLabourProfile() {
             </div>
           </div>
 
-          {/* ADDRESS */}
           <div className="mt-8">
             <label className="text-sm font-medium text-gray-600">
               Address / Location
@@ -194,7 +246,6 @@ export default function EditLabourProfile() {
             />
           </div>
 
-          {/* ABOUT */}
           <div className="mt-8">
             <label className="text-sm font-medium text-gray-600">
               About Yourself
@@ -209,7 +260,6 @@ export default function EditLabourProfile() {
             />
           </div>
 
-          {/* SKILLS */}
           <div className="mt-8">
             <label className="text-sm font-medium text-gray-600 mb-2 block">
               Your Skills
@@ -250,7 +300,6 @@ export default function EditLabourProfile() {
             </div>
           </div>
 
-          {/* ACTION BUTTONS */}
           <div className="flex justify-end gap-4 mt-12">
             <button
               type="button"

@@ -193,7 +193,48 @@ export const getLabourProfile = async (req, res) => {
         return res.status(500).json({ message: error.message });
     }
 };
+export const updateLabourProfile = async (req, res) => {
+    try {
+        const db = await connection();
 
+        const labourId = new ObjectId(req.user.id);
+
+        const {
+            name,
+            phone,
+            experience,
+            price,
+            location,
+            about,
+            skills,
+        } = req.body;
+
+        const updateDoc = {
+            ...(name !== undefined && { name }),
+            ...(phone !== undefined && { phone }),
+            ...(experience !== undefined && { experience: Number(experience) || 0 }),
+            ...(price !== undefined && { price: Number(price) || 0 }),
+            ...(location !== undefined && { location }),
+            ...(about !== undefined && { about }),
+            ...(skills !== undefined && { skills: Array.isArray(skills) ? skills : [] }),
+            updatedAt: new Date(),
+        };
+
+        await db.collection("labour").updateOne(
+            { _id: labourId },
+            { $set: updateDoc }
+        );
+
+        const updated = await db.collection("labour").findOne({ _id: labourId });
+        if (!updated) return res.status(404).json({ message: "Labour not found" });
+
+        const { password, ...safe } = updated;
+        return res.json({ message: "Profile updated", labour: safe });
+    } catch (err) {
+        console.log("updateLabourProfile error:", err);
+        return res.status(500).json({ message: err.message });
+    }
+};
 export const updateAvailability = async (req, res) => {
     try {
         const db = await connection();

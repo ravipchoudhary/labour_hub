@@ -7,7 +7,7 @@ type FormData = {
   phone: string;
   gender: string;
   address: string;
-  skills: string;
+  skills: string[];
   experience: string;
   rate: string;
   rateType: string;
@@ -26,7 +26,7 @@ const Register = () => {
     phone: "",
     gender: "",
     address: "",
-    skills: "",
+    skills: [],
     experience: "",
     rate: "",
     rateType: "Per Day",
@@ -37,7 +37,7 @@ const Register = () => {
   });
 
   const [preview, setPreview] = useState<string | null>(null);
-
+const [newSkill, setNewSkill] = useState("");
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -59,19 +59,33 @@ const Register = () => {
     setFormData({ ...formData, photo: file });
     setPreview(URL.createObjectURL(file));
   };
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    const skillsArray = formData.skills
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-    e.preventDefault();
+  const addSkill = () => {
+    const s = newSkill.trim();
+    if (!s) return;
 
+    if (formData.skills.some((x) => x.toLowerCase() === s.toLowerCase())) {
+      setNewSkill("");
+      return;
+    }
+
+    setFormData((prev) => ({ ...prev, skills: [...prev.skills, s] }));
+    setNewSkill("");
+  };
+
+  const removeSkill = (skill: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      skills: prev.skills.filter((x) => x !== skill),
+    }));
+  };
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     if (
       !formData.fullName ||
       !formData.email ||
       !formData.phone ||
       !formData.gender ||
-      !formData.skills ||
+      formData.skills.length === 0 ||
       !formData.experience ||
       !formData.rate ||
       !formData.password ||
@@ -96,7 +110,7 @@ const Register = () => {
           name: formData.fullName,
           email: formData.email,
           phone: formData.phone,
-          skills: skillsArray,
+          skills: formData.skills,
           location: formData.address,
           price: Number(formData.rate),
           experience: Number(formData.experience),
@@ -206,14 +220,46 @@ const Register = () => {
               <option>Other</option>
             </select>
 
-            <input
-              type="text"
-              name="skills"
-              placeholder="Skills"
-              value={formData.skills}
-              onChange={handleChange}
-              className="w-full border rounded-lg px-4 py-2"
-            />
+            <div>
+              <label className="text-sm font-medium text-gray-600 mb-2 block">
+                Skills
+              </label>
+
+              <div className="flex flex-wrap gap-2 mb-3">
+                {formData.skills.map((skill) => (
+                  <span
+                    key={skill}
+                    className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm flex items-center gap-2"
+                  >
+                    {skill}
+                    <button
+                      type="button"
+                      onClick={() => removeSkill(skill)}
+                      className="hover:text-red-500"
+                    >
+                      ✕
+                    </button>
+                  </span>
+                ))}
+              </div>
+
+              <div className="flex gap-2">
+                <input
+                  value={newSkill}
+                  onChange={(e) => setNewSkill(e.target.value)}
+                  placeholder="Add a skills"
+                  className="flex-1 border rounded-lg px-4 py-2"
+                />
+
+                <button
+                  type="button"
+                  onClick={addSkill}
+                  className="bg-orange-500 hover:bg-orange-600 text-white px-5 rounded-lg"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
             <textarea
               name="about"
               placeholder="About (Write something about your work)"

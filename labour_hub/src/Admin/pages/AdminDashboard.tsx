@@ -23,7 +23,6 @@ const AdminDashboard = () => {
       navigate("/admin/login");
       return;
     }
-
     fetch("http://localhost:4000/api/labour")
       .then((res) => res.json())
       .then((data) => {
@@ -40,7 +39,7 @@ const AdminDashboard = () => {
         setEmployers(employerUsers.length);
         setLoading(false);
       })
-      .catch((e: any) => {
+      .catch(() => {
         navigate("/admin/login");
       });
   }, [navigate]);

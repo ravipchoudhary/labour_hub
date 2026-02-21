@@ -7,6 +7,7 @@ import {
     registerLabour,
     loginLabour,
     updateAvailability,
+    updateLabourProfile,
 } from "../controllers/labourController.js";
 import { protect } from "../middlewares/authMiddleware.js";
 
@@ -18,6 +19,8 @@ router.post("/login", loginLabour);
 
 
 router.get("/profile", protect, getLabourProfile);
+router.put("/profile", protect, updateLabourProfile);
+router.patch("/profile", protect, updateLabourProfile);
 
 
 router.patch("/availability", protect, updateAvailability);

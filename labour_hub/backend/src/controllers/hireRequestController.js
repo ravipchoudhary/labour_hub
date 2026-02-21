@@ -1,6 +1,49 @@
 import { ObjectId } from "mongodb";
 import { connection } from "../config/db.js";
 
+export const getLabourAllRequests = async (req, res) => {
+    try {
+        const db = await connection();
+        const labourId = new ObjectId(req.user.id);
+
+        const requests = await db
+            .collection("hireRequests")
+            .aggregate([
+                { $match: { labourId } },
+                {
+                    $lookup: {
+                        from: "employees",
+                        localField: "employeeId",
+                        foreignField: "_id",
+                        as: "employee",
+                    },
+                },
+                { $unwind: { path: "$employee", preserveNullAndEmptyArrays: true } },
+                {
+                    $project: {
+                        status: 1,
+                        message: 1,
+                        createdAt: 1,
+                        updatedAt: 1,
+                        employee: {
+                            _id: "$employee._id",
+                            name: "$employee.name",
+                            email: "$employee.email",
+                            phone: "$employee.phone",
+                            location: "$employee.location",
+                        },
+                    },
+                },
+                { $sort: { createdAt: -1 } },
+            ])
+            .toArray();
+
+        return res.json({ requests });
+    } catch (err) {
+        console.log("getLabourAllRequests error:", err);
+        return res.status(500).json({ message: "Server error" });
+    }
+};
 export const getEmployeeHiredWorkers = async (req, res) => {
     try {
         const db = await connection();
