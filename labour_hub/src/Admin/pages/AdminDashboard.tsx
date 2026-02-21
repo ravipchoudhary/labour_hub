@@ -19,6 +19,20 @@ const AdminDashboard = () => {
 
   const token = localStorage.getItem("token");
 
+  const totalPercent = 100;
+
+  const activePercent = totalUsers
+    ? ((activeWorkers / totalUsers) * 100).toFixed(0)
+    : 0;
+
+  const employerPercent = totalUsers
+    ? ((employers / totalUsers) * 100).toFixed(0)
+    : 0;
+
+  const pendingPercent = totalUsers
+    ? ((pendingApprovals / totalUsers) * 100).toFixed(0)
+    : 0;
+
   const fetchDashboard = useCallback(async () => {
     try {
       if (!token) {
@@ -46,7 +60,7 @@ const AdminDashboard = () => {
       setActiveWorkers(data.data.approved);
       setPendingApprovals(data.data.pending);
       setEmployers(data.data.employers);
-      setBlockedUsers(data.data.blocked); 
+      setBlockedUsers(data.data.blocked);
 
     } catch (error) {
       console.log("Dashboard fetch error:", error);
@@ -91,7 +105,7 @@ const AdminDashboard = () => {
             <StatCard
               title="Total Users"
               value={totalUsers}
-              badge="+12%"
+              badge={`${totalPercent}%`}
               icon="👤"
             />
           </div>
@@ -103,7 +117,7 @@ const AdminDashboard = () => {
             <StatCard
               title="Active Workers"
               value={activeWorkers}
-              badge="+8%"
+              badge={`${activePercent}%`}
               icon="👥"
             />
           </div>
@@ -115,7 +129,7 @@ const AdminDashboard = () => {
             <StatCard
               title="Employers"
               value={employers}
-              badge="+5%"
+              badge={`${employerPercent}%`}
               icon="💼"
             />
           </div>
@@ -127,7 +141,7 @@ const AdminDashboard = () => {
             <StatCard
               title="Pending Approvals"
               value={pendingApprovals}
-              badge="+4%"
+              badge={`${pendingPercent}%`}
               icon="⚠️"
             />
           </div>
