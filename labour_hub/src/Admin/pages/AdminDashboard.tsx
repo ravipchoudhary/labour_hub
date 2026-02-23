@@ -111,7 +111,7 @@ const AdminDashboard = () => {
           </div>
 
           <div
-            onClick={() => navigate("/admin/users?status=approved&role=labour")}
+            onClick={() => navigate("/admin/users?status=accept&role=labour")}
             className="cursor-pointer"
           >
             <StatCard
@@ -123,7 +123,7 @@ const AdminDashboard = () => {
           </div>
 
           <div
-            onClick={() => navigate("/admin/users?status=approved&role=employer")}
+            onClick={() => navigate("/admin/users?status=accept&role=employer")}
             className="cursor-pointer"
           >
             <StatCard

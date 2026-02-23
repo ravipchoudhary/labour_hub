@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import TopBar from "../components/Topbar";
 
-type Status = "pending" | "approved" | "blocked";
+type Status = "pending" | "accept" | "reject";
 
 const UserManagement = () => {
   const navigate = useNavigate();
@@ -108,8 +108,8 @@ const UserManagement = () => {
           >
             <option value="all">All Status</option>
             <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="blocked">Blocked</option>
+            <option value="accept">Approved</option>
+            <option value="reject">Rejected</option>
           </select>
 
           <select
@@ -187,13 +187,13 @@ const UserManagement = () => {
                         {u.status === "pending" && (
                           <>
                             <button
-                              onClick={() => updateStatus(u._id, "approved")}
+                              onClick={() => updateStatus(u._id, "accept")}
                               className="text-green-600 font-bold text-xl"
                             >
                               ✔
                             </button>
                             <button
-                              onClick={() => updateStatus(u._id, "blocked")}
+                              onClick={() => updateStatus(u._id, "reject")}
                               className="text-red-600 font-bold text-xl"
                             >
                               ✖
@@ -201,18 +201,18 @@ const UserManagement = () => {
                           </>
                         )}
 
-                        {u.status === "approved" && (
+                        {u.status === "accept" && (
                           <button
-                            onClick={() => updateStatus(u._id, "blocked")}
+                            onClick={() => updateStatus(u._id, "reject")}
                             className="bg-orange-500 text-white text-xs px-4 py-1 rounded-full"
                           >
-                            Block
+                            Reject
                           </button>
                         )}
 
-                        {u.status === "blocked" && (
+                        {u.status === "reject" && (
                           <button
-                            onClick={() => updateStatus(u._id, "approved")}
+                            onClick={() => updateStatus(u._id, "accept")}
                             className="bg-green-600 text-white text-xs px-4 py-1 rounded-full"
                           >
                             Unblock
