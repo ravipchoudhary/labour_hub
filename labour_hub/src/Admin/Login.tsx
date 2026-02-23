@@ -173,12 +173,13 @@ const Login = () => {
 
         <div className="hidden md:flex absolute left-0 top-0 h-full w-[55%] items-center justify-center">
           <div className="text-center text-white px-12">
-            <h2 className="text-3xl font-bold mb-4 mt-16">Hello, Welcome!</h2>
+            <h2 className="text-3xl font-bold mb-4 mt-15">Hello, Welcome!</h2>
             <img
               src="/logo.png"
               alt="Urban Force"
-              className="w-40 object-contain mx-auto -mt-8"
-            />
+              className="w-40 object-contain mx-auto -mt-5"
+              />
+            <h3 className="text-3xl font-semibold -mt-9">Urban Force</h3>
             <div className="mt-6 hidden lg:flex justify-center">
               <button
                 type="button"
