@@ -22,7 +22,6 @@ const FindLabour = () => {
 
     const key = import.meta.env.VITE_GOOGLE_API_KEY;
 
-    // 🔥 GOOGLE AUTOCOMPLETE
     useEffect(() => {
         if (!key) return;
 
@@ -64,7 +63,6 @@ const FindLabour = () => {
         }
     }, [key]);
 
-    // 🔥 FETCH LABOURS
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -100,7 +98,7 @@ const FindLabour = () => {
         fetchData();
     }, []);
 
-    // 🔥 FILTER LOGIC
+    
     const filteredWorkers = labours.filter((worker) => {
         const skillMatch =
             selectedSkill === "All" || worker.skills.includes(selectedSkill);
