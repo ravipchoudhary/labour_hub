@@ -1,11 +1,13 @@
-import { useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { FormEvent, useEffect, useState } from "react";
+
 
 declare global {
   interface Window {
     google: any;
   }
 }
+
 
 const safeJson = async (res: Response) => {
   const text = await res.text();
@@ -16,20 +18,25 @@ const safeJson = async (res: Response) => {
   }
 };
 
+
 const Login = () => {
   const navigate = useNavigate();
 
+
   const [form, setForm] = useState({ email: "", password: "" });
+
 
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [commonError, setCommonError] = useState("");
   const [loading, setLoading] = useState(false);
 
+
   const handleCredentialResponse = async (response: any) => {
     try {
       setCommonError("");
       setLoading(true);
+
 
       const res = await fetch("http://localhost:4000/admin/google-login", {
         method: "POST",
@@ -37,7 +44,9 @@ const Login = () => {
         body: JSON.stringify({ token: response.credential }),
       });
 
+
       const parsed = await safeJson(res);
+
 
       if (res.ok && parsed.ok && parsed.data?.success && parsed.data?.token) {
         localStorage.setItem("token", parsed.data.token);
@@ -46,6 +55,7 @@ const Login = () => {
         navigate("/admin/dashboard", { replace: true });
         return;
       }
+
 
       setCommonError(parsed.data?.message || "Google login failed");
     } catch (err) {
@@ -56,6 +66,7 @@ const Login = () => {
     }
   };
 
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
@@ -65,6 +76,7 @@ const Login = () => {
       else if (role === "employee") navigate("/find-labour", { replace: true });
     }
 
+
     if (window.google) {
       window.google.accounts.id.initialize({
         client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
@@ -72,6 +84,7 @@ const Login = () => {
       });
     }
   }, [navigate]);
+
 
   const handleGoogleLogin = () => {
     if (!window.google) {
@@ -81,15 +94,19 @@ const Login = () => {
     window.google.accounts.id.prompt();
   };
 
+
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
+
 
     setEmailError("");
     setPasswordError("");
     setCommonError("");
     setLoading(true);
 
+
     const identifier = form.email.trim();
+
 
     try {
       let res = await fetch("http://localhost:4000/admin/login", {
@@ -98,7 +115,9 @@ const Login = () => {
         body: JSON.stringify({ email: identifier, password: form.password }),
       });
 
+
       let parsed = await safeJson(res);
+
 
       if (res.ok && parsed.ok && parsed.data?.token) {
         localStorage.setItem("token", parsed.data.token);
@@ -108,25 +127,31 @@ const Login = () => {
         return;
       }
 
+
       res = await fetch("http://localhost:4000/api/labour/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ identifier, password: form.password }),
       });
 
+
       parsed = await safeJson(res);
+
 
       if (res.ok && parsed.ok && parsed.data?.token) {
         localStorage.setItem("token", parsed.data.token);
         localStorage.setItem("role", "labour");
 
+
         const labourId = parsed.data?.labour?._id;
         if (labourId) localStorage.setItem("userId", labourId);
+
 
         window.dispatchEvent(new Event("auth-changed"));
         navigate("/labour-dashboard", { replace: true });
         return;
       }
+
 
       res = await fetch("http://localhost:4000/api/employees/login", {
         method: "POST",
@@ -138,22 +163,28 @@ const Login = () => {
         }),
       });
 
+
       parsed = await safeJson(res);
+
 
       if (res.ok && parsed.ok && parsed.data?.token) {
         localStorage.setItem("token", parsed.data.token);
         localStorage.setItem("role", "employee");
 
+
         const employeeId =
           parsed.data?.user?._id || parsed.data?.employee?._id;
 
+
         if (employeeId) localStorage.setItem("userId", employeeId);
+
 
         window.dispatchEvent(new Event("auth-changed"));
         navigate("/find-labour", { replace: true });
         return;
       }
       const msg = parsed.data?.message || "Invalid credentials";
+
 
       if (res.status === 400 || res.status === 404) setEmailError(msg);
       else if (res.status === 401) setPasswordError(msg);
@@ -166,10 +197,12 @@ const Login = () => {
     }
   };
 
+
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-[#c7e7ff] via-[#ffd6a5] to-[#ffb4c6] flex items-center justify-center px-4">
       <div className="relative bg-white rounded-2xl shadow-xl overflow-hidden w-full max-w-[900px] h-auto md:h-[480px]">
         <div className="hidden md:block absolute left-0 top-0 h-full w-[55%] bg-[#fb923c] rounded-r-[180px]" />
+
 
         <div className="hidden md:flex absolute left-0 top-0 h-full w-[55%] items-center justify-center">
           <div className="text-center text-white px-12">
@@ -178,7 +211,7 @@ const Login = () => {
               src="/logo.png"
               alt="Urban Force"
               className="w-40 object-contain mx-auto -mt-5"
-              />
+            />
             <h3 className="text-3xl font-semibold -mt-9">Urban Force</h3>
             <div className="mt-6 hidden lg:flex justify-center">
               <button
@@ -191,10 +224,12 @@ const Login = () => {
           </div>
         </div>
 
+
         <div className="relative md:absolute right-0 top-0 w-full md:w-[45%] h-full flex flex-col justify-center px-6 md:px-14 py-10 md:py-0">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-8 text-center">
             Login
           </h2>
+
 
           <form onSubmit={handleLogin}>
             <div className="mb-4 relative">
@@ -216,6 +251,7 @@ const Login = () => {
               </span>
             </div>
 
+
             <div className="mb-2 relative">
               <input
                 type="password"
@@ -232,7 +268,9 @@ const Login = () => {
               {passwordError && <p className="text-red-500 text-sm mt-1">{passwordError}</p>}
             </div>
 
+
             {commonError && <p className="text-red-500 text-sm mt-2">{commonError}</p>}
+
 
             <div
               className="text-center mt-2 text-sm text-gray-900 mb-6 cursor-pointer hover:font-bold"
@@ -240,6 +278,7 @@ const Login = () => {
             >
               Forgot Password?
             </div>
+
 
             <button
               type="submit"
@@ -250,6 +289,7 @@ const Login = () => {
             </button>
           </form>
 
+
           <div className="flex justify-center gap-4 mt-4">
             <div
               onClick={handleGoogleLogin}
@@ -258,13 +298,16 @@ const Login = () => {
               G
             </div>
 
+
             <div className="w-10 h-10 text-black font-bold flex items-center justify-center border rounded-lg cursor-pointer hover:bg-gray-100">
               f
             </div>
 
+
             <div className="w-10 h-10 text-black font-bold flex items-center justify-center border rounded-lg cursor-pointer hover:bg-gray-100">
               Ø
             </div>
+
 
             <div className="w-10 h-10 text-black font-bold flex items-center justify-center border rounded-lg cursor-pointer hover:bg-gray-100">
               in
@@ -284,4 +327,6 @@ const Login = () => {
   );
 };
 
+
 export default Login;
+

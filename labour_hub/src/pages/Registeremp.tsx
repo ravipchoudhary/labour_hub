@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
+
 type InputProps = {
   label: string;
   placeholder: string;
@@ -12,8 +13,10 @@ type InputProps = {
   ) => void;
 };
 
+
 const Registeremp = () => {
   const navigate = useNavigate();
+
 
   const [formData, setFormData] = useState({
     name: "",
@@ -25,8 +28,10 @@ const Registeremp = () => {
     confirmPassword: "",
   });
 
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
 
   const isFormValid =
     formData.name.trim() &&
@@ -38,6 +43,7 @@ const Registeremp = () => {
     formData.confirmPassword &&
     formData.password === formData.confirmPassword;
 
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -45,16 +51,20 @@ const Registeremp = () => {
     setError("");
   };
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
 
     if (!isFormValid) {
       setError("Please fill all fields correctly");
       return;
     }
 
+
     setLoading(true);
     setError("");
+
 
     try {
       const res = await fetch("http://localhost:4000/api/employees/register", {
@@ -70,7 +80,9 @@ const Registeremp = () => {
         }),
       });
 
+
       const data = await res.json().catch(() => ({}));
+
 
       if (res.ok) {
         alert("Registration Successful!");
@@ -85,6 +97,7 @@ const Registeremp = () => {
     }
   };
 
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-6xl">
@@ -95,12 +108,14 @@ const Registeremp = () => {
           ← Back
         </Link>
 
+
         <div className="bg-white rounded-xl shadow-lg grid grid-cols-1 md:grid-cols-2 gap-12 p-6 sm:p-10">
           <div>
             <h2 className="text-2xl font-bold mb-2">Register as an Employer</h2>
             <p className="text-gray-500 mb-6">
               Create your account and start hiring skilled workers
             </p>
+
 
             <form className="space-y-4" onSubmit={handleSubmit}>
               <Input
@@ -111,6 +126,7 @@ const Registeremp = () => {
                 name="name"
               />
 
+
               <Input
                 label="Email Address"
                 placeholder="Enter your email id"
@@ -119,6 +135,7 @@ const Registeremp = () => {
                 onChange={handleChange}
                 name="email"
               />
+
 
               <Input
                 label="Phone Number"
@@ -129,6 +146,7 @@ const Registeremp = () => {
                 name="phone"
               />
 
+
               <Input
                 label="Address / Location"
                 placeholder="Enter your area/locality"
@@ -136,6 +154,7 @@ const Registeremp = () => {
                 onChange={handleChange}
                 name="location"
               />
+
 
               <div>
                 <label className="block text-sm font-medium mb-1">
@@ -151,6 +170,7 @@ const Registeremp = () => {
                 />
               </div>
 
+
               <Input
                 label="Password"
                 type="password"
@@ -159,6 +179,7 @@ const Registeremp = () => {
                 onChange={handleChange}
                 name="password"
               />
+
 
               <Input
                 label="Confirm Password"
@@ -169,25 +190,29 @@ const Registeremp = () => {
                 name="confirmPassword"
               />
 
+
               {formData.password &&
                 formData.confirmPassword &&
                 formData.password !== formData.confirmPassword && (
                   <p className="text-sm text-red-500">Passwords do not match</p>
                 )}
 
+
               {error && <p className="text-sm text-red-500">{error}</p>}
+
 
               <button
                 type="submit"
                 disabled={!isFormValid || loading}
                 className={`w-full py-2.5 rounded-md font-semibold transition ${isFormValid && !loading
-                    ? "bg-orange-500 hover:bg-orange-600 text-white"
-                    : "bg-gray-300 cursor-not-allowed text-gray-600"
+                  ? "bg-orange-500 hover:bg-orange-600 text-white"
+                  : "bg-gray-300 cursor-not-allowed text-gray-600"
                   }`}
               >
                 {loading ? "Signing Up..." : "Sign Up"}
               </button>
             </form>
+
 
             <p className="text-sm text-gray-600 mt-4 text-center">
               Already have an account?{" "}
@@ -196,6 +221,7 @@ const Registeremp = () => {
               </Link>
             </p>
           </div>
+
 
           <div className="hidden md:flex items-center justify-center">
             <img
@@ -209,6 +235,7 @@ const Registeremp = () => {
     </div>
   );
 };
+
 
 const Input = ({
   label,
@@ -232,4 +259,6 @@ const Input = ({
   </div>
 );
 
+
 export default Registeremp;
+

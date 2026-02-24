@@ -6,20 +6,27 @@ import { ObjectId } from "mongodb";
 import { OAuth2Client } from "google-auth-library";
 
 
+
+
 dotenv.config();
+
 
 const secretKey = process.env.SECRET_KEY;
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
 
 const isValidEmail = (email) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };
 
 
+
+
 export const adminLogin = async (req, resp) => {
   try {
     const { email, password } = req.body;
     const db = await connection();
+
 
     if (!email || !password) {
       return resp.status(400).send({
@@ -28,6 +35,7 @@ export const adminLogin = async (req, resp) => {
       });
     }
 
+
     if (!isValidEmail(email)) {
       return resp.status(400).send({
         success: false,
@@ -35,7 +43,9 @@ export const adminLogin = async (req, resp) => {
       });
     }
 
+
     const user = await db.collection(collectionName).findOne({ email });
+
 
     if (!user) {
       return resp.status(404).send({
@@ -44,7 +54,9 @@ export const adminLogin = async (req, resp) => {
       });
     }
 
+
     const isMatch = await bcrypt.compare(password, user.password);
+
 
     if (!isMatch) {
       return resp.status(401).send({
@@ -54,11 +66,13 @@ export const adminLogin = async (req, resp) => {
       });
     }
 
+
     const token = jwt.sign(
       { id: user._id, email: user.email },
       secretKey,
       { expiresIn: "50d" }
     );
+
 
     return resp.status(200).send({
       success: true,
@@ -74,20 +88,26 @@ export const adminLogin = async (req, resp) => {
 };
 
 
+
+
 export const googleAdminLogin = async (req, resp) => {
   try {
     const { token } = req.body;
+
 
     const ticket = await client.verifyIdToken({
       idToken: token,
       audience: process.env.GOOGLE_CLIENT_ID,
     });
 
+
     const payload = ticket.getPayload();
     const { email, name } = payload;
 
+
     const db = await connection();
     let user = await db.collection(collectionName).findOne({ email });
+
 
     if (!user) {
       const result = await db.collection(collectionName).insertOne({
@@ -97,17 +117,20 @@ export const googleAdminLogin = async (req, resp) => {
         createdAt: new Date(),
       });
 
+
       user = {
         _id: result.insertedId,
         email,
       };
     }
 
+
     const jwtToken = jwt.sign(
       { id: user._id, email: user.email },
       secretKey,
       { expiresIn: "50d" }
     );
+
 
     return resp.status(200).send({
       success: true,
@@ -122,9 +145,12 @@ export const googleAdminLogin = async (req, resp) => {
 };
 
 
+
+
 export const verifyForgotPassword = async (req, resp) => {
   try {
     const { email, mobile } = req.body;
+
 
     if (!email || !mobile) {
       return resp.status(400).send({
@@ -133,8 +159,10 @@ export const verifyForgotPassword = async (req, resp) => {
       });
     }
 
+
     const db = await connection();
     const admin = await db.collection(collectionName).findOne({ email });
+
 
     if (!admin || admin.mobile !== mobile) {
       return resp.status(400).send({
@@ -142,6 +170,7 @@ export const verifyForgotPassword = async (req, resp) => {
         message: "Verification failed",
       });
     }
+
 
     resp.send({
       success: true,
@@ -156,9 +185,12 @@ export const verifyForgotPassword = async (req, resp) => {
 };
 
 
+
+
 export const resetPasswordDirect = async (req, resp) => {
   try {
     const { email, mobile, password, confirmPassword } = req.body;
+
 
     if (!email || !mobile || !password || !confirmPassword) {
       return resp.status(400).send({
@@ -167,6 +199,7 @@ export const resetPasswordDirect = async (req, resp) => {
       });
     }
 
+
     if (password !== confirmPassword) {
       return resp.status(400).send({
         success: false,
@@ -174,8 +207,10 @@ export const resetPasswordDirect = async (req, resp) => {
       });
     }
 
+
     const db = await connection();
     const admin = await db.collection(collectionName).findOne({ email });
+
 
     if (!admin || admin.mobile !== mobile) {
       return resp.status(400).send({
@@ -184,12 +219,15 @@ export const resetPasswordDirect = async (req, resp) => {
       });
     }
 
+
     const hashedPassword = await bcrypt.hash(password, 10);
+
 
     await db.collection(collectionName).updateOne(
       { email },
       { $set: { password: hashedPassword } }
     );
+
 
     resp.send({
       success: true,
@@ -204,15 +242,19 @@ export const resetPasswordDirect = async (req, resp) => {
 };
 
 
+
+
 export const getAdminProfile = async (req, resp) => {
   try {
     const db = await connection();
     const adminId = req.admin.id;
 
+
     const admin = await db.collection(collectionName).findOne(
       { _id: new ObjectId(adminId) },
       { projection: { password: 0 } }
     );
+
 
     if (!admin) {
       return resp.status(404).send({
@@ -220,6 +262,7 @@ export const getAdminProfile = async (req, resp) => {
         message: "Admin not found",
       });
     }
+
 
     resp.send({
       success: true,
@@ -234,16 +277,20 @@ export const getAdminProfile = async (req, resp) => {
 };
 
 
+
+
 export const updateAdminProfile = async (req, resp) => {
   try {
     const db = await connection();
     const adminId = req.admin.id;
     const { name, mobile } = req.body;
 
+
     await db.collection(collectionName).updateOne(
       { _id: new ObjectId(adminId) },
       { $set: { name, mobile } }
     );
+
 
     resp.send({
       success: true,
@@ -257,11 +304,13 @@ export const updateAdminProfile = async (req, resp) => {
   }
 };
 
+
 export const changeAdminPassword = async (req, resp) => {
   try {
     const db = await connection();
     const adminId = req.admin.id;
     const { currentPassword, newPassword, confirmPassword } = req.body;
+
 
     if (!currentPassword || !newPassword || !confirmPassword) {
       return resp.status(400).send({
@@ -270,6 +319,7 @@ export const changeAdminPassword = async (req, resp) => {
       });
     }
 
+
     if (newPassword !== confirmPassword) {
       return resp.status(400).send({
         success: false,
@@ -277,14 +327,17 @@ export const changeAdminPassword = async (req, resp) => {
       });
     }
 
+
     const admin = await db.collection(collectionName).findOne({
       _id: new ObjectId(adminId),
     });
+
 
     const isMatch = await bcrypt.compare(
       currentPassword,
       admin.password
     );
+
 
     if (!isMatch) {
       return resp.status(401).send({
@@ -293,12 +346,15 @@ export const changeAdminPassword = async (req, resp) => {
       });
     }
 
+
     const hashedPassword = await bcrypt.hash(newPassword, 10);
+
 
     await db.collection(collectionName).updateOne(
       { _id: new ObjectId(adminId) },
       { $set: { password: hashedPassword } }
     );
+
 
     resp.send({
       success: true,
@@ -312,9 +368,11 @@ export const changeAdminPassword = async (req, resp) => {
   }
 };
 
+
 export const recentRegistrations = async (req, resp) => {
   try {
     const db = await connection();
+
 
     const recentUsers = await db.collection("labour").find({}).sort({ createdAt: -1 }).limit(5).toArray();
     resp.send({
@@ -329,11 +387,14 @@ export const recentRegistrations = async (req, resp) => {
   }
 }
 
+
 export const getAllUsers = async (req, resp) => {
   try {
     const { role, status, search } = req.query;
 
+
     const db = await connection();
+
 
     let filter = {};
     if (role & role !== "All") {
@@ -361,12 +422,15 @@ export const getAllUsers = async (req, resp) => {
   }
 };
 
+
 export const updateUserStatus = async (req, resp) => {
   try {
     const { id } = req.params;
     const { status } = req.status;
 
+
     const db = await connection();
+
 
     await db.collection("labour").updateOne(
       { _id: new ObjectId(id) },
@@ -384,11 +448,13 @@ export const updateUserStatus = async (req, resp) => {
   }
 }
 
+
 export const getLabourVerification = async(req,resp)=> {
   try {
     const db = await connection();
     const labours = await db.collection("labour").find({
       role:"labour",status:"pending"}).sort({createdAt:-1}).toArray();
+
 
       resp.status(200).send({
         success:true,
@@ -401,16 +467,20 @@ export const getLabourVerification = async(req,resp)=> {
   }
 }
 
+
 export const updateLabourVerificationStatus=async(req,resp)=> {
   try {
     const {id} = req.params.id;
     const {status} = req.body;
 
+
     const db = await connection();
+
 
     await db.collection("labour").updateOne({
       _is:new ObjectId(id)},
     {$set:{status}})
+
 
     resp.status(200).send({
       success:true,

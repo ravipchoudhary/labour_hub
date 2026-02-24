@@ -38,8 +38,6 @@ const WorkerCard = ({ _id, name, price, rating, available, location, skills }: P
                     <a href="">Call Now</a>
                 </button>
                 <button className="border px-3 py-1 rounded hover:bg-orange-500 hover:text-white"><a href=""></a> WhatsApp</button>
-                <button disabled={available === false}
-                className="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-2 rounded disabled:opacity-50">Hire Now</button>
             </div>
 
         </div>

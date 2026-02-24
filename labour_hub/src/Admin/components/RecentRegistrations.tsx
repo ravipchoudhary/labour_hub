@@ -17,15 +17,15 @@ const statusStyle: Record<string, string> = {
 
 const RecentRegistrations = () => {
   const navigate = useNavigate();
-  const [users,setUsers]= useState<User[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
 
-  useEffect(()=> {
+  useEffect(() => {
     const fetchRecentUsers = async () => {
       const token = localStorage.getItem("token");
 
       const res = await fetch("http://localhost:4000/admin/recent-users", {
         headers: {
-          Authorization:`Bearer ${token}`
+          Authorization: `Bearer ${token}`
         }
       });
 
@@ -36,7 +36,7 @@ const RecentRegistrations = () => {
     };
 
     fetchRecentUsers();
-  },[]);
+  }, []);
 
   const formatTime = (dateString: string) => {
     const now = new Date();
@@ -66,7 +66,8 @@ const RecentRegistrations = () => {
         {users.map((item) => (
           <div
             key={item._id}
-            className="flex justify-between bg-gray-50 items-center border border-gray-200 rounded-xl p-5 shadow-sm"
+            onClick={() => navigate(`/admin/users/${item._id}`)}
+            className="flex justify-between bg-gray-50 items-center border border-gray-200 rounded-xl p-5 shadow-sm cursor-pointer hover:bg-gray-100 transition"
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center font-bold text-orange-600">
@@ -82,9 +83,8 @@ const RecentRegistrations = () => {
             </div>
 
             <span
-              className={`text-white text-xs px-4 py-1.5 rounded-full ${
-                statusStyle[item.status]
-              }`}
+              className={`text-white text-xs px-4 py-1.5 rounded-full ${statusStyle[item.status]
+                }`}
             >
               {item.status}
             </span>

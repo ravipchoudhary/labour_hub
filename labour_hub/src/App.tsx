@@ -1,6 +1,7 @@
 import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 
+
 import Header from "./components/common/Header";
 import Footer from "./components/common/Footer";
 import Home from "./pages/Home";
@@ -27,17 +28,22 @@ import ResetPasswordDirect from "./Admin/ResetPasswordDirect";
 import AdminProfile from "./Admin/pages/AdminProfile";
 import ChangePassword from "./Admin/components/ChangePasswordModal";
 
+
 function App() {
   const location = useLocation();
   const navigate = useNavigate();
 
+
   const isAdminPage = location.pathname.startsWith("/admin");
+
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
 
+
     if (!token) return;
+
 
     if (location.pathname === "/login" || location.pathname === "/admin/login") {
       if (role === "admin") navigate("/admin/dashboard", { replace: true });
@@ -46,9 +52,11 @@ function App() {
     }
   }, [location.pathname, navigate]);
 
+
   return (
     <>
       {!isAdminPage && <Header />}
+
 
       <Routes>
         <Route path="/terms-of-service" element={<Termsofservice />} />
@@ -64,6 +72,7 @@ function App() {
         <Route path="/hired-workers" element={<HiredWorkers />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
+
         {/* Admin route */}
         <Route path="/admin/login" element={<Login />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -74,6 +83,7 @@ function App() {
         <Route path="/admin/profile" element={<AdminProfile />} />
         <Route path="/admin/change-password" element={<ChangePassword />} />
 
+
         <Route path="/register/worker" element={<Register />} />
         <Route path="/register/employer" element={<Registeremp />} />
         <Route path="/labour-dashboard" element={<LabourDashboard />} />
@@ -82,9 +92,12 @@ function App() {
         <Route path="/worker/:id" element={<WorkerDetail />} />
       </Routes>
 
+
       {!isAdminPage && <Footer />}
     </>
   );
 }
 
+
 export default App;
+

@@ -7,17 +7,22 @@ import SideCards from "../components/Sidecards";
 import StatusBarChart from "../components/StatusBarChart";
 import UserTypePieChart from "../components/UserTypePieChart";
 
+
 const AdminDashboard = () => {
   const navigate = useNavigate();
+
 
   const [totalUsers, setTotalUsers] = useState(0);
   const [activeWorkers, setActiveWorkers] = useState(0);
   const [pendingApprovals, setPendingApprovals] = useState(0);
   const [employers, setEmployers] = useState(0);
+  const [blockedUsers, setBlockedUsers] = useState(0);
   const [loading, setLoading] = useState(true);
+
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+
 
     if (!token) {
       navigate("/admin/login");
@@ -28,21 +33,25 @@ const AdminDashboard = () => {
       .then((data) => {
         setTotalUsers(data.length);
 
+
         const approved = data.filter((item: any) => item.status === "approved");
         const pending = data.filter((item: any) => item.status === "pending");
         const employerUsers = data.filter(
           (item: any) => item.role === "employer"
         );
 
+
         setActiveWorkers(approved.length);
         setPendingApprovals(pending.length);
         setEmployers(employerUsers.length);
+        setBlockedUsers(employerUsers.length - approved.length);
         setLoading(false);
       })
       .catch(() => {
         navigate("/admin/login");
       });
   }, [navigate]);
+
 
   if (loading) {
     return (
@@ -52,11 +61,14 @@ const AdminDashboard = () => {
     );
   }
 
+
   return (
     <div className="min-h-screen bg-[#FAF6F5]">
       <TopBar />
 
+
       <div className="max-w-[1500px] mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8">
+
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           <StatCard title="Total Users" value={totalUsers} badge="+12%" icon="👤" />
@@ -69,9 +81,11 @@ const AdminDashboard = () => {
             <StatusBarChart
               active={activeWorkers}
               pending={pendingApprovals}
+              blocked={blockedUsers}
               total={totalUsers}
             />
           </div>
+
 
           <div className="lg:col-span-2">
             <UserTypePieChart
@@ -80,6 +94,7 @@ const AdminDashboard = () => {
             />
           </div>
         </div>
+
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
@@ -91,5 +106,6 @@ const AdminDashboard = () => {
     </div>
   );
 };
+
 
 export default AdminDashboard;

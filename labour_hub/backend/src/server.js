@@ -7,12 +7,16 @@ import cors from "cors";
 import dotenv from "dotenv";
 import employeeRoutes from "./routes/employeeRoutes.js";
 
+
 dotenv.config();
+
 
 const app = express();
 
+
 app.use(express.json());
 app.use(cors());
+
 
 app.use("/admin", adminRouter);
 app.use("/api/labour", labourRoutes);
@@ -21,8 +25,11 @@ app.use("/api/hire", hireRequestRoutes);
 
 await connectDB();
 
+
 const PORT = process.env.PORT || 4000;
+
 
 app.listen(PORT, () => {
     console.log(`server is running on port ${PORT}`);
 });
+

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+
 type FormData = {
   fullName: string;
   email: string;
@@ -17,8 +18,10 @@ type FormData = {
   photo: File | null;
 };
 
+
 const Register = () => {
   const navigate = useNavigate();
+
 
   const [formData, setFormData] = useState<FormData>({
     fullName: "",
@@ -36,8 +39,10 @@ const Register = () => {
     photo: null,
   });
 
+
   const [preview, setPreview] = useState<string | null>(null);
-const [newSkill, setNewSkill] = useState("");
+  const [newSkill, setNewSkill] = useState("");
+
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -47,14 +52,17 @@ const [newSkill, setNewSkill] = useState("");
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
 
     if (!file.type.startsWith("image/")) {
       alert("Please upload an image file");
       return;
     }
+
 
     setFormData({ ...formData, photo: file });
     setPreview(URL.createObjectURL(file));
@@ -63,14 +71,17 @@ const [newSkill, setNewSkill] = useState("");
     const s = newSkill.trim();
     if (!s) return;
 
+
     if (formData.skills.some((x) => x.toLowerCase() === s.toLowerCase())) {
       setNewSkill("");
       return;
     }
 
+
     setFormData((prev) => ({ ...prev, skills: [...prev.skills, s] }));
     setNewSkill("");
   };
+
 
   const removeSkill = (skill: string) => {
     setFormData((prev) => ({
@@ -95,10 +106,12 @@ const [newSkill, setNewSkill] = useState("");
       return;
     }
 
+
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords do not match");
       return;
     }
+
 
     try {
       const response = await fetch("http://localhost:4000/api/labour/register", {
@@ -120,17 +133,23 @@ const [newSkill, setNewSkill] = useState("");
         }),
 
 
+
+
       });
 
+
       const data = await response.json();
+
 
       if (!response.ok) {
         alert(data.message);
         return;
       }
 
+
       alert("Worker registered successfully");
       navigate("/login");
+
 
     } catch (error) {
       alert("Something went wrong");
@@ -138,9 +157,12 @@ const [newSkill, setNewSkill] = useState("");
   };
 
 
+
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="w-full max-w-6xl bg-white rounded-2xl shadow-lg overflow-hidden grid grid-cols-1 lg:grid-cols-2">
+
 
         <div className="flex items-center justify-center py-10 px-6">
           <form
@@ -150,6 +172,7 @@ const [newSkill, setNewSkill] = useState("");
             <h2 className="text-2xl font-bold text-gray-800 text-center">
               Register as a Worker
             </h2>
+
 
             <div className="flex justify-center pt-4">
               <label className="cursor-pointer text-center">
@@ -175,11 +198,13 @@ const [newSkill, setNewSkill] = useState("");
                   )}
                 </div>
 
+
                 <p className="text-xs mt-2 text-gray-500">
                   Upload Photo
                 </p>
               </label>
             </div>
+
 
             <input
               type="text"
@@ -190,6 +215,7 @@ const [newSkill, setNewSkill] = useState("");
               className="w-full border rounded-lg px-4 py-2"
             />
 
+
             <input
               type="email"
               name="email"
@@ -199,6 +225,7 @@ const [newSkill, setNewSkill] = useState("");
               className="w-full border rounded-lg px-4 py-2"
             />
 
+
             <input
               type="tel"
               name="phone"
@@ -207,6 +234,7 @@ const [newSkill, setNewSkill] = useState("");
               onChange={handleChange}
               className="w-full border rounded-lg px-4 py-2"
             />
+
 
             <select
               name="gender"
@@ -220,10 +248,12 @@ const [newSkill, setNewSkill] = useState("");
               <option>Other</option>
             </select>
 
+
             <div>
               <label className="text-sm font-medium text-gray-600 mb-2 block">
                 Skills
               </label>
+
 
               <div className="flex flex-wrap gap-2 mb-3">
                 {formData.skills.map((skill) => (
@@ -243,6 +273,7 @@ const [newSkill, setNewSkill] = useState("");
                 ))}
               </div>
 
+
               <div className="flex gap-2">
                 <input
                   value={newSkill}
@@ -250,6 +281,7 @@ const [newSkill, setNewSkill] = useState("");
                   placeholder="Add a skills"
                   className="flex-1 border rounded-lg px-4 py-2"
                 />
+
 
                 <button
                   type="button"
@@ -269,6 +301,7 @@ const [newSkill, setNewSkill] = useState("");
               rows={3}
             />
 
+
             <input
               type="text"
               name="address"
@@ -277,6 +310,7 @@ const [newSkill, setNewSkill] = useState("");
               onChange={handleChange}
               className="w-full border rounded-lg px-4 py-2"
             />
+
 
             <input
               type="number"
@@ -287,6 +321,7 @@ const [newSkill, setNewSkill] = useState("");
               className="w-full border rounded-lg px-4 py-2"
             />
 
+
             <div className="flex gap-2">
               <input
                 type="number"
@@ -296,6 +331,7 @@ const [newSkill, setNewSkill] = useState("");
                 onChange={handleChange}
                 className="w-full border rounded-lg px-4 py-2"
               />
+
 
               <select
                 name="rateType"
@@ -308,6 +344,7 @@ const [newSkill, setNewSkill] = useState("");
               </select>
             </div>
 
+
             <input
               type="password"
               name="password"
@@ -316,6 +353,7 @@ const [newSkill, setNewSkill] = useState("");
               onChange={handleChange}
               className="w-full border rounded-lg px-4 py-2"
             />
+
 
             <input
               type="password"
@@ -327,6 +365,8 @@ const [newSkill, setNewSkill] = useState("");
             />
 
 
+
+
             <button
               type="submit"
               className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg font-semibold"
@@ -335,6 +375,7 @@ const [newSkill, setNewSkill] = useState("");
             </button>
           </form>
         </div>
+
 
         <div className="hidden lg:flex items-center justify-center bg-orange-500 text-white px-10">
           <div className="text-center space-y-4 max-w-sm">
@@ -345,9 +386,12 @@ const [newSkill, setNewSkill] = useState("");
           </div>
         </div>
 
+
       </div>
     </div>
   );
 };
 
+
 export default Register;
+

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import type React from "react";
 import axios from "axios";
 
+
 export default function EditLabourProfile() {
   const navigate = useNavigate();
   const [photo, setPhoto] = useState<string | null>(null);
@@ -12,6 +13,7 @@ export default function EditLabourProfile() {
     "AC Repair",
   ]);
   const [newSkill, setNewSkill] = useState<string>("");
+
 
   const [profile, setProfile] = useState({
     name: "Rajesh Kumar",
@@ -24,6 +26,7 @@ export default function EditLabourProfile() {
       "Experienced electrician with expertise in residential and commercial wiring, AC installation and repair.",
   });
 
+
   useEffect(() => {
     const loadProfile = async () => {
       try {
@@ -31,14 +34,17 @@ export default function EditLabourProfile() {
         const role = localStorage.getItem("role");
         if (!token || role !== "labour") return;
 
+
         const res = await fetch("http://localhost:4000/api/labour/profile", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
+
         const data = await res.json().catch(() => ({}));
         if (!res.ok) return;
+
 
         setProfile((p) => ({
           ...p,
@@ -50,14 +56,17 @@ export default function EditLabourProfile() {
           about: data?.about || "",
         }));
 
+
         if (Array.isArray(data?.skills)) setSkills(data.skills);
       } catch (e) {
         console.error("loadProfile error:", e);
       }
     };
 
+
     loadProfile();
   }, []);
+
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -66,27 +75,33 @@ export default function EditLabourProfile() {
     }
   };
 
+
   const addSkill = () => {
     const s = newSkill.trim();
     if (!s) return;
+
 
     if (skills.some((x) => x.toLowerCase() === s.toLowerCase())) {
       setNewSkill("");
       return;
     }
 
+
     setSkills([...skills, s]);
     setNewSkill("");
   };
+
 
   const removeSkill = (skill: string) => {
     setSkills(skills.filter((s) => s !== skill));
   };
 
+
   const handleSave = async () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return alert("Token missing,login again")
+
 
       await axios.patch(
         "http://localhost:4000/api/labour/profile",
@@ -103,6 +118,7 @@ export default function EditLabourProfile() {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+
 
       alert("Profile saved ✅");
       navigate("/labour-dashboard");
@@ -122,11 +138,13 @@ export default function EditLabourProfile() {
             ← Back to Dashboard
           </p>
 
+
           <h1 className="text-3xl font-semibold mt-2">Edit Profile</h1>
           <p className="opacity-90">
             Update your profile to attract more employers
           </p>
         </div>
+
 
         <div className="p-10">
           <div className="flex items-center gap-6 mb-10">
@@ -142,9 +160,11 @@ export default function EditLabourProfile() {
               )}
             </div>
 
+
             <div>
               <h3 className="font-semibold text-lg">Profile Photo</h3>
               <p className="text-sm text-gray-500 mb-2">JPG, PNG · Max 5MB</p>
+
 
               <label className="cursor-pointer text-orange-600 font-medium hover:underline">
                 Change Photo
@@ -157,6 +177,7 @@ export default function EditLabourProfile() {
               </label>
             </div>
           </div>
+
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
@@ -172,6 +193,7 @@ export default function EditLabourProfile() {
               />
             </div>
 
+
             <div>
               <label className="text-sm font-medium text-gray-600">
                 Phone Number
@@ -184,6 +206,7 @@ export default function EditLabourProfile() {
                 className="mt-1 w-full rounded-xl border px-4 py-3 focus:ring-2 focus:ring-orange-400 outline-none"
               />
             </div>
+
 
             <div>
               <label className="text-sm font-medium text-gray-600">
@@ -202,6 +225,7 @@ export default function EditLabourProfile() {
               />
             </div>
 
+
             <div>
               <label className="text-sm font-medium text-gray-600">
                 Your Rate (₹)
@@ -219,6 +243,7 @@ export default function EditLabourProfile() {
                   className="flex-1 rounded-xl border px-4 py-3 focus:ring-2 focus:ring-orange-400 outline-none"
                 />
 
+
                 <select
                   value={profile.rateType}
                   onChange={(e) =>
@@ -233,6 +258,7 @@ export default function EditLabourProfile() {
             </div>
           </div>
 
+
           <div className="mt-8">
             <label className="text-sm font-medium text-gray-600">
               Address / Location
@@ -245,6 +271,7 @@ export default function EditLabourProfile() {
               className="mt-1 w-full rounded-xl border px-4 py-3 focus:ring-2 focus:ring-orange-400 outline-none"
             />
           </div>
+
 
           <div className="mt-8">
             <label className="text-sm font-medium text-gray-600">
@@ -260,10 +287,12 @@ export default function EditLabourProfile() {
             />
           </div>
 
+
           <div className="mt-8">
             <label className="text-sm font-medium text-gray-600 mb-2 block">
               Your Skills
             </label>
+
 
             <div className="flex flex-wrap gap-3 mb-4">
               {skills.map((skill) => (
@@ -283,6 +312,7 @@ export default function EditLabourProfile() {
               ))}
             </div>
 
+
             <div className="flex gap-3">
               <input
                 value={newSkill}
@@ -300,6 +330,7 @@ export default function EditLabourProfile() {
             </div>
           </div>
 
+
           <div className="flex justify-end gap-4 mt-12">
             <button
               type="button"
@@ -308,6 +339,7 @@ export default function EditLabourProfile() {
             >
               Cancel
             </button>
+
 
             <button
               type="button"
