@@ -75,14 +75,26 @@ export const adminLogin = async (req, resp) => {
       { expiresIn: "50d" }
     );
 
-    return resp.status(200).send({
-    const token = jwt.sign({ id: result.insertedId, email: userData.email }, secretKey, { expiresIn: "50d" })
-    resp.status(201).send({
-      success: true,
-      message: "Login success",
-      token
-    });
+   try {
 
+  const token = jwt.sign(
+    { id: result.insertedId, email: userData.email },
+    secretKey,
+    { expiresIn: "50d" }
+  );
+
+  return resp.status(201).send({
+    success: true,
+    message: "Login success",
+    token: token
+  });
+
+} catch (error) {
+  return resp.status(500).send({
+    success: false,
+    message: "Server error"
+  });
+}
   } catch (error) {
     return resp.status(500).send({
       success: false,
@@ -90,7 +102,6 @@ export const adminLogin = async (req, resp) => {
     });
   }
 };
-
 export const googleAdminLogin = async (req, resp) => {
   try {
     const { token } = req.body;
@@ -139,33 +150,33 @@ export const googleAdminLogin = async (req, resp) => {
   }
 };
 
-export const adminLogin = async (req, resp) => {
-  const { email, password } = req.body;
-  const db = await connection();
+// export const adminLogin = async (req, resp) => {
+//   const { email, password } = req.body;
+//   const db = await connection();
 
-  const user = await db.collection(collectionName).findOne({ email });
+//   const user = await db.collection(collectionName).findOne({ email });
 
-  if (user) {
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (isMatch) {
-      const token = jwt.sign({ id:user._id, email: user.email }, secretKey, { expiresIn: "50d" })
-      resp.status(200).send({
-        success: true,
-        message: "login success",
-        token:token
-      })
-    } else {
-      resp.status(401).send({
-        message: "password invalid",
-        success: false
-      })
-    }
-  } else {
-    resp.status(404).send({
-      message: "User not found", success: false
-    })
-  }
-}
+//   if (user) {
+//     const isMatch = await bcrypt.compare(password, user.password);
+//     if (isMatch) {
+//       const token = jwt.sign({ id:user._id, email: user.email }, secretKey, { expiresIn: "50d" })
+//       resp.status(200).send({
+//         success: true,
+//         message: "login success",
+//         token:token
+//       })
+//     } else {
+//       resp.status(401).send({
+//         message: "password invalid",
+//         success: false
+//       })
+//     }
+//   } else {
+//     resp.status(404).send({
+//       message: "User not found", success: false
+//     })
+//   }
+// }
 
 
 
@@ -431,7 +442,7 @@ export const getAllUsers = async (req, resp) => {
     resp.status(500).send({
       success: false,
       message: "Failed to fetch users"
-      message: "Server error",
+     // message: "Server error",
     });
   }
 };
@@ -499,6 +510,7 @@ export const updateLabourVerificationStatus = async (req, resp) => {
     })
   }
 }
+export const recentRegistrations = async (req, resp) => {}
 
 export const getDashboardStats = async (req, resp) => {
   try {
