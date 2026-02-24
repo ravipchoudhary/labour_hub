@@ -11,29 +11,29 @@ import { verifyAdminToken } from "../middlewares/authMiddleware.js";
 
 const adminRouter = express.Router();
 
-adminRouter.post("/login", adminLogin);
-adminRouter.post("/google-login", googleAdminLogin);
-adminRouter.post("/verify-forgot-password", verifyForgotPassword);
-adminRouter.post("/reset-password-direct", resetPasswordDirect);
-adminRouter.get("/dashboard", verifyAdminToken, (req, resp) => {
+adminRouter.post("/login",adminLogin);
+adminRouter.post("/google-login",googleAdminLogin);
+adminRouter.post("/verify-forgot-password",verifyForgotPassword);
+adminRouter.post("/reset-password-direct",resetPasswordDirect);
+adminRouter.get("/dashboard",verifyAdminToken,(req,resp)=> {
     resp.send({
-        success: true,
-        message: "Welcome to Admin Dashboard",
+        success:true,
+        message:"Welcome to Admin Dashboard",
         admin: req.admin,
     })
 })
 
-adminRouter.get("/users", verifyAdminToken, (req, resp) => {
+adminRouter.get("/users",verifyAdminToken,(req,resp)=> {
     resp.send({
-        success: true,
-        message: "Users fetched successfully",
+        success:true,
+        message:"Users fetched successfully",
     })
 })
 
-adminRouter.get("/labours", verifyAdminToken, (req, resp) => {
+adminRouter.get("/labours",verifyAdminToken,(req,resp)=> {
     resp.send({
-        success: true,
-        message: "Labours fetched successfully",
+        success:true,
+        message:"Labours fetched successfully",
     })
 })
 
