@@ -37,6 +37,11 @@ const TopBar = () => {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && search.trim() !== "") {
+                navigate(`/admin/users?search=${search}`);
+              }
+            }}
             placeholder="Search Users......."
             className="outline-none text-sm w-48"
           />
