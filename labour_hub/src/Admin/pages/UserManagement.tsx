@@ -4,14 +4,16 @@ import axios from "axios";
 import TopBar from "../components/Topbar";
 import { users as initialUsers } from "../datas/users";
 
-type Status = "pending" | "approved" | "blocked";
+type Status = "pending" | "accept" | "reject";
+
 
 const UserManagement = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const searchFromUrl = searchParams.get("search") || "";
 
-  const [users, setUsers] = useState(initialUsers);
-  const [globalSearch, setGlobalSearch] = useState("");
+  const [users, setUsers] = useState<any[]>([]);
+
 
   const token = localStorage.getItem("token");
 
@@ -29,7 +31,7 @@ const UserManagement = () => {
           params: {
             status: statusFromUrl !== "all" ? statusFromUrl : undefined,
             role: roleFromUrl !== "all" ? roleFromUrl : undefined,
-            search: globalSearch || undefined,
+            search: searchFromUrl || undefined,
           },
         }
       );
@@ -40,11 +42,13 @@ const UserManagement = () => {
     } catch (error) {
       console.log("Fetch error", error);
     }
-  }, [token, statusFromUrl, roleFromUrl, globalSearch]);
+  }, [token, statusFromUrl, roleFromUrl, searchFromUrl]);
 
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
+
+
 
   const updateStatus = async (id: string, status: Status) => {
     try {
@@ -100,8 +104,12 @@ const UserManagement = () => {
         <div className="bg-white border border-gray-200 
         rounded-2xl p-5 flex flex-col md:flex-row gap-4">
           <input
-            value={globalSearch}
-            onChange={(e) => setGlobalSearch(e.target.value)}
+            defaultValue={searchFromUrl}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                navigate(`/admin/users?search=${(e.target as HTMLInputElement).value}`);
+              }
+            }}
             placeholder="Search by name or email..."
             className="border border-gray-300 rounded-xl 
             px-4 py-2 w-full md:w-[35%] outline-none bg-gray-50"
@@ -114,8 +122,8 @@ const UserManagement = () => {
           >
             <option value="all">All Status</option>
             <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="blocked">Blocked</option>
+            <option value="accept">Approved</option>
+            <option value="reject">Rejected</option>
           </select>
 
           <select
@@ -184,13 +192,12 @@ const UserManagement = () => {
                     
                     <td className="px-6 text-center align-middle">
                       <span
-                        className={`inline-flex min-w-[110px] h-[28px] text-white text-xs rounded-full items-center justify-center ${
-                          u.status === "pending"
-                            ? "bg-indigo-600"
-                            : u.status === "approved"
+                        className={`inline-flex min-w-[110px] h-[28px] text-white text-xs rounded-full items-center justify-center ${u.status === "pending"
+                          ? "bg-indigo-600"
+                          : u.status === "accept"
                             ? "bg-green-600"
                             : "bg-orange-500"
-                        }`}
+                          }`}
                       >
                         {u.status}
                       </span>
@@ -204,13 +211,13 @@ const UserManagement = () => {
                         {u.status === "pending" && (
                           <>
                             <button
-                              onClick={() => updateStatus(u._id, "approved")}
+                              onClick={() => updateStatus(u._id, "accept")}
                               className="text-green-600 font-bold text-xl"
                             >
                               ✔
                             </button>
                             <button
-                              onClick={() => updateStatus(u._id, "blocked")}
+                              onClick={() => updateStatus(u._id, "reject")}
                               className="text-red-600 font-bold text-xl"
                             >
                               ✖
@@ -218,18 +225,18 @@ const UserManagement = () => {
                           </>
                         )}
 
-                        {u.status === "approved" && (
+                        {u.status === "accept" && (
                           <button
-                            onClick={() => updateStatus(u._id, "blocked")}
+                            onClick={() => updateStatus(u._id, "reject")}
                             className="bg-orange-500 text-white text-xs px-4 py-1 rounded-full"
                           >
-                            Block
+                            Reject
                           </button>
                         )}
 
-                        {u.status === "blocked" && (
+                        {u.status === "reject" && (
                           <button
-                            onClick={() => updateStatus(u._id, "approved")}
+                            onClick={() => updateStatus(u._id, "accept")}
                             className="bg-green-600 text-white text-xs px-4 py-1 rounded-full"
                           >
                             Unblock

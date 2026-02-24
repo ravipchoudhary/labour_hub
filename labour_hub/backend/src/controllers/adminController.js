@@ -520,12 +520,12 @@ export const getDashboardStats = async (req, resp) => {
 
     const activeWorkers = await db.collection("labour").countDocuments({
       role: { $regex: "^labour$", $options: "i" },
-      status: { $regex: "^approved$", $options: "i" }
+      status: { $regex: "^accept$", $options: "i" }
     });
 
     const employers = await db.collection("labour").countDocuments({
       role: { $regex: "^employer$", $options: "i" },
-      status: { $regex: "^approved$", $options: "i" }
+      status: { $regex: "^accept$", $options: "i" }
     });
 
     const pending = await db.collection("labour").countDocuments({
@@ -533,7 +533,7 @@ export const getDashboardStats = async (req, resp) => {
     });
 
     const blocked = await db.collection("labour").countDocuments({
-      status: { $regex: "^blocked$", $options: "i" }
+      status: { $regex: "^reject$", $options: "i" }
     });
 
     resp.status(200).send({
