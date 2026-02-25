@@ -39,6 +39,7 @@ const WorkerCard = ({ _id, name, price, rating, available, location, skills }: P
                 </button>
                 <button className="border px-3 py-1 rounded hover:bg-orange-500 hover:text-white"><a href=""></a> WhatsApp</button>
             </div>
+
         </div>
     );
 };

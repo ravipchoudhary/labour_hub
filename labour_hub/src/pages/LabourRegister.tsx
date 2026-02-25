@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+
 type FormData = {
   fullName: string;
   email: string;
   phone: string;
   gender: string;
   address: string;
-  skills: string;
+  skills: string[];
   experience: string;
   rate: string;
   rateType: string;
@@ -17,8 +18,10 @@ type FormData = {
   photo: File | null;
 };
 
+
 const Register = () => {
   const navigate = useNavigate();
+
 
   const [formData, setFormData] = useState<FormData>({
     fullName: "",
@@ -26,7 +29,7 @@ const Register = () => {
     phone: "",
     gender: "",
     address: "",
-    skills: "",
+    skills: [],
     experience: "",
     rate: "",
     rateType: "Per Day",
@@ -36,7 +39,9 @@ const Register = () => {
     photo: null,
   });
 
+
   const [preview, setPreview] = useState<string | null>(null);
+  const [newSkill, setNewSkill] = useState("");
 
 
   const handleChange = (
@@ -47,31 +52,51 @@ const Register = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
 
     if (!file.type.startsWith("image/")) {
       alert("Please upload an image file");
       return;
     }
 
+
     setFormData({ ...formData, photo: file });
     setPreview(URL.createObjectURL(file));
   };
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    const skillsArray = formData.skills
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-    e.preventDefault();
+  const addSkill = () => {
+    const s = newSkill.trim();
+    if (!s) return;
 
+
+    if (formData.skills.some((x) => x.toLowerCase() === s.toLowerCase())) {
+      setNewSkill("");
+      return;
+    }
+
+
+    setFormData((prev) => ({ ...prev, skills: [...prev.skills, s] }));
+    setNewSkill("");
+  };
+
+
+  const removeSkill = (skill: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      skills: prev.skills.filter((x) => x !== skill),
+    }));
+  };
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     if (
       !formData.fullName ||
       !formData.email ||
       !formData.phone ||
       !formData.gender ||
-      !formData.skills ||
+      formData.skills.length === 0 ||
       !formData.experience ||
       !formData.rate ||
       !formData.password ||
@@ -81,10 +106,12 @@ const Register = () => {
       return;
     }
 
+
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords do not match");
       return;
     }
+
 
     try {
       const response = await fetch("http://localhost:4000/api/labour/register", {
@@ -96,7 +123,7 @@ const Register = () => {
           name: formData.fullName,
           email: formData.email,
           phone: formData.phone,
-          skills: skillsArray,
+          skills: formData.skills,
           location: formData.address,
           price: Number(formData.rate),
           experience: Number(formData.experience),
@@ -106,17 +133,23 @@ const Register = () => {
         }),
 
 
+
+
       });
 
+
       const data = await response.json();
+
 
       if (!response.ok) {
         alert(data.message);
         return;
       }
 
+
       alert("Worker registered successfully");
       navigate("/login");
+
 
     } catch (error) {
       alert("Something went wrong");
@@ -124,9 +157,12 @@ const Register = () => {
   };
 
 
+
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="w-full max-w-6xl bg-white rounded-2xl shadow-lg overflow-hidden grid grid-cols-1 lg:grid-cols-2">
+
 
         <div className="flex items-center justify-center py-10 px-6">
           <form
@@ -137,6 +173,7 @@ const Register = () => {
               Register as a Worker
             </h2>
 
+
             <div className="flex justify-center pt-4">
               <label className="cursor-pointer text-center">
                 <input
@@ -145,7 +182,6 @@ const Register = () => {
                   onChange={handlePhotoUpload}
                   className="hidden"
                 />
-
                 <div className="w-24 h-24 rounded-full border-4 border-orange-500 flex items-center justify-center overflow-hidden bg-orange-500 text-white text-2xl font-bold">
                   {preview ? (
                     <img
@@ -162,11 +198,13 @@ const Register = () => {
                   )}
                 </div>
 
+
                 <p className="text-xs mt-2 text-gray-500">
                   Upload Photo
                 </p>
               </label>
             </div>
+
 
             <input
               type="text"
@@ -177,6 +215,7 @@ const Register = () => {
               className="w-full border rounded-lg px-4 py-2"
             />
 
+
             <input
               type="email"
               name="email"
@@ -186,6 +225,7 @@ const Register = () => {
               className="w-full border rounded-lg px-4 py-2"
             />
 
+
             <input
               type="tel"
               name="phone"
@@ -194,6 +234,7 @@ const Register = () => {
               onChange={handleChange}
               className="w-full border rounded-lg px-4 py-2"
             />
+
 
             <select
               name="gender"
@@ -207,14 +248,50 @@ const Register = () => {
               <option>Other</option>
             </select>
 
-            <input
-              type="text"
-              name="skills"
-              placeholder="Skills"
-              value={formData.skills}
-              onChange={handleChange}
-              className="w-full border rounded-lg px-4 py-2"
-            />
+
+            <div>
+              <label className="text-sm font-medium text-gray-600 mb-2 block">
+                Skills
+              </label>
+
+
+              <div className="flex flex-wrap gap-2 mb-3">
+                {formData.skills.map((skill) => (
+                  <span
+                    key={skill}
+                    className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm flex items-center gap-2"
+                  >
+                    {skill}
+                    <button
+                      type="button"
+                      onClick={() => removeSkill(skill)}
+                      className="hover:text-red-500"
+                    >
+                      ✕
+                    </button>
+                  </span>
+                ))}
+              </div>
+
+
+              <div className="flex gap-2">
+                <input
+                  value={newSkill}
+                  onChange={(e) => setNewSkill(e.target.value)}
+                  placeholder="Add a skills"
+                  className="flex-1 border rounded-lg px-4 py-2"
+                />
+
+
+                <button
+                  type="button"
+                  onClick={addSkill}
+                  className="bg-orange-500 hover:bg-orange-600 text-white px-5 rounded-lg"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
             <textarea
               name="about"
               placeholder="About (Write something about your work)"
@@ -223,6 +300,7 @@ const Register = () => {
               className="w-full border rounded-lg px-4 py-2"
               rows={3}
             />
+
 
             <input
               type="text"
@@ -233,6 +311,7 @@ const Register = () => {
               className="w-full border rounded-lg px-4 py-2"
             />
 
+
             <input
               type="number"
               name="experience"
@@ -241,6 +320,7 @@ const Register = () => {
               onChange={handleChange}
               className="w-full border rounded-lg px-4 py-2"
             />
+
 
             <div className="flex gap-2">
               <input
@@ -251,6 +331,7 @@ const Register = () => {
                 onChange={handleChange}
                 className="w-full border rounded-lg px-4 py-2"
               />
+
 
               <select
                 name="rateType"
@@ -263,6 +344,7 @@ const Register = () => {
               </select>
             </div>
 
+
             <input
               type="password"
               name="password"
@@ -271,6 +353,7 @@ const Register = () => {
               onChange={handleChange}
               className="w-full border rounded-lg px-4 py-2"
             />
+
 
             <input
               type="password"
@@ -282,6 +365,8 @@ const Register = () => {
             />
 
 
+
+
             <button
               type="submit"
               className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg font-semibold"
@@ -290,6 +375,7 @@ const Register = () => {
             </button>
           </form>
         </div>
+
 
         <div className="hidden lg:flex items-center justify-center bg-orange-500 text-white px-10">
           <div className="text-center space-y-4 max-w-sm">
@@ -300,9 +386,12 @@ const Register = () => {
           </div>
         </div>
 
+
       </div>
     </div>
   );
 };
 
+
 export default Register;
+

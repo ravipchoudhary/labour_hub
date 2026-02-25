@@ -11,7 +11,9 @@ import {
 } from "../controllers/adminController.js";
 import { verifyAdminToken } from "../middlewares/authMiddleware.js";
 
+
 const adminRouter = express.Router();
+
 
 adminRouter.post("/login", adminLogin);
 adminRouter.post("/google-login", googleAdminLogin);
@@ -25,6 +27,7 @@ adminRouter.get("/dashboard", verifyAdminToken, (req, resp) => {
     })
 })
 
+
 adminRouter.get("/users", verifyAdminToken, (req, resp) => {
     resp.send({
         success: true,
@@ -32,12 +35,14 @@ adminRouter.get("/users", verifyAdminToken, (req, resp) => {
     })
 })
 
+
 adminRouter.get("/labours", verifyAdminToken, (req, resp) => {
     resp.send({
         success: true,
         message: "Labours fetched successfully",
     })
 })
+
 
 adminRouter.get("/profile", verifyAdminToken, getAdminProfile);
 adminRouter.put("/profile", verifyAdminToken, updateAdminProfile);

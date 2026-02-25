@@ -4,17 +4,21 @@ import { getLabours } from "../api/labourApi";
 import type { Worker } from "../data/worker";
 import { useNavigate } from "react-router-dom";
 
+
 const FindLabour = () => {
     const navigate = useNavigate();
+
 
     useEffect(() => {
         const role = localStorage.getItem("role");
         const token = localStorage.getItem("token");
 
+
         if (!token) {
             navigate("/login", { replace: true });
             return;
         }
+
 
         if (role === "labour") {
             navigate("/labour-dashboard", { replace: true });
@@ -26,19 +30,23 @@ const FindLabour = () => {
     const [selectedSkill, setSelectedSkill] = useState("All");
     const [location, setLocation] = useState("");
 
+
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const data = await getLabours();
 
+
                 const transformedData = data.map((labour: any) => {
                     const reviews = labour.reviews || [];
+
 
                     const rating =
                         reviews.length > 0
                             ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) /
                             reviews.length
                             : 0;
+
 
                     return {
                         ...labour,
@@ -47,6 +55,7 @@ const FindLabour = () => {
                         rating,
                     };
                 });
+
 
                 console.log("Fetched labours:", transformedData);
                 setLabours(transformedData);
@@ -60,23 +69,31 @@ const FindLabour = () => {
     }, []);
 
 
+
+
     const filteredWorkers = labours.filter((worker) => {
         const skillMatch =
             selectedSkill === "All" || worker.skills.includes(selectedSkill);
 
+
         const locationMatch =
             worker.location?.toLowerCase().includes(location.toLowerCase());
+
 
         return skillMatch && locationMatch;
     });
 
 
+
+
     if (loading) return <p>Loading...</p>;
+
 
     return (
         <div className="min-h-screen bg-gray-100 p-8">
             <div className="bg-blue-600 text-white p-6 rounded-lg mb-8">
                 <h1 className="text-3xl font-semibold mb-4">Find Skilled Workers</h1>
+
 
                 <div className="flex flex-col sm:flex-row gap-4">
                     <select
@@ -91,6 +108,7 @@ const FindLabour = () => {
                         <option value="Labour">Labour</option>
                     </select>
 
+
                     <input
                         type="text"
                         placeholder="Enter your location"
@@ -100,6 +118,7 @@ const FindLabour = () => {
                     />
                 </div>
             </div>
+
 
             {filteredWorkers.length === 0 ? (
                 <p>No worker found for selected filters.</p>
@@ -123,4 +142,6 @@ const FindLabour = () => {
     );
 };
 
+
 export default FindLabour;
+
