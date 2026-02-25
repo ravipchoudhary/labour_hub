@@ -16,7 +16,6 @@ const AdminDashboard = () => {
   const [activeWorkers, setActiveWorkers] = useState(0);
   const [pendingApprovals, setPendingApprovals] = useState(0);
   const [employers, setEmployers] = useState(0);
-  const [blockedUsers, setBlockedUsers] = useState(0);
   const [loading, setLoading] = useState(true);
 
 
@@ -44,7 +43,6 @@ const AdminDashboard = () => {
         setActiveWorkers(approved.length);
         setPendingApprovals(pending.length);
         setEmployers(employerUsers.length);
-        setBlockedUsers(employerUsers.length - approved.length);
         setLoading(false);
       })
       .catch(() => {
@@ -81,8 +79,8 @@ const AdminDashboard = () => {
             <StatusBarChart
               active={activeWorkers}
               pending={pendingApprovals}
-              blocked={blockedUsers}
               total={totalUsers}
+              blocked={totalUsers - activeWorkers - pendingApprovals}
             />
           </div>
 
@@ -109,3 +107,4 @@ const AdminDashboard = () => {
 
 
 export default AdminDashboard;
+

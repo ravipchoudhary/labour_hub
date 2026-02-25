@@ -449,46 +449,49 @@ export const updateUserStatus = async (req, resp) => {
 }
 
 
-export const getLabourVerification = async(req,resp)=> {
+export const getLabourVerification = async (req, resp) => {
   try {
     const db = await connection();
     const labours = await db.collection("labour").find({
-      role:"labour",status:"pending"}).sort({createdAt:-1}).toArray();
+      role: "labour", status: "pending"
+    }).sort({ createdAt: -1 }).toArray();
 
 
-      resp.status(200).send({
-        success:true,
-        data:labours
-      })
-  } catch(error)  {
+    resp.status(200).send({
+      success: true,
+      data: labours
+    })
+  } catch (error) {
     resp.status(500).send({
-      success:false
+      success: false
     })
   }
 }
 
 
-export const updateLabourVerificationStatus=async(req,resp)=> {
+export const updateLabourVerificationStatus = async (req, resp) => {
   try {
-    const {id} = req.params.id;
-    const {status} = req.body;
+    const { id } = req.params.id;
+    const { status } = req.body;
 
 
     const db = await connection();
 
 
     await db.collection("labour").updateOne({
-      _is:new ObjectId(id)},
-    {$set:{status}})
+      _is: new ObjectId(id)
+    },
+      { $set: { status } })
 
 
     resp.status(200).send({
-      success:true,
-      message:"Status updated"
+      success: true,
+      message: "Status updated"
     })
   } catch (error) {
     resp.status(500).send({
-      success:false
+      success: false
     })
   }
 }
+

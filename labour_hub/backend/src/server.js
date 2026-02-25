@@ -23,6 +23,7 @@ app.use("/api/labour", labourRoutes);
 app.use("/api/employees", employeeRoutes);
 app.use("/api/hire", hireRequestRoutes);
 
+
 await connectDB();
 
 
