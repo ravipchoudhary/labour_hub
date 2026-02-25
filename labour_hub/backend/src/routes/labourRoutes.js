@@ -7,20 +7,32 @@ import {
     registerLabour,
     loginLabour,
     updateAvailability,
+    updateLabourProfile,
 } from "../controllers/labourController.js";
 import { protect } from "../middlewares/authMiddleware.js";
 
+
 const router = express.Router();
+
+
 
 
 router.post("/register", registerLabour);
 router.post("/login", loginLabour);
 
 
+
+
 router.get("/profile", protect, getLabourProfile);
+router.put("/profile", protect, updateLabourProfile);
+router.patch("/profile", protect, updateLabourProfile);
+
+
 
 
 router.patch("/availability", protect, updateAvailability);
+
+
 
 
 router.get("/jobs", protect, async (req, res) => {
@@ -28,14 +40,17 @@ router.get("/jobs", protect, async (req, res) => {
         const db = await connection();
         const labourId = new ObjectId(req.user.id);
 
+
         const jobs = await db
             .collection("jobs")
             .find({ labourId })
             .toArray();
 
+
         const completedJobs = jobs.filter((j) => j.status === "completed");
         const pendingJobs = jobs.filter((j) => j.status === "pending");
         const rejectedJobs = jobs.filter((j) => j.status === "rejected");
+
 
         return res.json({ completedJobs, pendingJobs, rejectedJobs });
     } catch (error) {
@@ -44,15 +59,18 @@ router.get("/jobs", protect, async (req, res) => {
 });
 
 
+router.get("/dashboard", protect, getDashboardStats);
 router.get("/", async (req, res) => {
     try {
         const db = await connection();
         const labours = await db.collection("labour").find({}).toArray();
 
+
         const safeLabours = labours.map((l) => {
             const { password, ...rest } = l;
             return rest;
         });
+
 
         return res.json(safeLabours);
     } catch (error) {
@@ -60,15 +78,19 @@ router.get("/", async (req, res) => {
     }
 });
 
+
 router.get("/:id", async (req, res) => {
     try {
         const db = await connection();
+
 
         const labour = await db.collection("labour").findOne({
             _id: new ObjectId(req.params.id),
         });
 
+
         if (!labour) return res.status(404).json({ message: "Labour not found" });
+
 
         const { password, ...safeLabour } = labour;
         return res.json(safeLabour);
@@ -78,22 +100,29 @@ router.get("/:id", async (req, res) => {
 });
 
 
+
+
 router.post("/:id/review", async (req, res) => {
     try {
         const db = await connection();
         const { rating, comment, name } = req.body;
 
+
         const labourId = req.params.id;
+
 
         const labour = await db.collection("labour").findOne({
             _id: new ObjectId(labourId),
         });
 
+
         if (!labour) {
             return res.status(404).json({ message: "Labour not found" });
         }
 
+
         const reviews = labour.reviews || [];
+
 
         reviews.push({
             rating: Number(rating),
@@ -102,9 +131,11 @@ router.post("/:id/review", async (req, res) => {
             createdAt: new Date(),
         });
 
+
         const avgRating =
             reviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0) /
             reviews.length;
+
 
         await db.collection("labour").updateOne(
             { _id: new ObjectId(labourId) },
@@ -116,6 +147,7 @@ router.post("/:id/review", async (req, res) => {
             }
         );
 
+
         return res.json({
             message: "Review added",
             rating: Number(avgRating.toFixed(1)),
@@ -126,5 +158,6 @@ router.post("/:id/review", async (req, res) => {
         return res.status(500).json({ message: "Failed to add review" });
     }
 });
+
 
 export default router;

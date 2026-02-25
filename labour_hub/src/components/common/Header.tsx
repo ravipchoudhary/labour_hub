@@ -44,7 +44,6 @@ const Header = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
 
-    // update header instantly in same tab
     window.dispatchEvent(new Event("auth-changed"));
 
     setToken(null);

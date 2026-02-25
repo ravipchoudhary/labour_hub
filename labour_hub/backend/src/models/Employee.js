@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 
+
 const employeeSchema = new mongoose.Schema(
     {
         name: String,
@@ -10,5 +11,6 @@ const employeeSchema = new mongoose.Schema(
     },
     { timestamps: true }
 );
+
 
 export default mongoose.model("Employee", employeeSchema);
