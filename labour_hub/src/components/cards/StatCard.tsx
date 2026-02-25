@@ -4,11 +4,16 @@ type Props = {
     title: string;
     value: string | number;
     icon: ReactNode;
+    onClick?: () => void;
 };
 
-const StatCard = ({ title, value, icon }: Props) => {
+const StatCard = ({ title, value, icon, onClick }: Props) => {
     return (
-        <div className="flex items-center gap-4 bg-white p-6 rounded-xl border hover:shadow-md transition">
+        <div
+            onClick={onClick}
+            className={`flex items-center gap-4 bg-white p-6 rounded-xl border hover:shadow-md transition ${onClick ? "cursor-pointer hover:scale-105" : ""
+                }`}
+        >
             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-orange-100 text-orange-600">
                 {icon}
             </div>

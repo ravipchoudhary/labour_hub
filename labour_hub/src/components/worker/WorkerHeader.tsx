@@ -1,16 +1,20 @@
 import { Worker } from "../../data/worker";
 
+
 type Props = {
     worker: Worker;
 };
 
+
 const WorkerHeader = ({ worker }: Props) => {
     const isAvailable = worker.available;
+
 
     return (
         <div className="bg-white p-6 rounded-lg shadow mb-6">
             <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold">{worker.name}</h2>
+
 
                 <span
                     className={`px-3 py-1 text-sm rounded-full font-medium ${isAvailable
@@ -24,7 +28,7 @@ const WorkerHeader = ({ worker }: Props) => {
             <p className="text-gray-500">{worker.location}</p>
             <p className="mt-1">⭐ {worker.rating}</p>
             <p className="mt-1 font-semibold">₹{worker.price} / day</p>
-            
+
             <div className="flex gap-2 mt-3 flex-wrap">
                 {Array.isArray(worker.skills) && worker.skills.map((skill, index) => (
                     <span
@@ -56,9 +60,12 @@ const WorkerHeader = ({ worker }: Props) => {
                     💬 WhatsApp
                 </button>
                 </a>
+
             </div>
         </div>
     );
 };
 
+
 export default WorkerHeader;
+
