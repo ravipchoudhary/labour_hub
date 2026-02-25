@@ -16,23 +16,8 @@ const AdminDashboard = () => {
   const [employers, setEmployers] = useState(0);
   const [blockedUsers, setBlockedUsers] = useState(0);
   const [loading, setLoading] = useState(true);
-  
 
   const token = localStorage.getItem("token");
-
-  const totalPercent = 100;
-
-  const activePercent = totalUsers
-    ? ((activeWorkers / totalUsers) * 100).toFixed(0)
-    : 0;
-
-  const employerPercent = totalUsers
-    ? ((employers / totalUsers) * 100).toFixed(0)
-    : 0;
-
-  const pendingPercent = totalUsers
-    ? ((pendingApprovals / totalUsers) * 100).toFixed(0)
-    : 0;
 
   const fetchDashboard = useCallback(async () => {
     try {
@@ -42,7 +27,7 @@ const AdminDashboard = () => {
       }
 
       const response = await fetch(
-        "http://localhost:4000/admin/dashboard-stats",
+        "http://localhost:4000/api/labour",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -50,24 +35,34 @@ const AdminDashboard = () => {
         }
       );
 
-      const data = await response.json();
-
-      if (!data.success) {
+      if (!response.ok) {
         navigate("/admin/login");
         return;
       }
 
-      setTotalUsers(data.data.totalUsers);
-      setActiveWorkers(data.data.approved);
-      setPendingApprovals(data.data.pending);
-      setEmployers(data.data.employers);
-      setBlockedUsers(data.data.blocked);
+      const data = await response.json();
+
+      if (!Array.isArray(data)) {
+        navigate("/admin/login");
+        return;
+      }
+
+      setTotalUsers(data.length);
+
+      const approved = data.filter((u: any) => u.status === "accept");
+      const pending = data.filter((u: any) => u.status === "pending");
+      const rejected = data.filter((u: any) => u.status === "reject");
+      const employerUsers = data.filter((u: any) => u.role === "employer");
+
+      setActiveWorkers(approved.length);
+      setPendingApprovals(pending.length);
+      setBlockedUsers(rejected.length);
+      setEmployers(employerUsers.length);
+      setLoading(false);
 
     } catch (error) {
-      console.log("Dashboard fetch error:", error);
+      console.log("Dashboard error:", error);
       navigate("/admin/login");
-    } finally {
-      setLoading(false);
     }
   }, [token, navigate]);
 
@@ -76,10 +71,7 @@ const AdminDashboard = () => {
   }, [fetchDashboard]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      fetchDashboard();
-    }, 5000);
-
+    const interval = setInterval(fetchDashboard, 5000);
     return () => clearInterval(interval);
   }, [fetchDashboard]);
 
@@ -95,7 +87,7 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-[#FAF6F5]">
       <TopBar />
 
-      <div className="max-w-[1500px] mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8">
+      <div className="max-w-[1500px] mx-auto px-4 sm:px-6 py-6 space-y-8">
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
 
@@ -106,7 +98,7 @@ const AdminDashboard = () => {
             <StatCard
               title="Total Users"
               value={totalUsers}
-              badge={`${totalPercent}%`}
+              badge="100%"
               icon="👤"
             />
           </div>
@@ -118,7 +110,7 @@ const AdminDashboard = () => {
             <StatCard
               title="Active Workers"
               value={activeWorkers}
-              badge={`${activePercent}%`}
+              badge={`${totalUsers ? Math.round((activeWorkers / totalUsers) * 100) : 0}%`}
               icon="👥"
             />
           </div>
@@ -130,19 +122,19 @@ const AdminDashboard = () => {
             <StatCard
               title="Employers"
               value={employers}
-              badge={`${employerPercent}%`}
+              badge={`${totalUsers ? Math.round((employers / totalUsers) * 100) : 0}%`}
               icon="💼"
             />
           </div>
 
           <div
-            onClick={() => navigate("/admin/users?status=pending&role=labour")}
+            onClick={() => navigate("/admin/users?status=pending")}
             className="cursor-pointer"
           >
             <StatCard
               title="Pending Approvals"
               value={pendingApprovals}
-              badge={`${pendingPercent}%`}
+              badge={`${totalUsers ? Math.round((pendingApprovals / totalUsers) * 100) : 0}%`}
               icon="⚠️"
             />
           </div>
@@ -150,6 +142,7 @@ const AdminDashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
           <div className="lg:col-span-3">
             <StatusBarChart
               active={activeWorkers}
@@ -165,6 +158,7 @@ const AdminDashboard = () => {
               employers={employers}
             />
           </div>
+
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -173,6 +167,7 @@ const AdminDashboard = () => {
           </div>
           <SideCards />
         </div>
+
       </div>
     </div>
   );

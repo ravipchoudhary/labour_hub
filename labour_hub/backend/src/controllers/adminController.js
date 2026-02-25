@@ -373,7 +373,7 @@ export const updateUserStatus = async (req, resp) => {
 
     await db.collection("labour").updateOne(
       { _id: new ObjectId(id) },
-      { $set: { status } }
+      { $set: { status, updatedAt: new Date() } }
     );
     resp.status(200).send({
       success: true,
