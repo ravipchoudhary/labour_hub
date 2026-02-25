@@ -470,3 +470,80 @@ export const getDashboardStats = async (req, resp) => {
     });
   }
 };
+
+export const getSingleUser = async (req, resp) => {
+  try {
+    const { id } = req.params;
+    const db = await connection();
+    const objectId = new ObjectId(id);
+
+    let user = await db.collection("labour").findOne({ _id: objectId });
+
+    if (!user) {
+      user = await db.collection("employer").findOne({ _id: objectId })
+    }
+    if (!user) {
+      return resp.status(404).send({
+        success: false,
+        message: "User not found"
+      })
+    }
+
+    resp.send({
+      success: true,
+      data: user
+    })
+  }
+  catch (error) {
+    resp.status(500).send({
+      success: false,
+      message: "Failed to fetch User"
+    })
+  }
+}
+
+export const updateUserProfileStatus = async (req, resp) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!["pending", "accept", "reject"].includes(status)) {
+      return resp.status(400).send({
+        success: false,
+        message: "Invalid status value"
+      })
+    }
+
+    const db = await connection();
+    const objectId = new ObjectId(id);
+
+    let result = await db.collection("labour").updateOne(
+      { _id: objectId },
+      { $set: { status, updateAt: new Date() } }
+    );
+
+    if (result.matchedCount === 0) {
+      result = await db.collection("employer").updateOne(
+        { _id: objectId },
+        { $set: { status, updateAt: new Date() } }
+      );
+    }
+
+    if (result.matchedCount === 0) {
+      return resp.status(404).send({
+        success: false,
+        message: "User not found"
+      })
+    }
+
+    resp.send({
+      success: true,
+      message: "User status updated"
+    })
+  } catch (error) {
+    resp.status(500).send({
+      success: false,
+      message: "Failed to update user status"
+    })
+  }
+}
