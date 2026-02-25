@@ -18,38 +18,63 @@ const AdminDashboard = () => {
   const [employers, setEmployers] = useState(0);
   const [loading, setLoading] = useState(true);
 
+  const token = localStorage.getItem("token");
+
+  const fetchDashboard = useCallback(async () => {
+    try {
+      if (!token) {
+        navigate("/admin/login");
+        return;
+      }
+
+      const response = await fetch(
+        "http://localhost:4000/api/labour",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        navigate("/admin/login");
+        return;
+      }
+
+      const data = await response.json();
+
+      if (!Array.isArray(data)) {
+        navigate("/admin/login");
+        return;
+      }
+
+      setTotalUsers(data.length);
+
+      const approved = data.filter((u: any) => u.status === "accept");
+      const pending = data.filter((u: any) => u.status === "pending");
+      const rejected = data.filter((u: any) => u.status === "reject");
+      const employerUsers = data.filter((u: any) => u.role === "employer");
+
+      setActiveWorkers(approved.length);
+      setPendingApprovals(pending.length);
+      setBlockedUsers(rejected.length);
+      setEmployers(employerUsers.length);
+      setLoading(false);
+
+    } catch (error) {
+      console.log("Dashboard error:", error);
+      navigate("/admin/login");
+    }
+  }, [token, navigate]);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    fetchDashboard();
+  }, [fetchDashboard]);
 
-
-    if (!token) {
-      navigate("/admin/login");
-      return;
-    }
-    fetch("http://localhost:4000/api/labour")
-      .then((res) => res.json())
-      .then((data) => {
-        setTotalUsers(data.length);
-
-
-        const approved = data.filter((item: any) => item.status === "approved");
-        const pending = data.filter((item: any) => item.status === "pending");
-        const employerUsers = data.filter(
-          (item: any) => item.role === "employer"
-        );
-
-
-        setActiveWorkers(approved.length);
-        setPendingApprovals(pending.length);
-        setEmployers(employerUsers.length);
-        setLoading(false);
-      })
-      .catch(() => {
-        navigate("/admin/login");
-      });
-  }, [navigate]);
-
+  useEffect(() => {
+    const interval = setInterval(fetchDashboard, 5000);
+    return () => clearInterval(interval);
+  }, [fetchDashboard]);
 
   if (loading) {
     return (
@@ -64,9 +89,57 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-[#FAF6F5]">
       <TopBar />
 
+      <div className="max-w-[1500px] mx-auto px-4 sm:px-6 py-6 space-y-8">
 
-      <div className="max-w-[1500px] mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
 
+          <div
+            onClick={() => navigate("/admin/users")}
+            className="cursor-pointer"
+          >
+            <StatCard
+              title="Total Users"
+              value={totalUsers}
+              badge="100%"
+              icon="👤"
+            />
+          </div>
+
+          <div
+            onClick={() => navigate("/admin/users?status=accept&role=labour")}
+            className="cursor-pointer"
+          >
+            <StatCard
+              title="Active Workers"
+              value={activeWorkers}
+              badge={`${totalUsers ? Math.round((activeWorkers / totalUsers) * 100) : 0}%`}
+              icon="👥"
+            />
+          </div>
+
+          <div
+            onClick={() => navigate("/admin/users?status=accept&role=employer")}
+            className="cursor-pointer"
+          >
+            <StatCard
+              title="Employers"
+              value={employers}
+              badge={`${totalUsers ? Math.round((employers / totalUsers) * 100) : 0}%`}
+              icon="💼"
+            />
+          </div>
+
+          <div
+            onClick={() => navigate("/admin/users?status=pending")}
+            className="cursor-pointer"
+          >
+            <StatCard
+              title="Pending Approvals"
+              value={pendingApprovals}
+              badge={`${totalUsers ? Math.round((pendingApprovals / totalUsers) * 100) : 0}%`}
+              icon="⚠️"
+            />
+          </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           <StatCard title="Total Users" value={totalUsers} badge="+12%" icon="👤" />
@@ -75,6 +148,7 @@ const AdminDashboard = () => {
           <StatCard title="Pending Approvals" value={pendingApprovals} badge="+4%" icon="⚠️" />
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
           <div className="lg:col-span-3">
             <StatusBarChart
               active={activeWorkers}
@@ -91,6 +165,7 @@ const AdminDashboard = () => {
               employers={employers}
             />
           </div>
+
         </div>
 
 
@@ -100,6 +175,7 @@ const AdminDashboard = () => {
           </div>
           <SideCards />
         </div>
+
       </div>
     </div>
   );
