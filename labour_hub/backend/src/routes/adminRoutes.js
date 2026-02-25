@@ -4,7 +4,10 @@ import {
     getAdminProfile, updateAdminProfile, changeAdminPassword,
     googleAdminLogin, recentRegistrations, getAllUsers, updateUserStatus,
     getLabourVerification,
-    updateLabourVerificationStatus
+    updateLabourVerificationStatus,
+    getDashboardStats,
+    getSingleUser,
+    updateUserProfileStatus
 } from "../controllers/adminController.js";
 import { verifyAdminToken } from "../middlewares/authMiddleware.js";
 
@@ -47,10 +50,11 @@ adminRouter.put("/change-password", verifyAdminToken, changeAdminPassword);
 adminRouter.get("/recent-users", verifyAdminToken, recentRegistrations);
 adminRouter.get("/all-users", verifyAdminToken, getAllUsers);
 adminRouter.put("/all-users/:id/status", verifyAdminToken, updateUserStatus);
-adminRouter.get("/admin/labour-verification", verifyAdminToken, getLabourVerification);
-adminRouter.put("/admin/labour-verification-status/:id", verifyAdminToken, updateLabourVerificationStatus)
-
-
+adminRouter.get("/admin/labour-verification",verifyAdminToken,getLabourVerification);
+adminRouter.put("/admin/labour-verification-status/:id",verifyAdminToken,updateLabourVerificationStatus);
+adminRouter.get("/dashboard-stats",verifyAdminToken,getDashboardStats);
+adminRouter.get("/user/:id", verifyAdminToken, getSingleUser);
+adminRouter.put("/all-user/:id/status", verifyAdminToken, updateUserProfileStatus);
 
 
 export default adminRouter;

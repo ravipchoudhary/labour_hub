@@ -495,3 +495,122 @@ export const updateLabourVerificationStatus = async (req, resp) => {
   }
 }
 
+export const getDashboardStats = async (req, resp) => {
+  try {
+    const db = await connection();
+
+    const totalUsers = await db.collection("labour").countDocuments();
+
+    const activeWorkers = await db.collection("labour").countDocuments({
+      role: { $regex: "^labour$", $options: "i" },
+      status: { $regex: "^accept$", $options: "i" }
+    });
+
+    const employers = await db.collection("labour").countDocuments({
+      role: { $regex: "^employer$", $options: "i" },
+      status: { $regex: "^accept$", $options: "i" }
+    });
+
+    const pending = await db.collection("labour").countDocuments({
+      status: { $regex: "^pending$", $options: "i" }
+    });
+
+    const blocked = await db.collection("labour").countDocuments({
+      status: { $regex: "^reject$", $options: "i" }
+    });
+
+    resp.status(200).send({
+      success: true,
+      data: {
+        totalUsers,
+        approved: activeWorkers,
+        pending,
+        blocked,
+        employers
+      }
+    });
+
+  } catch (error) {
+    resp.status(500).send({
+      success: false,
+      message: "Dashboard stats failed"
+    });
+  }
+};
+
+export const getSingleUser = async (req, resp) => {
+  try {
+    const { id } = req.params;
+    const db = await connection();
+    const objectId = new ObjectId(id);
+
+    let user = await db.collection("labour").findOne({ _id: objectId });
+
+    if (!user) {
+      user = await db.collection("employer").findOne({ _id: objectId })
+    }
+    if (!user) {
+      return resp.status(404).send({
+        success: false,
+        message: "User not found"
+      })
+    }
+
+    resp.send({
+      success: true,
+      data: user
+    })
+  }
+  catch (error) {
+    resp.status(500).send({
+      success: false,
+      message: "Failed to fetch User"
+    })
+  }
+}
+
+export const updateUserProfileStatus = async (req, resp) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!["pending", "accept", "reject"].includes(status)) {
+      return resp.status(400).send({
+        success: false,
+        message: "Invalid status value"
+      })
+    }
+
+    const db = await connection();
+    const objectId = new ObjectId(id);
+
+    let result = await db.collection("labour").updateOne(
+      { _id: objectId },
+      { $set: { status, updateAt: new Date() } }
+    );
+
+    if (result.matchedCount === 0) {
+      result = await db.collection("employer").updateOne(
+        { _id: objectId },
+        { $set: { status, updateAt: new Date() } }
+      );
+    }
+
+    if (result.matchedCount === 0) {
+      return resp.status(404).send({
+        success: false,
+        message: "User not found"
+      })
+    }
+
+    resp.send({
+      success: true,
+      message: "User status updated"
+    })
+  } catch (error) {
+    resp.status(500).send({
+      success: false,
+      message: "Failed to update user status"
+    })
+  }
+}
