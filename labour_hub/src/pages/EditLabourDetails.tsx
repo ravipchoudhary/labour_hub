@@ -91,7 +91,6 @@ export default function EditLabourProfile() {
     setNewSkill("");
   };
 
-
   const removeSkill = (skill: string) => {
     setSkills(skills.filter((s) => s !== skill));
   };
