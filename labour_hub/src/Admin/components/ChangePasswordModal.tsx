@@ -4,6 +4,10 @@ import { useNavigate } from "react-router-dom";
 const ChangePassword = () => {
   const navigate = useNavigate();
 
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
   const [form, setForm] = useState({
     currentPassword: "",
     newPassword: "",
@@ -67,35 +71,63 @@ const ChangePassword = () => {
         <label className="block mb-1 text-sm font-medium">
           Current Password
         </label>
-        <input
-          type="password"
-          name="currentPassword"
-          value={form.currentPassword}
-          onChange={handleChange}
-          className="w-full border p-3 mb-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
-        />
+        <div className="relative">
+          <input
+            type={showCurrent ? "text" : "password"}
+            name="currentPassword"
+            value={form.currentPassword}
+            onChange={handleChange}
+            className="w-full border p-3 mb-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
+          />
+          <span
+            onClick={() => setShowCurrent(!showCurrent)}
+            className="absolute right-3 top-3 cursor-pointer text-sm text-gray-600"
+          >
+            {showCurrent ? "Hide" : "Show"}
+          </span>
+        </div>
 
+
+        {/* New Password */}
         <label className="block mb-1 text-sm font-medium">
           New Password
         </label>
-        <input
-          type="password"
-          name="newPassword"
-          value={form.newPassword}
-          onChange={handleChange}
-          className="w-full border p-3 mb-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
-        />
+        <div className="relative">
+          <input
+            type={showNew ? "text" : "password"}
+            name="newPassword"
+            value={form.newPassword}
+            onChange={handleChange}
+            className="w-full border p-3 mb-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
+          />
+          <span
+            onClick={() => setShowNew(!showNew)}
+            className="absolute right-3 top-3 cursor-pointer text-sm text-gray-600"
+          >
+            {showNew ? "Hide" : "Show"}
+          </span>
+        </div>
 
+
+        {/* Confirm New Password */}
         <label className="block mb-1 text-sm font-medium">
           Confirm New Password
         </label>
-        <input
-          type="password"
-          name="confirmPassword"
-          value={form.confirmPassword}
-          onChange={handleChange}
-          className="w-full border p-3 mb-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
-        />
+        <div className="relative">
+          <input
+            type={showConfirm ? "text" : "password"}
+            name="confirmPassword"
+            value={form.confirmPassword}
+            onChange={handleChange}
+            className="w-full border p-3 mb-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
+          />
+          <span
+            onClick={() => setShowConfirm(!showConfirm)}
+            className="absolute right-3 top-3 cursor-pointer text-sm text-gray-600"
+          >
+            {showConfirm ? "Hide" : "Show"}
+          </span>
+        </div>
 
         <button
           onClick={handleSubmit}
@@ -106,11 +138,10 @@ const ChangePassword = () => {
 
         {message && (
           <div
-            className={`mt-4 p-2 rounded text-sm font-medium ${
-              success
+            className={`mt-4 p-2 rounded text-sm font-medium ${success
                 ? "bg-green-100 text-green-700"
                 : "bg-red-100 text-red-700"
-            }`}
+              }`}
           >
             {message}
           </div>
