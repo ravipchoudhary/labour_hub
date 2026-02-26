@@ -242,19 +242,39 @@ const Input = ({
   value,
   onChange,
   name,
-}: InputProps) => (
-  <div>
-    <label className="block text-sm font-medium mb-1">{label}</label>
-    <input
-      name={name}
-      type={type}
-      value={value}
-      onChange={onChange}
-      placeholder={placeholder}
-      className="w-full border rounded-md px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-400"
-      required
-    />
-  </div>
-);
+}: InputProps) => {
+  const [showPassword, setShowPassword] = useState(false);
+  const isPassword = type === "password";
+
+  return (
+    <div className="mb-4">
+      <label className="block text-sm font-medium mb-1">
+        {label}
+      </label>
+
+      <div className="relative">
+        <input
+          name={name}
+          type={isPassword && showPassword ? "text" : type}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          className="w-full border rounded-md px-3 py-2.5 pr-12 focus:outline-none focus:ring-2 focus:ring-orange-400"
+          required
+        />
+
+        {isPassword && (
+          <span
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-2.5 cursor-pointer text-sm text-gray-600 select-none"
+          >
+            {showPassword ? "Hide" : "Show"}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export default Registeremp;
 
