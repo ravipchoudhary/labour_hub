@@ -1,7 +1,50 @@
 import { ObjectId } from "mongodb";
 import { connection } from "../config/db.js";
 
+export const getEmployeeRejectedRequests = async (req, res) => {
+    try {
+        const db = await connection();
+        const employeeId = new ObjectId(req.user.id);
 
+        const rejected = await db.collection("hireRequests").aggregate([
+            { $match: { employeeId, status: "rejected" } },
+
+            {
+                $lookup: {
+                    from: "labour",
+                    localField: "labourId",
+                    foreignField: "_id",
+                    as: "labour",
+                },
+            },
+            { $unwind: { path: "$labour", preserveNullAndEmptyArrays: true } },
+
+            {
+                $project: {
+                    status: 1,
+                    message: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    labour: {
+                        _id: "$labour._id",
+                        name: "$labour.name",
+                        phone: "$labour.phone",
+                        profession: "$labour.profession",
+                        location: "$labour.location",
+                        rating: "$labour.rating",
+                    },
+                },
+            },
+
+            { $sort: { updatedAt: -1 } },
+        ]).toArray();
+
+        return res.json({ data: rejected });
+    } catch (err) {
+        console.log("getEmployeeRejectedRequests error:", err);
+        return res.status(500).json({ message: "Server error" });
+    }
+};
 export const getLabourAllRequests = async (req, res) => {
     try {
         const db = await connection();
@@ -262,26 +305,45 @@ export const updateHireRequestStatus = async (req, res) => {
 
 
         if (status === "accepted") {
+            const now = new Date();
 
-            const today = new Date();
+            const startTime = new Date(now);
+            startTime.setHours(10, 0, 0, 0);
 
-            const startTime = new Date(today);
-            startTime.setHours(10, 0, 0, 0); // 10 AM
+            const endTime = new Date(now);
+            endTime.setHours(20, 0, 0, 0);
 
-            const endTime = new Date(today);
-            endTime.setHours(20, 0, 0, 0); // 8 PM
+            if (now.getTime() > endTime.getTime()) {
+                startTime.setDate(startTime.getDate() + 1);
+                endTime.setDate(endTime.getDate() + 1);
+            }
 
+            const labourDoc = await db.collection("labour").findOne({ _id: hireReq.labourId });
+
+            const amount = Number(labourDoc?.price || 0);
+            const work = labourDoc?.profession || labourDoc?.skills?.[0] || "Work";
+            const location = labourDoc?.location || "";
+
+            const month = startTime.toLocaleString("en-US", { month: "short" }); // "Jan", "Feb"...
 
             await db.collection("jobs").insertOne({
                 labourId: hireReq.labourId,
                 employeeId: hireReq.employeeId,
                 requestId: hireReq._id,
+
                 status: "pending",
                 startTime,
                 endTime,
+
+                work,
+                location,
+                amount,
+                month,
+
                 createdAt: new Date(),
                 updatedAt: new Date(),
             });
+
             await db.collection("labour").updateOne(
                 { _id: new ObjectId(req.user.id) },
                 { $set: { available: false, updatedAt: new Date() } }
@@ -293,5 +355,93 @@ export const updateHireRequestStatus = async (req, res) => {
     } catch (err) {
         console.log("updateHireRequestStatus error:", err);
         return res.status(500).json({ message: "Server error" });
+    }
+};
+export const getEmployeeCompletedJobs = async (req, res) => {
+    try {
+        const db = await connection();
+        const employeeId = new ObjectId(req.user.id);
+
+        const jobs = await db.collection("jobs").aggregate([
+            { $match: { employeeId, status: "completed" } },
+
+            {
+                $lookup: {
+                    from: "labour",
+                    localField: "labourId",
+                    foreignField: "_id",
+                    as: "labour",
+                },
+            },
+            { $unwind: { path: "$labour", preserveNullAndEmptyArrays: true } },
+
+            {
+                $project: {
+                    status: 1,
+                    updatedAt: 1,
+                    createdAt: 1,
+                    amount: 1,
+                    work: 1,
+                    location: 1,
+                    startTime: 1,
+                    endTime: 1,
+
+                    labour: {
+                        _id: "$labour._id",
+                        name: "$labour.name",
+                        phone: "$labour.phone",
+                        profession: "$labour.profession",
+                        rating: "$labour.rating",
+                        location: "$labour.location",
+                        city: "$labour.city",
+                    },
+                },
+            },
+
+            { $sort: { updatedAt: -1 } },
+        ]).toArray();
+
+        return res.json({ data: jobs });
+    } catch (err) {
+        console.log("getEmployeeCompletedJobs error:", err);
+        return res.status(500).json({ message: "Server error" });
+    }
+};
+export const getEmployeeContactedWorkers = async (req, res) => {
+    try {
+        const db = await connection();
+        const employeeId = new ObjectId(req.user.id);
+
+        const data = await db.collection("hireRequests").aggregate([
+            { $match: { employeeId } },
+            {
+                $lookup: {
+                    from: "labour",
+                    localField: "labourId",
+                    foreignField: "_id",
+                    as: "labour",
+                },
+            },
+            { $unwind: { path: "$labour", preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    status: 1,
+                    createdAt: 1,
+                    labour: {
+                        _id: "$labour._id",
+                        name: "$labour.name",
+                        phone: "$labour.phone",
+                        location: "$labour.location",
+                        profession: "$labour.profession",
+                        available: "$labour.available",
+                    },
+                },
+            },
+            { $sort: { createdAt: -1 } },
+        ]).toArray();
+
+        res.json({ data });
+    } catch (e) {
+        res.status(500).json({ message: "Server error" });
     }
 };

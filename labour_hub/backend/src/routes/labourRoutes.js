@@ -13,34 +13,35 @@ import { protect } from "../middlewares/authMiddleware.js";
 
 
 const router = express.Router();
-
-
-
-
 router.post("/register", registerLabour);
 router.post("/login", loginLabour);
-
-
-
-
 router.get("/profile", protect, getLabourProfile);
 router.put("/profile", protect, updateLabourProfile);
 router.patch("/profile", protect, updateLabourProfile);
-
-
-
-
 router.patch("/availability", protect, updateAvailability);
-
-
-
-
 router.get("/jobs", protect, async (req, res) => {
     try {
         const db = await connection();
         const labourId = new ObjectId(req.user.id);
 
+        const now = new Date();
 
+        await db.collection("jobs").updateMany(
+            { labourId, status: "pending", endTime: { $lte: now } },
+            { $set: { status: "completed", updatedAt: now } }
+        );
+
+        const stillPending = await db.collection("jobs").countDocuments({
+            labourId,
+            status: "pending",
+        });
+
+        if (stillPending === 0) {
+            await db.collection("labour").updateOne(
+                { _id: labourId },
+                { $set: { available: true, updatedAt: now } }
+            );
+        }
         const jobs = await db
             .collection("jobs")
             .find({ labourId })
@@ -98,9 +99,6 @@ router.get("/:id", async (req, res) => {
         return res.status(500).json({ message: error.message });
     }
 });
-
-
-
 
 router.post("/:id/review", async (req, res) => {
     try {
