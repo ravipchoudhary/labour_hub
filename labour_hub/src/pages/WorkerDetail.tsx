@@ -11,7 +11,6 @@ import SimilarWorkers from "../components/worker/SimilarWorkers";
 import SafetyTips from "../components/worker/SafetyTips";
 import WorkerContactCard from "../components/worker/WorkerContactCard";
 
-
 const API_BASE = "http://localhost:4000";
 
 
@@ -209,7 +208,6 @@ const WorkerDetail = () => {
 
     if (loading) return <p className="p-8">Loading...</p>;
     if (!worker) return <p className="p-8">Worker not found</p>;
-
 
     return (
         <div className="bg-gray-100 min-h-screen p-8">
