@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { Lock, ArrowLeft } from "lucide-react";
 
 const ResetPasswordDirect = () => {
   const navigate = useNavigate();
@@ -8,12 +9,14 @@ const ResetPasswordDirect = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [msg, setMsg] = useState("");
+  const [success, setSuccess] = useState(false);
 
   const submit = async (e: any) => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
       setMsg("Passwords do not match");
+      setSuccess(false);
       return;
     }
 
@@ -25,6 +28,7 @@ const ResetPasswordDirect = () => {
 
     const data = await res.json();
     setMsg(data.message);
+    setSuccess(data.success);
 
     if (data.success) {
       setTimeout(() => navigate("/admin/login"), 1500);
@@ -32,30 +36,69 @@ const ResetPasswordDirect = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <form onSubmit={submit} className="bg-white p-6 shadow w-96">
-        <h2 className="text-xl font-bold mb-4">Set New Password</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#c7d5df] via-[#e8caa7] to-[#e6a1a9]">
 
-        <input
-          type="password"
-          placeholder="New password"
-          className="w-full border border-gray-300 rounded-xl px-4 py-2 mb-4 outline-none focus:ring-2 focus:ring-gray-200"
-          onChange={(e) => setPassword(e.target.value)}
-        />
+      <div className="w-full max-w-md bg-white shadow-xl rounded-3xl p-8">
 
-        <input
-          type="password"
-          placeholder="Confirm password"
-          className="w-full border border-gray-300 rounded-xl px-4 py-2 mb-4 outline-none focus:ring-2 focus:ring-gray-200"
-          onChange={(e) => setConfirmPassword(e.target.value)}
-        />
-
-        <button className="w-full bg-[#fb923c] text-white py-2 rounded-xl font-bold">
-          Reset Password
+        <button
+          onClick={() => navigate("/admin/login")}
+          className="flex items-center text-gray-600 mb-6 hover:text-orange-600 transition"
+        >
+          <ArrowLeft size={18} className="mr-2" />
+          Back to Login
         </button>
 
-        {msg && <p className="text-sm mt-3 text-red-500">{msg}</p>}
-      </form>
+        <h2 className="text-3xl font-bold text-gray-800 text-center mb-2">
+          Set New Password
+        </h2>
+
+        <p className="text-gray-500 text-center mb-6 text-sm">
+          Create a strong new password
+        </p>
+
+        <form onSubmit={submit} className="space-y-5">
+
+          <div className="relative">
+            <Lock className="absolute left-3 top-3 text-gray-400" size={18} />
+            <input
+              type="password"
+              placeholder="New Password"
+              className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="relative">
+            <Lock className="absolute left-3 top-3 text-gray-400" size={18} />
+            <input
+              type="password"
+              placeholder="Confirm Password"
+              className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          <button className="w-full bg-orange-500 text-white py-3 rounded-xl font-semibold hover:bg-orange-600 transition duration-300 shadow-md">
+            Reset Password
+          </button>
+
+          {msg && (
+            <div
+              className={`mt-4 p-3 rounded-xl text-sm text-center font-medium ${
+                success
+                  ? "bg-green-100 text-green-700 border border-green-300"
+                  : "bg-red-100 text-red-700 border border-red-300"
+              }`}
+            >
+              {msg}
+            </div>
+          )}
+
+        </form>
+
+      </div>
     </div>
   );
 };

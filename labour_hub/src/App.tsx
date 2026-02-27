@@ -30,6 +30,8 @@ import ChangePassword from "./Admin/components/ChangePasswordModal";
 import CompletedJobs from "./pages/CompletedJobs";
 import RejectedWorkers from "./pages/RejectedWorkers";
 import ContactedWorkers from "./pages/ContactedWorkers";
+import UserProfile from "./Admin/pages/UserProfile";
+import Reports from "./Admin/pages/Reports";
 
 
 function App() {
@@ -88,6 +90,9 @@ function App() {
         <Route path="/admin/reset-password-direct" element={<ResetPasswordDirect />} />
         <Route path="/admin/profile" element={<AdminProfile />} />
         <Route path="/admin/change-password" element={<ChangePassword />} />
+        <Route path="/admin/users/:id" element={<UserProfile />} />
+        <Route path="/admin/reports" element={<Reports />} />
+
 
 
         <Route path="/register/worker" element={<Register />} />
