@@ -10,15 +10,16 @@ const Dashboard = () => {
     
     const [stats, setStats] = useState({
         workersContacted: 0,
-        activeSearches: 0,
+        rejected: 0,
         workersHired: 0,
+        completedJobs: 0,
     });
     useEffect(() => {
         const fetchStats = async () => {
             try {
                 const token = localStorage.getItem("token");
 
-                const res = await fetch("http://localhost:4000/api/labour/dashboard", {
+                const res = await fetch("http://localhost:4000/api/employees/dashboard", {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -33,8 +34,9 @@ const Dashboard = () => {
                 const data = await res.json();
                 setStats({
                     workersContacted: data.workersContacted ?? 0,
-                    activeSearches: data.activeSearches ?? 0,
+                    rejected: data.rejected ?? 0,
                     workersHired: data.workersHired ?? 0,
+                    completedJobs: data.completedJobs ?? 0,
                 });
             } catch (err) {
                 console.error("fetchStats error:", err);
@@ -48,10 +50,10 @@ const Dashboard = () => {
             <h2 className="text-2xl font-semibold mb-6">Welcome back, Employer!</h2>
 
             <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                <StatCard value={stats.workersContacted} title="Workers Contacted" icon={<span className="text-xl">👥</span>} onClick={() => navigate("/hired-workers")} />
-                <StatCard value={stats.activeSearches} title="Active Searches" icon={<span className="text-xl">🔍</span>} onClick={() => navigate("/find-labour")} />
+                <StatCard value={stats.workersContacted} title="Workers Contacted" icon={<span className="text-xl">👥</span>} onClick={() => navigate("/contacted-workers")} />
+                <StatCard value={stats.rejected} title="Rejected" icon={<span className="text-xl">🔍</span>} onClick={() => navigate("/rejected-workers")} />
                 <StatCard value={stats.workersHired} title="Workers Hired" icon={<span className="text-xl">✅</span>} onClick={() => navigate("/hired-workers")} />
-                <StatCard value="2h" title="Avg Response Time" icon={<span className="text-xl">⏱️</span>} />
+                <StatCard value={stats.completedJobs} title="Completed Jobs" icon={<span className="text-xl">🏁</span>} onClick={() => navigate("/completed-jobs")} />
             </div>
 
             <div className="mt-10 rounded-xl border bg-white p-6 shadow-md">

@@ -75,9 +75,7 @@ const Footer = () => {
                                     Terms of Service
                                 </Link>
                             </li>
-                            <li className="hover:underline cursor-pointer">Help Center</li>
-                            <li> <Link to="/privacy-policy" className="hover:underline cursor-pointer">Privacy Policy</Link></li>
-                            <li className="hover:underline cursor-pointer">Terms of Service</li>
+                            
                         </ul>
                     </div>
                 </div>

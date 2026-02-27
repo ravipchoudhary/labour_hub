@@ -27,6 +27,9 @@ import ForgotPassword from "./Admin/ForgotPassword";
 import ResetPasswordDirect from "./Admin/ResetPasswordDirect";
 import AdminProfile from "./Admin/pages/AdminProfile";
 import ChangePassword from "./Admin/components/ChangePasswordModal";
+import CompletedJobs from "./pages/CompletedJobs";
+import RejectedWorkers from "./pages/RejectedWorkers";
+import ContactedWorkers from "./pages/ContactedWorkers";
 import UserProfile from "./Admin/pages/UserProfile";
 import Reports from "./Admin/pages/Reports";
 
@@ -73,6 +76,9 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/hired-workers" element={<HiredWorkers />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/rejected-workers" element={<RejectedWorkers />} />
+        <Route path="/completed-jobs" element={<CompletedJobs />} />
+        <Route path="/contacted-workers" element={<ContactedWorkers />} />
 
 
         {/* Admin route */}
