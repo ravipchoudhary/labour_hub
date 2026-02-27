@@ -5,6 +5,8 @@ import { Lock, ArrowLeft } from "lucide-react";
 const ResetPasswordDirect = () => {
   const navigate = useNavigate();
   const { state } = useLocation();
+  const [showNewPassword, setShowNewPassword] = useState(false);
+const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");

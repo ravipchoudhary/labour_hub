@@ -5,6 +5,10 @@ import { Lock, ArrowLeft } from "lucide-react";
 const ChangePassword = () => {
   const navigate = useNavigate();
 
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
   const [form, setForm] = useState({
     currentPassword: "",
     newPassword: "",

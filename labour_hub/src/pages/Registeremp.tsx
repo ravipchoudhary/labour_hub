@@ -13,10 +13,8 @@ type InputProps = {
   ) => void;
 };
 
-
 const Registeremp = () => {
   const navigate = useNavigate();
-
 
   const [formData, setFormData] = useState({
     name: "",
@@ -258,7 +256,5 @@ const Input = ({
     />
   </div>
 );
-
-
 export default Registeremp;
 

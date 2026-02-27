@@ -24,7 +24,7 @@ const Login = () => {
 
 
   const [form, setForm] = useState({ email: "", password: "" });
-
+  const [showPassword, setShowPassword] = useState(false);
 
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
@@ -255,7 +255,7 @@ const Login = () => {
 
             <div className="mb-2 relative">
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 value={form.password}
                 onChange={(e) => {
@@ -263,10 +263,23 @@ const Login = () => {
                   setPasswordError("");
                   setCommonError("");
                 }}
-                className={`w-full bg-gray-100 px-4 py-3 rounded-lg outline-none focus:ring-2 ${passwordError ? "border border-red-500 focus:ring-red-200" : "focus:ring-gray-200"
+                className={`w-full bg-gray-100 px-4 py-3 rounded-lg outline-none focus:ring-2 ${passwordError
+                    ? "border border-red-500 focus:ring-red-200"
+                    : "focus:ring-gray-200"
                   }`}
               />
-              {passwordError && <p className="text-red-500 text-sm mt-1">{passwordError}</p>}
+
+              {/* Show/Hide Button */}
+              <span
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3 cursor-pointer text-sm text-gray-600"
+              >
+                {showPassword ? "Hide" : "Show"}
+              </span>
+
+              {passwordError && (
+                <p className="text-red-500 text-sm mt-1">{passwordError}</p>
+              )}
             </div>
 
 
