@@ -14,8 +14,8 @@ const AdminDashboard = () => {
   const [activeWorkers, setActiveWorkers] = useState(0);
   const [pendingApprovals, setPendingApprovals] = useState(0);
   const [employers, setEmployers] = useState(0);
-  const [blockedUsers, setBlockedUsers] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [blockedUsers, setBlockedUsers] = useState(0);
 
   const token = localStorage.getItem("token");
 
@@ -92,8 +92,17 @@ const AdminDashboard = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
 
-          <div onClick={() => navigate("/admin/users")} className="cursor-pointer">
-            <StatCard title="Total Users" value={totalUsers} badge="100%" icon="👤" />
+          <div
+            onClick={() => navigate("/admin/users")}
+            className="cursor-pointer"
+          
+          >
+            <StatCard
+              title="Total Users"
+              value={totalUsers}
+              badge="100%"
+              icon="👤"
+            />
           </div>
 
           <div onClick={() => navigate("/admin/users?status=accept&role=labour")} className="cursor-pointer">
@@ -121,6 +130,7 @@ const AdminDashboard = () => {
               badge={`${totalUsers ? Math.round((pendingApprovals / totalUsers) * 100) : 0}%`}
               icon="⚠️"
             />
+          </div>
           </div>
 
         </div>
@@ -151,7 +161,6 @@ const AdminDashboard = () => {
         </div>
 
       </div>
-    </div>
   );
 };
 

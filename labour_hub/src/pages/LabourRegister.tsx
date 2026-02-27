@@ -22,6 +22,8 @@ type FormData = {
 const Register = () => {
   const navigate = useNavigate();
 
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [formData, setFormData] = useState<FormData>({
     fullName: "",
@@ -345,25 +347,44 @@ const Register = () => {
             </div>
 
 
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full border rounded-lg px-4 py-2"
-            />
+            {/* Password */}
+            <div className="relative mb-4">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="Password"
+                value={formData.password}
+                onChange={handleChange}
+                className="w-full border rounded-lg px-4 py-2"
+              />
+
+              <span
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-2 cursor-pointer text-sm text-gray-600"
+              >
+                {showPassword ? "Hide" : "Show"}
+              </span>
+            </div>
 
 
-            <input
-              type="password"
-              name="confirmPassword"
-              placeholder="Confirm Password"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className="w-full border rounded-lg px-4 py-2"
-            />
+            {/* Confirm Password */}
+            <div className="relative mb-4">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                name="confirmPassword"
+                placeholder="Confirm Password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className="w-full border rounded-lg px-4 py-2"
+              />
 
+              <span
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-2 cursor-pointer text-sm text-gray-600"
+              >
+                {showConfirmPassword ? "Hide" : "Show"}
+              </span>
+            </div>
 
 
 
