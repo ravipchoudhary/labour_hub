@@ -121,6 +121,7 @@ const Login = () => {
 
       if (res.ok && parsed.ok && parsed.data?.token) {
         localStorage.setItem("token", parsed.data.token);
+        localStorage.setItem("userData", JSON.stringify(parsed.data));
         localStorage.setItem("role", "admin");
         window.dispatchEvent(new Event("auth-changed"));
         navigate("/admin/dashboard", { replace: true });
@@ -140,6 +141,7 @@ const Login = () => {
 
       if (res.ok && parsed.ok && parsed.data?.token) {
         localStorage.setItem("token", parsed.data.token);
+        localStorage.setItem("userData", JSON.stringify(parsed.data));
         localStorage.setItem("role", "labour");
 
 
@@ -169,6 +171,7 @@ const Login = () => {
 
       if (res.ok && parsed.ok && parsed.data?.token) {
         localStorage.setItem("token", parsed.data.token);
+        localStorage.setItem("userData", JSON.stringify(parsed.data));
         localStorage.setItem("role", "employee");
 
 

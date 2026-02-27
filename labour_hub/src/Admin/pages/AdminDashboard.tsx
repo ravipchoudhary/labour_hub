@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import TopBar from "../components/Topbar";
 import StatCard from "../components/StatCard";
 import RecentRegistrations from "../components/RecentRegistrations";
@@ -17,6 +17,7 @@ const AdminDashboard = () => {
   const [pendingApprovals, setPendingApprovals] = useState(0);
   const [employers, setEmployers] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [blockedUsers, setBlockedUsers] = useState(0);
 
   const token = localStorage.getItem("token");
 
@@ -96,6 +97,7 @@ const AdminDashboard = () => {
           <div
             onClick={() => navigate("/admin/users")}
             className="cursor-pointer"
+          
           >
             <StatCard
               title="Total Users"
@@ -139,6 +141,7 @@ const AdminDashboard = () => {
               badge={`${totalUsers ? Math.round((pendingApprovals / totalUsers) * 100) : 0}%`}
               icon="⚠️"
             />
+          </div>
           </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
