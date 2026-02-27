@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import TopBar from "../components/Topbar";
 import StatCard from "../components/StatCard";
 import RecentRegistrations from "../components/RecentRegistrations";
@@ -7,15 +7,14 @@ import SideCards from "../components/Sidecards";
 import StatusBarChart from "../components/StatusBarChart";
 import UserTypePieChart from "../components/UserTypePieChart";
 
-
 const AdminDashboard = () => {
   const navigate = useNavigate();
-
 
   const [totalUsers, setTotalUsers] = useState(0);
   const [activeWorkers, setActiveWorkers] = useState(0);
   const [pendingApprovals, setPendingApprovals] = useState(0);
   const [employers, setEmployers] = useState(0);
+  const [blockedUsers, setBlockedUsers] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem("token");
@@ -27,40 +26,41 @@ const AdminDashboard = () => {
         return;
       }
 
-      const response = await fetch(
-        "http://localhost:4000/api/labour",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const [adminRes, labourRes] = await Promise.all([
+        fetch("http://localhost:4000/admin/dashboard-stats", {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch("http://localhost:4000/api/labour", {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
 
-      if (!response.ok) {
+      if (!adminRes.ok || !labourRes.ok) {
         navigate("/admin/login");
         return;
       }
 
-      const data = await response.json();
+      const adminData = await adminRes.json();
+      const labourData = await labourRes.json();
 
-      if (!Array.isArray(data)) {
+      if (!adminData.success || !Array.isArray(labourData)) {
         navigate("/admin/login");
         return;
       }
 
-      setTotalUsers(data.length);
+      const total = labourData.length;
+      const approved = labourData.filter((u: any) => u.status === "accept");
+      const pending = labourData.filter((u: any) => u.status === "pending");
+      const rejected = labourData.filter((u: any) => u.status === "reject");
+      const employerUsers = labourData.filter((u: any) => u.role === "employer");
 
-      const approved = data.filter((u: any) => u.status === "accept");
-      const pending = data.filter((u: any) => u.status === "pending");
-      const rejected = data.filter((u: any) => u.status === "reject");
-      const employerUsers = data.filter((u: any) => u.role === "employer");
-
+      setTotalUsers(total);
       setActiveWorkers(approved.length);
       setPendingApprovals(pending.length);
       setBlockedUsers(rejected.length);
       setEmployers(employerUsers.length);
-      setLoading(false);
 
+      setLoading(false);
     } catch (error) {
       console.log("Dashboard error:", error);
       navigate("/admin/login");
@@ -84,7 +84,6 @@ const AdminDashboard = () => {
     );
   }
 
-
   return (
     <div className="min-h-screen bg-[#FAF6F5]">
       <TopBar />
@@ -93,22 +92,11 @@ const AdminDashboard = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
 
-          <div
-            onClick={() => navigate("/admin/users")}
-            className="cursor-pointer"
-          >
-            <StatCard
-              title="Total Users"
-              value={totalUsers}
-              badge="100%"
-              icon="👤"
-            />
+          <div onClick={() => navigate("/admin/users")} className="cursor-pointer">
+            <StatCard title="Total Users" value={totalUsers} badge="100%" icon="👤" />
           </div>
 
-          <div
-            onClick={() => navigate("/admin/users?status=accept&role=labour")}
-            className="cursor-pointer"
-          >
+          <div onClick={() => navigate("/admin/users?status=accept&role=labour")} className="cursor-pointer">
             <StatCard
               title="Active Workers"
               value={activeWorkers}
@@ -117,10 +105,7 @@ const AdminDashboard = () => {
             />
           </div>
 
-          <div
-            onClick={() => navigate("/admin/users?status=accept&role=employer")}
-            className="cursor-pointer"
-          >
+          <div onClick={() => navigate("/admin/users?status=accept&role=employer")} className="cursor-pointer">
             <StatCard
               title="Employers"
               value={employers}
@@ -129,10 +114,7 @@ const AdminDashboard = () => {
             />
           </div>
 
-          <div
-            onClick={() => navigate("/admin/users?status=pending")}
-            className="cursor-pointer"
-          >
+          <div onClick={() => navigate("/admin/users?status=pending")} className="cursor-pointer">
             <StatCard
               title="Pending Approvals"
               value={pendingApprovals}
@@ -141,23 +123,17 @@ const AdminDashboard = () => {
             />
           </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <StatCard title="Total Users" value={totalUsers} badge="+12%" icon="👤" />
-          <StatCard title="Active Workers" value={activeWorkers} badge="+8%" icon="👥" />
-          <StatCard title="Employers" value={employers} badge="+5%" icon="💼" />
-          <StatCard title="Pending Approvals" value={pendingApprovals} badge="+4%" icon="⚠️" />
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
 
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           <div className="lg:col-span-3">
             <StatusBarChart
               active={activeWorkers}
               pending={pendingApprovals}
+              blocked={blockedUsers}
               total={totalUsers}
-              blocked={totalUsers - activeWorkers - pendingApprovals}
             />
           </div>
-
 
           <div className="lg:col-span-2">
             <UserTypePieChart
@@ -165,9 +141,7 @@ const AdminDashboard = () => {
               employers={employers}
             />
           </div>
-
         </div>
-
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
@@ -181,6 +155,4 @@ const AdminDashboard = () => {
   );
 };
 
-
 export default AdminDashboard;
-

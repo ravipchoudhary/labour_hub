@@ -5,12 +5,14 @@ import TopBar from "../components/Topbar";
 
 type Status = "pending" | "accept" | "reject";
 
+
 const UserManagement = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const searchFromUrl = searchParams.get("search") || "";
 
   const [users, setUsers] = useState<any[]>([]);
-  const [globalSearch, setGlobalSearch] = useState("");
+
 
   const token = localStorage.getItem("token");
 
@@ -28,7 +30,7 @@ const UserManagement = () => {
           params: {
             status: statusFromUrl !== "all" ? statusFromUrl : undefined,
             role: roleFromUrl !== "all" ? roleFromUrl : undefined,
-            search: globalSearch || undefined,
+            search: searchFromUrl || undefined,
           },
         }
       );
@@ -39,11 +41,13 @@ const UserManagement = () => {
     } catch (error) {
       console.log("Fetch error", error);
     }
-  }, [token, statusFromUrl, roleFromUrl, globalSearch]);
+  }, [token, statusFromUrl, roleFromUrl, searchFromUrl]);
 
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
+
+
 
   const updateStatus = async (id: string, status: Status) => {
     try {
@@ -95,8 +99,12 @@ const UserManagement = () => {
 
         <div className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col md:flex-row gap-4">
           <input
-            value={globalSearch}
-            onChange={(e) => setGlobalSearch(e.target.value)}
+            defaultValue={searchFromUrl}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                navigate(`/admin/users?search=${(e.target as HTMLInputElement).value}`);
+              }
+            }}
             placeholder="Search by name or email..."
             className="border border-gray-300 rounded-xl px-4 py-2 w-full md:w-[35%] outline-none"
           />
@@ -168,10 +176,10 @@ const UserManagement = () => {
                     <td className="px-6 text-center">
                       <span
                         className={`inline-flex min-w-[110px] h-[28px] text-white text-xs rounded-full items-center justify-center ${u.status === "pending"
-                            ? "bg-indigo-600"
-                            : u.status === "approved"
-                              ? "bg-green-600"
-                              : "bg-orange-500"
+                          ? "bg-indigo-600"
+                          : u.status === "accept"
+                            ? "bg-green-600"
+                            : "bg-orange-500"
                           }`}
                       >
                         {u.status}

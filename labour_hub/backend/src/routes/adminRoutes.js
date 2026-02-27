@@ -7,7 +7,11 @@ import {
     updateLabourVerificationStatus,
     getDashboardStats,
     getSingleUser,
-    updateUserProfileStatus
+    updateUserProfileStatus,
+    exportPDFData,
+    exportCSVData,
+    getReportsData,
+    
 } from "../controllers/adminController.js";
 import { verifyAdminToken } from "../middlewares/authMiddleware.js";
 
@@ -55,6 +59,10 @@ adminRouter.put("/admin/labour-verification-status/:id",verifyAdminToken,updateL
 adminRouter.get("/dashboard-stats",verifyAdminToken,getDashboardStats);
 adminRouter.get("/user/:id", verifyAdminToken, getSingleUser);
 adminRouter.put("/all-user/:id/status", verifyAdminToken, updateUserProfileStatus);
+adminRouter.get("/reports", verifyAdminToken, getReportsData);
+adminRouter.get("/reports/exports-csv", verifyAdminToken, exportCSVData);
+adminRouter.get("/reports/exports-pdf", verifyAdminToken, exportPDFData);
+
 
 
 export default adminRouter;
