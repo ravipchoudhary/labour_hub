@@ -4,6 +4,8 @@ import dotenv from "dotenv";
 import bcrypt from "bcrypt";
 import { ObjectId } from "mongodb";
 import { OAuth2Client } from "google-auth-library";
+import { Parser } from "json2csv";
+import PDFDocument from "pdfkit";
 
 
 
@@ -397,13 +399,13 @@ export const getAllUsers = async (req, resp) => {
 
 
     let filter = {};
-    if (role & role !== "All") {
+    if (role && role !== "all") {
       filter.role = role;
     }
-    else if (status & status !== "All") {
+    if (status && status !== "all") {
       filter.status = status;
     }
-    else if (search) {
+    if (search) {
       filter.$or = [
         { name: { $regex: search, $options: "i" } },
         { email: { $regex: search, $options: "i" } }
@@ -426,7 +428,7 @@ export const getAllUsers = async (req, resp) => {
 export const updateUserStatus = async (req, resp) => {
   try {
     const { id } = req.params;
-    const { status } = req.status;
+    const { status } = req.body;
 
 
     const db = await connection();
@@ -614,3 +616,103 @@ export const updateUserProfileStatus = async (req, resp) => {
     })
   }
 }
+
+
+
+export const getReportsData = async (req, res) => {
+  try {
+    const db = await connection();
+    const { days } = req.query;
+
+    let filter = {};
+
+    if (days) {
+      const pastDate = new Date();
+      pastDate.setDate(pastDate.getDate() - parseInt(days));
+      filter = { createdAt: { $gte: pastDate } };
+    }
+
+    const users = await db.collection("labour").find(filter).toArray();
+
+    const labourCount = users.filter(u => u.role === "labour").length;
+    const employerCount = users.filter(u => u.role === "employer").length;
+
+    const dailyMap = {};
+    users.forEach(user => {
+      const date = new Date(user.createdAt).toISOString().split("T")[0];
+      dailyMap[date] = (dailyMap[date] || 0) + 1;
+    });
+
+    const dailyGrowth = Object.keys(dailyMap).map(date => ({
+      date,
+      count: dailyMap[date]
+    }));
+
+    const monthlyArray = new Array(12).fill(0);
+    users.forEach(user => {
+      const month = new Date(user.createdAt).getMonth();
+      monthlyArray[month] += 1;
+    });
+
+    res.send({
+      success: true,
+      labourCount,
+      employerCount,
+      dailyGrowth,
+      monthlyData: monthlyArray,
+      total: users.length
+    });
+
+  } catch (error) {
+    res.status(500).send({ success: false });
+  }
+};
+
+
+export const exportCSVData = async (req, res) => {
+  try {
+    const db = await connection();
+    const users = await db.collection("labour").find().toArray();
+
+    let csv = "Name,Email,Role\n";
+
+    users.forEach(user => {
+      csv += `${user.name},${user.email},${user.role}\n`;
+    });
+
+    res.header("Content-Type", "text/csv");
+    res.attachment("report.csv");
+    return res.send(csv);
+
+  } catch (error) {
+    res.status(500).send({ success: false });
+  }
+};
+
+
+export const exportPDFData = async (req, res) => {
+  try {
+    const db = await connection();
+    const users = await db.collection("labour").find().toArray();
+
+    const doc = new PDFDocument();
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", "attachment; filename=report.pdf");
+
+    doc.pipe(res);
+
+    doc.fontSize(18).text("Urban Force Report", { align: "center" });
+    doc.moveDown();
+
+    users.forEach(user => {
+      doc.fontSize(12).text(
+        `Name: ${user.name} | Email: ${user.email} | Role: ${user.role}`
+      );
+    });
+
+    doc.end();
+
+  } catch (error) {
+    res.status(500).send({ success: false });
+  }
+};
