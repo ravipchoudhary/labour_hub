@@ -13,9 +13,10 @@ const AdminDashboard = () => {
   const [totalUsers, setTotalUsers] = useState(0);
   const [activeWorkers, setActiveWorkers] = useState(0);
   const [pendingApprovals, setPendingApprovals] = useState(0);
-  const [employers, setEmployers] = useState(0);
-  const [loading, setLoading] = useState(true);
   const [blockedUsers, setBlockedUsers] = useState(0);
+  const [employers, setEmployers] = useState(0);
+  const [labourCount, setLabourCount] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem("token");
 
@@ -26,54 +27,43 @@ const AdminDashboard = () => {
         return;
       }
 
-      const [adminRes, labourRes] = await Promise.all([
+      const [statsRes, labourRes] = await Promise.all([
         fetch("http://localhost:4000/admin/dashboard-stats", {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch("http://localhost:4000/api/labour", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
+        fetch("http://localhost:4000/api/labour"),
       ]);
 
-      if (!adminRes.ok || !labourRes.ok) {
+      if (!statsRes.ok || !labourRes.ok) {
         navigate("/admin/login");
         return;
       }
 
-      const adminData = await adminRes.json();
-      const labourData = await labourRes.json();
+      const statsData = await statsRes.json();
+      await labourRes.json();
 
-      if (!adminData.success || !Array.isArray(labourData)) {
+      if (!statsData.success) {
         navigate("/admin/login");
         return;
       }
 
-      const total = labourData.length;
-      const approved = labourData.filter((u: any) => u.status === "accept");
-      const pending = labourData.filter((u: any) => u.status === "pending");
-      const rejected = labourData.filter((u: any) => u.status === "reject");
-      const employerUsers = labourData.filter((u: any) => u.role === "employer");
+      const stats = statsData.data;
 
-      setTotalUsers(total);
-      setActiveWorkers(approved.length);
-      setPendingApprovals(pending.length);
-      setBlockedUsers(rejected.length);
-      setEmployers(employerUsers.length);
+      setTotalUsers(stats.totalUsers || 0);
+      setActiveWorkers(stats.approved || 0);
+      setPendingApprovals(stats.pending || 0);
+      setBlockedUsers(stats.blocked || 0);
+      setEmployers(stats.employers || 0);
+      setLabourCount(stats.labour || 0);
 
       setLoading(false);
-    } catch (error) {
-      console.log("Dashboard error:", error);
+    } catch {
       navigate("/admin/login");
     }
   }, [token, navigate]);
 
   useEffect(() => {
     fetchDashboard();
-  }, [fetchDashboard]);
-
-  useEffect(() => {
-    const interval = setInterval(fetchDashboard, 5000);
-    return () => clearInterval(interval);
   }, [fetchDashboard]);
 
   if (loading) {
@@ -92,50 +82,62 @@ const AdminDashboard = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
 
-          <div
-            onClick={() => navigate("/admin/users")}
-            className="cursor-pointer"
-          
-          >
-            <StatCard
-              title="Total Users"
-              value={totalUsers}
-              badge="100%"
-              icon="👤"
-            />
+          <div onClick={() => navigate("/admin/users")} className="cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+            <StatCard title="Total Users" value={totalUsers} badge="100%" icon="👤" />
           </div>
 
-          <div onClick={() => navigate("/admin/users?status=accept&role=labour")} className="cursor-pointer">
+          <div
+            onClick={() => navigate("/admin/users?status=accepted&role=labour")}
+            className="cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+          >
             <StatCard
               title="Active Workers"
               value={activeWorkers}
-              badge={`${totalUsers ? Math.round((activeWorkers / totalUsers) * 100) : 0}%`}
+              badge={
+                totalUsers > 0
+                  ? `${Math.round((activeWorkers / totalUsers) * 100)}%`
+                  : "0%"
+              }
               icon="👥"
             />
           </div>
 
-          <div onClick={() => navigate("/admin/users?status=accept&role=employer")} className="cursor-pointer">
+          <div
+            onClick={() => navigate("/admin/users?role=employee")}
+            className="cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+          >
             <StatCard
               title="Employers"
               value={employers}
-              badge={`${totalUsers ? Math.round((employers / totalUsers) * 100) : 0}%`}
+              badge={
+                totalUsers > 0
+                  ? `${Math.round((employers / totalUsers) * 100)}%`
+                  : "0%"
+              }
               icon="💼"
             />
           </div>
 
-          <div onClick={() => navigate("/admin/users?status=pending")} className="cursor-pointer">
+          <div
+            onClick={() => navigate("/admin/users?status=pending")}
+            className="cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+          >
             <StatCard
               title="Pending Approvals"
               value={pendingApprovals}
-              badge={`${totalUsers ? Math.round((pendingApprovals / totalUsers) * 100) : 0}%`}
+              badge={
+                totalUsers > 0
+                  ? `${Math.round((pendingApprovals / totalUsers) * 100)}%`
+                  : "0%"
+              }
               icon="⚠️"
             />
-          </div>
           </div>
 
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
           <div className="lg:col-span-3">
             <StatusBarChart
               active={activeWorkers}
@@ -147,10 +149,11 @@ const AdminDashboard = () => {
 
           <div className="lg:col-span-2">
             <UserTypePieChart
-              labour={totalUsers - employers}
+              labour={labourCount}
               employers={employers}
             />
           </div>
+
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -161,6 +164,7 @@ const AdminDashboard = () => {
         </div>
 
       </div>
+    </div>
   );
 };
 
