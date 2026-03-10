@@ -1,0 +1,718 @@
+import { connection, collectionName } from "../config/db.js";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+import bcrypt from "bcrypt";
+import { ObjectId } from "mongodb";
+import { OAuth2Client } from "google-auth-library";
+import { Parser } from "json2csv";
+import PDFDocument from "pdfkit";
+
+
+
+
+dotenv.config();
+
+
+const secretKey = process.env.SECRET_KEY;
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+
+const isValidEmail = (email) => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
+
+
+
+
+export const adminLogin = async (req, resp) => {
+  try {
+    const { email, password } = req.body;
+    const db = await connection();
+
+
+    if (!email || !password) {
+      return resp.status(400).send({
+        success: false,
+        message: "Email and password are required",
+      });
+    }
+
+
+    if (!isValidEmail(email)) {
+      return resp.status(400).send({
+        success: false,
+        message: "Invalid email format",
+      });
+    }
+
+
+    const user = await db.collection(collectionName).findOne({ email });
+
+
+    if (!user) {
+      return resp.status(404).send({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+
+    if (!isMatch) {
+      return resp.status(401).send({
+        success: false,
+        field: "password",
+        message: "Wrong Password"
+      });
+    }
+
+
+    const token = jwt.sign(
+      { id: user._id, email: user.email },
+      secretKey,
+      { expiresIn: "50d" }
+    );
+
+
+    return resp.status(200).send({
+      success: true,
+      message: "Login success",
+      token,
+    });
+  } catch (error) {
+    return resp.status(500).send({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+
+
+
+export const googleAdminLogin = async (req, resp) => {
+  try {
+    const { token } = req.body;
+
+
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+
+    const payload = ticket.getPayload();
+    const { email, name } = payload;
+
+
+    const db = await connection();
+    let user = await db.collection(collectionName).findOne({ email });
+
+
+    if (!user) {
+      const result = await db.collection(collectionName).insertOne({
+        name,
+        email,
+        googleLogin: true,
+        createdAt: new Date(),
+      });
+
+
+      user = {
+        _id: result.insertedId,
+        email,
+      };
+    }
+
+
+    const jwtToken = jwt.sign(
+      { id: user._id, email: user.email },
+      secretKey,
+      { expiresIn: "50d" }
+    );
+
+
+    return resp.status(200).send({
+      success: true,
+      token: jwtToken,
+    });
+  } catch (error) {
+    return resp.status(401).send({
+      success: false,
+      message: "Google authentication failed",
+    });
+  }
+};
+
+
+
+
+export const verifyForgotPassword = async (req, resp) => {
+  try {
+    const { email, mobile } = req.body;
+
+
+    if (!email || !mobile) {
+      return resp.status(400).send({
+        success: false,
+        message: "Email and mobile are required",
+      });
+    }
+
+
+    const db = await connection();
+    const admin = await db.collection(collectionName).findOne({ email });
+
+
+    if (!admin || admin.mobile !== mobile) {
+      return resp.status(400).send({
+        success: false,
+        message: "Verification failed",
+      });
+    }
+
+
+    resp.send({
+      success: true,
+      message: "Verification successful",
+    });
+  } catch (err) {
+    resp.status(500).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+
+
+
+export const resetPasswordDirect = async (req, resp) => {
+  try {
+    const { email, mobile, password, confirmPassword } = req.body;
+
+
+    if (!email || !mobile || !password || !confirmPassword) {
+      return resp.status(400).send({
+        success: false,
+        message: "All fields are required",
+      });
+    }
+
+
+    if (password !== confirmPassword) {
+      return resp.status(400).send({
+        success: false,
+        message: "Passwords do not match",
+      });
+    }
+
+
+    const db = await connection();
+    const admin = await db.collection(collectionName).findOne({ email });
+
+
+    if (!admin || admin.mobile !== mobile) {
+      return resp.status(400).send({
+        success: false,
+        message: "Verification failed",
+      });
+    }
+
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+
+    await db.collection(collectionName).updateOne(
+      { email },
+      { $set: { password: hashedPassword } }
+    );
+
+
+    resp.send({
+      success: true,
+      message: "Password reset successful",
+    });
+  } catch (err) {
+    resp.status(500).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+
+
+
+export const getAdminProfile = async (req, resp) => {
+  try {
+    const db = await connection();
+    const adminId = req.admin.id;
+
+
+    const admin = await db.collection(collectionName).findOne(
+      { _id: new ObjectId(adminId) },
+      { projection: { password: 0 } }
+    );
+
+
+    if (!admin) {
+      return resp.status(404).send({
+        success: false,
+        message: "Admin not found",
+      });
+    }
+
+
+    resp.send({
+      success: true,
+      data: admin,
+    });
+  } catch (err) {
+    resp.status(500).send({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+
+
+
+export const updateAdminProfile = async (req, resp) => {
+  try {
+    const db = await connection();
+    const adminId = req.admin.id;
+    const { name, mobile } = req.body;
+
+
+    await db.collection(collectionName).updateOne(
+      { _id: new ObjectId(adminId) },
+      { $set: { name, mobile } }
+    );
+
+
+    resp.send({
+      success: true,
+      message: "Profile updated successfully",
+    });
+  } catch (err) {
+    resp.status(500).send({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+
+export const changeAdminPassword = async (req, resp) => {
+  try {
+    const db = await connection();
+    const adminId = req.admin.id;
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return resp.status(400).send({
+        success: false,
+        message: "All fields are required",
+      });
+    }
+
+
+    if (newPassword !== confirmPassword) {
+      return resp.status(400).send({
+        success: false,
+        message: "Passwords do not match",
+      });
+    }
+
+
+    const admin = await db.collection(collectionName).findOne({
+      _id: new ObjectId(adminId),
+    });
+
+
+    const isMatch = await bcrypt.compare(
+      currentPassword,
+      admin.password
+    );
+
+
+    if (!isMatch) {
+      return resp.status(401).send({
+        success: false,
+        message: "Current password incorrect",
+      });
+    }
+
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+
+    await db.collection(collectionName).updateOne(
+      { _id: new ObjectId(adminId) },
+      { $set: { password: hashedPassword } }
+    );
+
+
+    resp.send({
+      success: true,
+      message: "Password updated successfully",
+    });
+  } catch (err) {
+    resp.status(500).send({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+
+export const recentRegistrations = async (req, resp) => {
+  try {
+    const db = await connection();
+
+
+    const recentUsers = await db.collection("labour").find({}).sort({ createdAt: -1 }).limit(5).toArray();
+    resp.send({
+      success: true,
+      data: recentUsers
+    });
+  } catch (err) {
+    resp.status(500).send({
+      success: false,
+      message: "server error"
+    })
+  }
+}
+
+
+export const getAllUsers = async (req, resp) => {
+  try {
+    const { role, status, search } = req.query;
+
+
+    const db = await connection();
+
+
+    let filter = {};
+    if (role && role !== "all") {
+      filter.role = role;
+    }
+    if (status && status !== "all") {
+      filter.status = status;
+    }
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } }
+      ]
+    }
+    const users = await db.collection("labour").find(filter).sort({ createdAt: -1 }).toArray();
+    resp.status(200).send({
+      success: true, users
+    })
+  }
+  catch (error) {
+    resp.status(500).send({
+      success: false,
+      message: "Failed to fetch users"
+    });
+  }
+};
+
+
+export const updateUserStatus = async (req, resp) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+
+    const db = await connection();
+
+
+    await db.collection("labour").updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { status, updatedAt: new Date() } }
+    );
+    resp.status(200).send({
+      success: true,
+      message: "Status updated"
+    })
+  } catch (error) {
+    resp.status(500).send({
+      success: false,
+      message: "Update failed"
+    })
+  }
+}
+
+
+export const getLabourVerification = async (req, resp) => {
+  try {
+    const db = await connection();
+    const labours = await db.collection("labour").find({
+      role: "labour", status: "pending"
+    }).sort({ createdAt: -1 }).toArray();
+
+
+    resp.status(200).send({
+      success: true,
+      data: labours
+    })
+  } catch (error) {
+    resp.status(500).send({
+      success: false
+    })
+  }
+}
+
+
+export const updateLabourVerificationStatus = async (req, resp) => {
+  try {
+    const { id } = req.params.id;
+    const { status } = req.body;
+
+
+    const db = await connection();
+
+
+    await db.collection("labour").updateOne({
+      _is: new ObjectId(id)
+    },
+      { $set: { status } })
+
+
+    resp.status(200).send({
+      success: true,
+      message: "Status updated"
+    })
+  } catch (error) {
+    resp.status(500).send({
+      success: false
+    })
+  }
+}
+
+export const getDashboardStats = async (req, resp) => {
+  try {
+    const db = await connection();
+
+    const totalUsers = await db.collection("labour").countDocuments();
+
+    const activeWorkers = await db.collection("labour").countDocuments({
+      role: { $regex: "^labour$", $options: "i" },
+      status: { $regex: "^accept$", $options: "i" }
+    });
+
+    const employers = await db.collection("labour").countDocuments({
+      role: { $regex: "^employer$", $options: "i" },
+      status: { $regex: "^accept$", $options: "i" }
+    });
+
+    const pending = await db.collection("labour").countDocuments({
+      status: { $regex: "^pending$", $options: "i" }
+    });
+
+    const blocked = await db.collection("labour").countDocuments({
+      status: { $regex: "^reject$", $options: "i" }
+    });
+
+    resp.status(200).send({
+      success: true,
+      data: {
+        totalUsers,
+        approved: activeWorkers,
+        pending,
+        blocked,
+        employers
+      }
+    });
+
+  } catch (error) {
+    resp.status(500).send({
+      success: false,
+      message: "Dashboard stats failed"
+    });
+  }
+};
+
+export const getSingleUser = async (req, resp) => {
+  try {
+    const { id } = req.params;
+    const db = await connection();
+    const objectId = new ObjectId(id);
+
+    let user = await db.collection("labour").findOne({ _id: objectId });
+
+    if (!user) {
+      user = await db.collection("employer").findOne({ _id: objectId })
+    }
+    if (!user) {
+      return resp.status(404).send({
+        success: false,
+        message: "User not found"
+      })
+    }
+
+    resp.send({
+      success: true,
+      data: user
+    })
+  }
+  catch (error) {
+    resp.status(500).send({
+      success: false,
+      message: "Failed to fetch User"
+    })
+  }
+}
+
+export const updateUserProfileStatus = async (req, resp) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!["pending", "accept", "reject"].includes(status)) {
+      return resp.status(400).send({
+        success: false,
+        message: "Invalid status value"
+      })
+    }
+
+    const db = await connection();
+    const objectId = new ObjectId(id);
+
+    let result = await db.collection("labour").updateOne(
+      { _id: objectId },
+      { $set: { status, updateAt: new Date() } }
+    );
+
+    if (result.matchedCount === 0) {
+      result = await db.collection("employer").updateOne(
+        { _id: objectId },
+        { $set: { status, updateAt: new Date() } }
+      );
+    }
+
+    if (result.matchedCount === 0) {
+      return resp.status(404).send({
+        success: false,
+        message: "User not found"
+      })
+    }
+
+    resp.send({
+      success: true,
+      message: "User status updated"
+    })
+  } catch (error) {
+    resp.status(500).send({
+      success: false,
+      message: "Failed to update user status"
+    })
+  }
+}
+
+
+
+export const getReportsData = async (req, res) => {
+  try {
+    const db = await connection();
+    const { days } = req.query;
+
+    let filter = {};
+
+    if (days) {
+      const pastDate = new Date();
+      pastDate.setDate(pastDate.getDate() - parseInt(days));
+      filter = { createdAt: { $gte: pastDate } };
+    }
+
+    const users = await db.collection("labour").find(filter).toArray();
+
+    const labourCount = users.filter(u => u.role === "labour").length;
+    const employerCount = users.filter(u => u.role === "employer").length;
+
+    const dailyMap = {};
+    users.forEach(user => {
+      const date = new Date(user.createdAt).toISOString().split("T")[0];
+      dailyMap[date] = (dailyMap[date] || 0) + 1;
+    });
+
+    const dailyGrowth = Object.keys(dailyMap).map(date => ({
+      date,
+      count: dailyMap[date]
+    }));
+
+    const monthlyArray = new Array(12).fill(0);
+    users.forEach(user => {
+      const month = new Date(user.createdAt).getMonth();
+      monthlyArray[month] += 1;
+    });
+
+    res.send({
+      success: true,
+      labourCount,
+      employerCount,
+      dailyGrowth,
+      monthlyData: monthlyArray,
+      total: users.length
+    });
+
+  } catch (error) {
+    res.status(500).send({ success: false });
+  }
+};
+
+
+export const exportCSVData = async (req, res) => {
+  try {
+    const db = await connection();
+    const users = await db.collection("labour").find().toArray();
+
+    let csv = "Name,Email,Role\n";
+
+    users.forEach(user => {
+      csv += `${user.name},${user.email},${user.role}\n`;
+    });
+
+    res.header("Content-Type", "text/csv");
+    res.attachment("report.csv");
+    return res.send(csv);
+
+  } catch (error) {
+    res.status(500).send({ success: false });
+  }
+};
+
+
+export const exportPDFData = async (req, res) => {
+  try {
+    const db = await connection();
+    const users = await db.collection("labour").find().toArray();
+
+    const doc = new PDFDocument();
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", "attachment; filename=report.pdf");
+
+    doc.pipe(res);
+
+    doc.fontSize(18).text("Urban Force Report", { align: "center" });
+    doc.moveDown();
+
+    users.forEach(user => {
+      doc.fontSize(12).text(
+        `Name: ${user.name} | Email: ${user.email} | Role: ${user.role}`
+      );
+    });
+
+    doc.end();
+
+  } catch (error) {
+    res.status(500).send({ success: false });
+  }
+};

@@ -1,68 +1,59 @@
 export type WorkerStatus = "Available" | "Busy";
 
 export interface Worker {
-    id: number;
+    _id?: string;
     name: string;
     skills: string[];
     location: string;
-    rating: number;
     price: number;
-    available: boolean;
-};
-
+    phone: string;
+    rating?: number;
+    available?: boolean;
+    about: string;
+    experience: number;
+    languages: string[];
+    workingHours: string;
+    responseTime: string;
+    reviews: {
+        name: string;
+        comment: string;
+        rating: number;
+    }[];
+}
 export const workers: Worker[] = [
     {
-        id: 1,
-        name: "Ramesh Kumar",
-        rating: 4.5,
+        _id: "1",
+        name: "Rajesh Kumar",
+        location: "Noida, UP",
+        skills: ["Electrician", "Wiring", "AC Repair"],
+        rating: 4.8,
+        phone: "9876543210",
+        price: 600,
         available: true,
-        price: 555,
-        location: "mumbai",
-        skills: ["Plumber" , " ","Electrician"],
+        experience: 6,
+        languages: ["Hindi", "English"],
+        workingHours: "9:00 AM - 6:00 PM",
+        responseTime: "< 2 hour",
+        about: "Experienced electrician with expertise in residential and commercial work.",
+        reviews: [
+            { name: "Amit Sharma", comment: "Very professional and punctual.", rating: 5 },
+            { name: "Priya Singh", comment: "Good work and clean finishing.", rating: 4 }
+        ]
     },
     {
-        id: 2,
-        name: "Vivak Yadav",
-        rating: 4.6,
+        _id: "2",
+        name: "Anil Mehta",
+        location: "Jaipur, Rajasthan",
+        skills: ["Wiring", "AC Repair"],
+        rating: 4.5,
         price: 550,
+        phone: "9876543211",
         available: false,
-        location: "Uttar Pradesh",
-        skills: ["Plumber"],
-    },
-    {
-        id: 3, 
-        price: 690,
-        name: "Vikram Yadav",
-        rating: 4.5,
-        available: true,
-        location: "Noida",
-        skills: ["Electrician"],
-    },
-    {
-        id: 4,
-        price: 560,
-        name: "Suraj Gupta",
-        rating: 4.2,
-        available: false,
-        location: "Maharashtra",
-        skills: ["Carpenter"],
-    },
-    {
-        id: 5,
-        name: "Akash Singh",
-        rating: 4.0,
-        price: 470,
-        available: true,
-        location: "Dilhi",
-        skills: ["Carpenter"],
-    },
-    {
-        id: 6,
-        name: "Suresh Yadav",
-        rating: 4.4,
-        price: 555,
-        available: false,
-        location: "Gurgaon",
-        skills: ["Carpenter"," ","Plumber"],
-    },
+        experience: 4,
+        languages: ["Hindi", "English"],
+        workingHours: "9:00 AM - 6:00 PM",
+        responseTime: "< 1 hour",
+        about: "Experienced electrician with expertise in residential and commercial work.",
+        reviews: []
+    }
 ];

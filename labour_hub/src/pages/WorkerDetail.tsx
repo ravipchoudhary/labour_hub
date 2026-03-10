@@ -1,66 +1,269 @@
-import { useParams } from "react-router-dom";
-import { workers } from "../data/worker";
-import { useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getLabourById, getLabours } from "../api/labourApi";
+import type { Worker } from "../data/worker";
+
+
+import WorkerHeader from "../components/worker/WorkerHeader";
+import WorkerAbout from "../components/worker/WorkerAbout";
+import WorkerReviews from "../components/worker/WorkerReviews";
+import SimilarWorkers from "../components/worker/SimilarWorkers";
+import SafetyTips from "../components/worker/SafetyTips";
+import WorkerContactCard from "../components/worker/WorkerContactCard";
+
+const API_BASE = "http://localhost:4000";
 
 
 const WorkerDetail = () => {
-    const { id } = useParams();
+    const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const worker = workers.find((w) => w.id === Number(id));
 
-    if (!worker) {
-        return <div className="p-8">Worker not found</div>;
-    }
+
+    const [worker, setWorker] = useState<Worker | null>(null);
+    const [workers, setWorkers] = useState<Worker[]>([]);
+    const [loading, setLoading] = useState(true);
+
+
+    const [hireLoading, setHireLoading] = useState(false);
+    const [hireError, setHireError] = useState("");
+    const [hireSuccess, setHireSuccess] = useState("");
+
+
+    const markBusy = async () => {
+        if (!worker) return;
+
+
+        try {
+            await fetch(`${API_BASE}/api/labour/${worker._id}/availability`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ available: false }),
+            });
+
+
+            setWorker({ ...worker, available: false });
+        } catch (e) {
+            console.error("markBusy error:", e);
+        }
+    };
+
+
+    const addReviewToWorker = (reviews: any[]) => {
+        if (!worker) return;
+
+
+        const avgRating =
+            reviews.length > 0
+                ? reviews.reduce((sum, r) => sum + Number(r.rating || 0), 0) /
+                reviews.length
+                : 0;
+
+
+        setWorker({
+            ...worker,
+            reviews,
+            rating: Number(avgRating.toFixed(1)),
+        });
+    };
+
+
+    const handleHireRequest = async () => {
+        if (!worker) return;
+
+
+        setHireError("");
+        setHireSuccess("");
+
+
+        const token = localStorage.getItem("token");
+        const role = localStorage.getItem("role");
+
+
+        if (!token || role !== "employee") {
+            navigate("/login");
+            return;
+        }
+
+
+        try {
+            setHireLoading(true);
+
+
+            const res = await fetch(`${API_BASE}/api/hire/create`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    labourId: worker._id,
+                    message: "I want to hire you",
+                }),
+            });
+
+
+            const data = await res.json().catch(() => ({}));
+
+
+            if (res.ok) {
+                alert("Hire request sent!");
+                setWorker((prev) => (prev ? { ...prev, alreadyRequested: true } as any : prev));
+            } else if (res.status === 409) {
+                setHireError(data.message || "Already requested. Wait for response.");
+            } else {
+                setHireError(data.message || "Hire request failed");
+            }
+
+
+            setHireSuccess("Hire request sent successfully");
+
+
+
+
+        } catch (err) {
+            console.error("Hire request error:", err);
+            setHireError("Server error / Backend not running");
+        } finally {
+            setHireLoading(false);
+        }
+    };
+
+
+    useEffect(() => {
+        if (!id) return;
+
+
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+
+
+                const workerData = await getLabourById(id);
+
+
+                const calculatedRating =
+                    workerData.reviews && workerData.reviews.length > 0
+                        ? workerData.reviews.reduce((sum: number, r: any) => sum + Number(r.rating || 0), 0) /
+                        workerData.reviews.length
+                        : 0;
+
+
+                const formattedWorker: Worker = {
+                    _id: workerData._id,
+                    name: workerData.name,
+                    phone: workerData.phone || "N/A",
+                    location: workerData.location,
+                    price: Number(workerData.price) || 0,
+                    skills: workerData.skills?.length
+                        ? workerData.skills
+                        : workerData.skill
+                            ? [workerData.skill]
+                            : [],
+                    rating: Number(calculatedRating.toFixed(1)),
+                    experience: Number(workerData.experience ?? 0),
+                    available: Boolean(workerData.available ?? true),
+                    reviews: workerData.reviews || [],
+                    languages: [],
+                    workingHours: "9 AM - 6 PM",
+                    responseTime: "1 hour",
+                    about: workerData.about || "No description available",
+                };
+
+
+                const allWorkersRaw = await getLabours();
+
+
+                const formattedWorkers: Worker[] = allWorkersRaw.map((w: any) => ({
+                    _id: w._id,
+                    name: w.name,
+                    location: w.location,
+                    price: Number(w.price) || 0,
+                    skills: w.skills?.length ? w.skills : w.skill ? [w.skill] : [],
+                    rating: Number(w.rating ?? 0),
+                    experience: Number(w.experience ?? 0),
+                    available: Boolean(w.available ?? true),
+                    reviews: w.reviews || [],
+                    languages: [],
+                    phone: w.phone || "N/A",
+                    workingHours: "9 AM - 6 PM",
+                    responseTime: "1 hour",
+                    about: w.about || "No description available",
+                }));
+
+
+                setWorker(formattedWorker);
+                setWorkers(formattedWorkers);
+            } catch (err) {
+                console.error("Worker detail error:", err);
+                setWorker(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+
+        fetchData();
+    }, [id]);
+
+
+    if (loading) return <p className="p-8">Loading...</p>;
+    if (!worker) return <p className="p-8">Worker not found</p>;
 
     return (
-        <div className="min-h-screen bg-gray-100 p-8">
-                <button
-                    onClick={() => navigate(-1)}
-                    className="mb-6 text-lg text-blue-700 hover:underline"
-                >
-                    ← Back to Find Labour
-                </button>
-                <p className="text-sm text-gray-500 mb-4">
-                    Home / Find Labour / {worker.name}
-                </p>
-            <div className="max-w-3xl bg-white rounded-xl p-6 shadow">
-                <div className="flex justify-between items-center">
-                    <h2 className="text-2xl font-semibold">{worker.name}</h2>
-                    <span
-                        className={`px-3 py-1 text-sm rounded-full ${worker.available
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
-                            }`}>
-                        {worker.available ? "Available" : "Busy"}
-                    </span>
+        <div className="bg-gray-100 min-h-screen p-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                    <WorkerHeader worker={worker} />
+                    <WorkerAbout worker={worker} />
+                    <WorkerReviews worker={worker} onReviewAdded={addReviewToWorker} />
                 </div>
 
-                <p className="mt-2 text-gray-600">⭐ {worker.rating}</p>
-                <p className="mt-1 text-xl font-semibold">₹{worker.price} / day</p>
-                <p className="mt-1 text-gray-500">{worker.location}</p>
 
-                <div className="flex gap-2 mt-4">
-                    {worker.skills.map((skill: string, index: number) => (
-                        <span
-                            key={index}
-                            className="bg-gray-100 px-3 py-1 rounded text-sm"
+                <div>
+                    <div className="bg-white rounded-xl shadow p-5 mb-4">
+                        <h3 className="text-lg font-semibold mb-2">Hire this worker</h3>
+                        <p className="text-sm text-gray-600 mb-4">
+                            Request a job from this worker.
+                        </p>
+                        {worker.available === false && (
+                            <p className="text-sm text-red-500 mb-3">
+                                Worker is busy right now
+                            </p>
+                        )}
+
+
+                        {hireError && <p className="text-sm text-red-500 mb-3">{hireError}</p>}
+                        {hireSuccess && <p className="text-sm text-green-600 mb-3">{hireSuccess}</p>}
+                        <button
+                            type="button"
+                            disabled={hireLoading || worker.available === false || (worker as any).alreadyRequested === true}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleHireRequest();
+                            }}
+                            className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg disabled:opacity-60"
                         >
-                            {skill}
-                        </span>
-                    ))}
-                </div>
+                            {(worker as any).alreadyRequested
+                                ? "Request Sent"
+                                : worker.available === false
+                                    ? "Worker Busy"
+                                    : hireLoading
+                                        ? "Sending..."
+                                        : "Hire Me"}
+                        </button>
+                    </div>
 
-                <div className="flex gap-4 mt-6">
-                    <button className="bg-orange-500 text-white px-5 py-2 rounded hover:bg-orange-600">
-                        Call Now
-                    </button>
-                    <button className="border px-5 py-2 rounded hover:bg-orange-500 hover:text-white">
-                        WhatsApp
-                    </button>
+
+                    <WorkerContactCard worker={worker} onMarkBusy={markBusy} onHire={handleHireRequest} />
+                    <SimilarWorkers currentWorker={worker} workers={workers} />
+                    <SafetyTips />
                 </div>
             </div>
         </div>
     );
 };
 
+
 export default WorkerDetail;
+

@@ -1,138 +1,546 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+} from "recharts";
+type TabType = "dashboard" | "completed" | "pending" | "allRequests";
 
-const LabourDashboard = () => {
-  const [available, setAvailable] = useState(true);
 
+interface Job {
+  id?: string;
+  _id?: string;
+  work: string;
+  location: string;
+  amount: number;
+  month?: string;
+}
+
+
+interface LabourProfile {
+  _id?: string;
+  name?: string;
+  role?: string;
+  rating?: number;
+  city?: string;
+  profession?: string;
+  available?: boolean;
+  location?: string;
+  skills?: string[];
+}
+
+
+interface StatProps {
+  title: string;
+  value: string;
+  onClick?: () => void;
+}
+
+
+interface HireRequest {
+  _id: string;
+  status: "pending" | "accepted" | "rejected";
+  createdAt?: string;
+  message?: string;
+
+
+  employee?: {
+    _id?: string;
+    name?: string;
+    email?: string;
+    phone?: string;
+    location?: string;
+  };
+}
+
+
+const API_BASE = "http://localhost:4000";
+
+
+const Stat: React.FC<StatProps> = ({ title, value, onClick }) => (
+  <div
+    onClick={onClick}
+    className={`bg-white rounded-2xl shadow p-5 transition
+    ${onClick ? "cursor-pointer hover:bg-orange-50 hover:shadow-lg" : ""}`}
+  >
+    <p className="text-gray-500 text-sm">{title}</p>
+    <h3 className="text-2xl font-semibold mt-2">{value}</h3>
+  </div>
+);
+
+
+const JobCard: React.FC<{ job: Job }> = ({ job }) => (
+  <div className="border rounded-xl p-4 flex justify-between hover:shadow-md transition">
+    <div>
+      <p className="font-medium">{job.work}</p>
+      <p className="text-sm text-gray-500">{job.location}</p>
+    </div>
+    <p className="font-semibold text-orange-600">₹{job.amount}</p>
+  </div>
+);
+
+
+const HireRequestCard: React.FC<{
+  req: HireRequest;
+  onAccept: () => void;
+  onReject: () => void;
+  loading?: boolean;
+}> = ({ req, onAccept, onReject, loading }) => {
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
-      {/* TITLE */}
-      <h1 className="text-3xl font-bold">My Dashboard</h1>
-      <p className="text-gray-500 mb-6">
-        Manage your profile and track your performance
-      </p>
+    <div className="border rounded-xl p-4 hover:shadow-md transition bg-white">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="font-semibold text-gray-800">
+            {req.employee?.name || "Unknown Employer"}
+          </p>
 
-      {/* STATS */}
-      <div className="grid grid-cols-4 gap-6 mb-8">
-        <StatCard title="Profile Views" value="124" />
-        <StatCard title="Calls Received" value="32" />
-        <StatCard title="Rating" value="4.8" />
-        <StatCard title="Jobs Done" value="156" />
-      </div>
 
-      <div className="grid grid-cols-3 gap-6">
-        {/* PROFILE INFO */}
-        <div className="col-span-2 bg-white p-6 rounded-xl shadow">
-          <div className="flex justify-between mb-4">
-            <h2 className="text-xl font-semibold">Profile Information</h2>
-            <button className="border px-4 py-1 rounded-lg text-sm">
-              Edit Profile
-            </button>
-          </div>
+          <p className="text-sm text-gray-500">
+            {req.employee?.location || "-"}
+            {req.employee?.phone ? ` • ${req.employee.phone}` : ""}
+          </p>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Input label="Full Name" value="Rajesh Kumar" />
-            <Input label="Phone Number" value="+91 9876543210" />
-            <Input label="Experience (Years)" value="8" />
-            <Input label="Daily Rate (₹)" value="600 / Day" />
-          </div>
 
-          <div className="mt-4">
-            <Input label="Address" value="Sector 18, Noida, UP" />
-          </div>
+          {req.message && (
+            <p className="text-sm text-gray-700 mt-2">
+              <span className="font-medium">Message:</span> {req.message}
+            </p>
+          )}
 
-          <div className="mt-4">
-            <label className="block text-sm font-medium mb-1">
-              About Me
-            </label>
-            <textarea
-              className="w-full border rounded-lg p-3"
-              rows={3}
-              value="Experienced electrician with expertise in residential and commercial wiring, AC installation and repair."
-              readOnly
-            />
-          </div>
 
-          <div className="mt-4">
-            <label className="block text-sm font-medium mb-2">Skills</label>
-            <div className="flex gap-2">
-              <SkillTag text="Electrician" />
-              <SkillTag text="Wiring" />
-              <SkillTag text="AC Repair" />
-            </div>
-          </div>
+          {req.createdAt && (
+            <p className="text-xs text-gray-400 mt-2">
+              {new Date(req.createdAt).toLocaleString()}
+            </p>
+          )}
         </div>
 
-        {/* RIGHT SIDE */}
-        <div className="space-y-6">
-          {/* AVAILABILITY */}
-          <div className="bg-white p-6 rounded-xl shadow">
-            <h3 className="font-semibold mb-2">Availability Status</h3>
-            <div className="flex items-center justify-between">
-              <span className="text-green-600">
-                {available ? "Available for work" : "Not available"}
-              </span>
-              <input
-                type="checkbox"
-                checked={available}
-                onChange={() => setAvailable(!available)}
-              />
-            </div>
-          </div>
 
-          {/* QUICK ACTIONS */}
-          <div className="bg-white p-6 rounded-xl shadow">
-            <h3 className="font-semibold mb-3">Quick Actions</h3>
-            <ActionButton text="View My Public Profile" />
-            <ActionButton text="Set Working Hours" />
-            <ActionButton text="Update Location" />
-          </div>
+        <div className="flex flex-col gap-2 min-w-[140px]">
+          <button
+            disabled={loading}
+            onClick={onAccept}
+            className="px-4 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white text-sm font-semibold disabled:opacity-60"
+          >
+            {loading ? "..." : "Accept"}
+          </button>
 
-          {/* TIPS */}
-          <div className="bg-orange-50 p-6 rounded-xl">
-            <h3 className="font-semibold mb-2">💡 Profile Tips</h3>
-            <ul className="text-sm text-gray-600 list-disc ml-4 space-y-1">
-              <li>Add more skills to appear in searches</li>
-              <li>Keep your phone number updated</li>
-              <li>Set competitive rates</li>
-              <li>Update availability regularly</li>
-            </ul>
-          </div>
+
+          <button
+            disabled={loading}
+            onClick={onReject}
+            className="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white text-sm font-semibold disabled:opacity-60"
+          >
+            {loading ? "..." : "Reject"}
+          </button>
         </div>
       </div>
     </div>
   );
 };
 
-export default LabourDashboard;
 
-/* ---------- SMALL COMPONENTS ---------- */
+export default function LabourDashboard() {
+  const navigate = useNavigate();
 
-const StatCard = ({ title, value }: { title: string; value: string }) => (
-  <div className="bg-white p-6 rounded-xl shadow">
-    <p className="text-gray-500 text-sm">{title}</p>
-    <h2 className="text-2xl font-bold mt-1">{value}</h2>
-  </div>
-);
 
-const Input = ({ label, value }: { label: string; value: string }) => (
-  <div>
-    <label className="block text-sm font-medium mb-1">{label}</label>
-    <input
-      className="w-full border rounded-lg p-2"
-      value={value}
-      readOnly
-    />
-  </div>
-);
+  const [activeTab, setActiveTab] = useState<TabType>("dashboard");
+  const [profile, setProfile] = useState<LabourProfile | null>(null);
 
-const SkillTag = ({ text }: { text: string }) => (
-  <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm">
-    {text}
-  </span>
-);
 
-const ActionButton = ({ text }: { text: string }) => (
-  <button className="w-full border rounded-lg py-2 mb-2 text-sm">
-    {text}
-  </button>
-);
+  const [completedJobs, setCompletedJobs] = useState<Job[]>([]);
+  const [available, setAvailable] = useState<boolean>(true);
+
+
+  const [hireRequests, setHireRequests] = useState<HireRequest[]>([]);
+  const [allRequests, setAllRequests] = useState<HireRequest[]>([]);
+  const [hireActionLoadingId, setHireActionLoadingId] = useState<string | null>(
+    null
+  );
+
+
+  const [earningsData, setEarningsData] = useState([
+    { month: "Jan", earning: 0 },
+    { month: "Feb", earning: 0 },
+    { month: "Mar", earning: 0 },
+    { month: "Apr", earning: 0 },
+    { month: "May", earning: 0 },
+    { month: "Jun", earning: 0 },
+  ]);
+
+
+  const [jobStats, setJobStats] = useState([
+    { name: "Completed", value: 0 },
+    { name: "Pending", value: 0 },
+    { name: "Rejected", value: 0 },
+  ]);
+
+
+  const authHeader = () => {
+    const token = localStorage.getItem("token");
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
+
+  const totalEarnings = useMemo(
+    () => completedJobs.reduce((acc, job) => acc + (Number(job.amount) || 0), 0),
+    [completedJobs]
+  );
+  const [hireStats, setHireStats] = useState({
+    pending: 0,
+    accepted: 0,
+    rejected: 0,
+    totalRequests: 0,
+  });
+  const fetchAll = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+
+      const profileRes = await axios.get(`${API_BASE}/api/labour/profile`, {
+        headers: authHeader(),
+      });
+      setProfile(profileRes.data);
+      setAvailable(Boolean(profileRes.data?.available));
+
+
+      const jobsRes = await axios.get(`${API_BASE}/api/labour/jobs`, {
+        headers: authHeader(),
+      });
+      const completed: Job[] = jobsRes.data?.completedJobs || [];
+      setCompletedJobs(completed);
+
+
+      const hireRes = await axios.get(`${API_BASE}/api/hire/pending`, {
+        headers: authHeader(),
+      });
+      const raw = hireRes.data;
+
+      const pendingReqs: HireRequest[] = Array.isArray(raw)
+        ? raw
+        : raw?.requests || raw?.pendingRequests || [];
+
+      setHireRequests(pendingReqs);
+      const allRes = await axios.get(`${API_BASE}/api/hire/labour/requests`, {
+        headers: authHeader(),
+      });
+      const allRaw = allRes.data;
+      const allReqs: HireRequest[] = Array.isArray(allRaw)
+        ? allRaw
+        : allRaw?.requests || allRaw?.hireRequests || [];
+      setAllRequests(allReqs);
+      const statsRes = await axios.get(`${API_BASE}/api/hire/stats`, {
+        headers: authHeader(),
+      });
+      const { pending, accepted, rejected, totalRequests } = statsRes.data;
+
+
+      setHireStats({ pending, accepted, rejected, totalRequests });
+
+
+      setJobStats([
+        { name: "Completed", value: completed.length },
+        { name: "Pending", value: pending },
+        { name: "Rejected", value: rejected },
+      ]);
+      const monthlyEarnings = [
+        { month: "Jan", earning: 0 },
+        { month: "Feb", earning: 0 },
+        { month: "Mar", earning: 0 },
+        { month: "Apr", earning: 0 },
+        { month: "May", earning: 0 },
+        { month: "Jun", earning: 0 },
+      ];
+
+
+      completed.forEach((job) => {
+        const month = job.month;
+        if (!month) return;
+        const idx = monthlyEarnings.findIndex((m) => m.month === month);
+        if (idx >= 0) monthlyEarnings[idx].earning += Number(job.amount) || 0;
+      });
+
+
+      setEarningsData(monthlyEarnings);
+    } catch (err) {
+      console.error("Failed to fetch profile/jobs/requests:", err);
+    }
+  };
+
+
+  useEffect(() => {
+    fetchAll();
+  }, []);
+
+
+  const toggleAvailability = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+
+      await axios.patch(
+        `${API_BASE}/api/labour/availability`,
+        { available: !available },
+        { headers: authHeader() }
+      );
+
+
+      setAvailable((prev) => !prev);
+    } catch (err) {
+      console.error("toggleAvailability error:", err);
+      alert("Availability update failed");
+    }
+  };
+
+
+  const updateHireStatus = async (requestId: string, status: "accepted" | "rejected") => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+
+      setHireActionLoadingId(requestId);
+
+
+      await axios.patch(
+        `${API_BASE}/api/hire/${requestId}/status`,
+        { status },
+        { headers: authHeader() }
+      );
+
+
+      setHireRequests((prev) => prev.filter((r) => r._id !== requestId));
+
+
+      setAllRequests((prev) =>
+        prev.map((r) => (r._id === requestId ? { ...r, status } : r))
+      );
+
+
+      if (status === "accepted") {
+        setAvailable(false);
+      }
+
+
+      await fetchAll();
+    } catch (err) {
+      console.error("updateHireStatus error:", err);
+      alert("Request update failed (backend issue)");
+    } finally {
+      setHireActionLoadingId(null);
+    }
+  };
+  return (
+    <div className="min-h-screen bg-gray-50 p-6 space-y-8">
+      <div className="bg-white rounded-2xl shadow p-6 flex justify-between flex-wrap gap-6">
+        <div className="flex gap-5">
+          <div className="w-20 h-20 rounded-xl bg-orange-100 flex items-center justify-center text-3xl">
+            👷
+          </div>
+
+
+          <div>
+            <h2 className="text-2xl font-semibold">
+              {profile?.name || "Loading..."}
+            </h2>
+            <p className="text-gray-500">
+              {profile?.profession || "-"} •{" "}
+              {profile?.city || profile?.location || "-"}
+            </p>
+            <p className="text-yellow-500">⭐ {profile?.rating || 0} Rating</p>
+          </div>
+        </div>
+
+
+        <div className="flex gap-4 items-center">
+          <button
+            onClick={toggleAvailability}
+            className={`px-4 py-2 rounded-full text-sm font-medium
+            ${available ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
+          >
+            {available ? "Available for Work" : "Unavailable"}
+          </button>
+
+
+          <button
+            onClick={() => navigate("/edit-profile")}
+            className="px-5 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
+          >
+            Edit Profile
+          </button>
+        </div>
+      </div>
+
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Stat
+          title="Total Jobs"
+          value={`${hireStats.totalRequests}`}
+          onClick={() => setActiveTab("allRequests")}
+        />
+        <Stat
+          title="Completed Jobs"
+          value={`${completedJobs.length}`}
+          onClick={() => setActiveTab("completed")}
+        />
+        <Stat
+          title="Pending Requests"
+          value={`${hireRequests.length}`}
+          onClick={() => setActiveTab("pending")}
+        />
+        <Stat title="Total Earnings" value={`₹${totalEarnings}`} />
+      </div>
+      {activeTab === "allRequests" && (
+        <div className="bg-white rounded-2xl shadow p-6">
+          <div className="flex justify-between mb-6">
+            <h3 className="font-semibold text-lg">All Requests (Pending/Accepted/Rejected)</h3>
+
+
+            <button
+              onClick={() => setActiveTab("dashboard")}
+              className="text-orange-600 font-medium"
+            >
+              ← Back
+            </button>
+          </div>
+
+
+          <div className="space-y-4">
+            {allRequests.length === 0 ? (
+              <p className="text-gray-500">No requests found.</p>
+            ) : (
+              allRequests.map((req) => (
+                <div key={req._id} className="border rounded-xl p-4 bg-white">
+                  <p className="font-semibold">{req.employee?.name || "Unknown Employer"}</p>
+                  <p className="text-sm text-gray-500">
+                    Status: <span className="font-medium">{req.status}</span>
+                  </p>
+                  {req.createdAt && (
+                    <p className="text-xs text-gray-400 mt-1">
+                      {new Date(req.createdAt).toLocaleString()}
+                    </p>
+                  )}
+                  {req.message && (
+                    <p className="text-sm mt-2">{req.message}</p>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+      {activeTab === "dashboard" && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white rounded-2xl shadow p-6">
+            <h3 className="font-semibold mb-4">Monthly Earnings</h3>
+            <ResponsiveContainer width="100%" height={280}>
+              <LineChart data={earningsData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Line
+                  type="monotone"
+                  dataKey="earning"
+                  stroke="#f97316"
+                  strokeWidth={3}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+
+          <div className="bg-white rounded-2xl shadow p-6">
+            <h3 className="font-semibold mb-4">Job Status Overview</h3>
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={jobStats}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="value" fill="#fb923c" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
+
+      {activeTab === "completed" && (
+        <div className="bg-white rounded-2xl shadow p-6">
+          <div className="flex justify-between mb-6">
+            <h3 className="font-semibold text-lg">Completed Jobs History</h3>
+
+
+            <button
+              onClick={() => setActiveTab("dashboard")}
+              className="text-orange-600 font-medium"
+            >
+              ← Back
+            </button>
+          </div>
+
+
+          <div className="space-y-4">
+            {completedJobs.length === 0 ? (
+              <p className="text-gray-500">No completed jobs yet.</p>
+            ) : (
+              completedJobs.map((job) => (
+                <JobCard
+                  key={(job.id || job._id || Math.random()).toString()}
+                  job={job}
+                />
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
+
+      {activeTab === "pending" && (
+        <div className="bg-white rounded-2xl shadow p-6">
+          <div className="flex justify-between mb-6">
+            <h3 className="font-semibold text-lg">Pending Hire Requests</h3>
+
+
+            <button
+              onClick={() => setActiveTab("dashboard")}
+              className="text-orange-600 font-medium"
+            >
+              ← Back
+            </button>
+          </div>
+
+
+          <div className="space-y-4">
+            {hireRequests.length === 0 ? (
+              <p className="text-gray-500">No pending requests right now.</p>
+            ) : (
+              hireRequests.map((req) => (
+                <HireRequestCard
+                  key={req._id}
+                  req={req}
+                  loading={hireActionLoadingId === req._id}
+                  onAccept={() => updateHireStatus(req._id, "accepted")}
+                  onReject={() => updateHireStatus(req._id, "rejected")}
+                />
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
