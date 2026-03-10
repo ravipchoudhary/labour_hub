@@ -36,6 +36,7 @@ interface LabourProfile {
   available?: boolean;
   location?: string;
   skills?: string[];
+  phone?: string;
 }
 
 
@@ -48,7 +49,7 @@ interface StatProps {
 
 interface HireRequest {
   _id: string;
-  status: "pending" | "accepted" | "rejected";
+  status: "pending" | "accepted" | "rejected" | "timed_out" ;
   createdAt?: string;
   message?: string;
 
@@ -199,6 +200,7 @@ export default function LabourDashboard() {
     pending: 0,
     accepted: 0,
     rejected: 0,
+    timed_out: 0,
     totalRequests: 0,
   });
   const fetchAll = async () => {
@@ -242,16 +244,20 @@ export default function LabourDashboard() {
       const statsRes = await axios.get(`${API_BASE}/api/hire/stats`, {
         headers: authHeader(),
       });
-      const { pending, accepted, rejected, totalRequests } = statsRes.data;
+      const { pending, accepted, rejected, timed_out, totalRequests } = statsRes.data;
 
-
-      setHireStats({ pending, accepted, rejected, totalRequests });
-
-
+      setHireStats({
+        pending: pending ?? 0,
+        accepted: accepted ?? 0,
+        rejected: rejected ?? 0,
+        timed_out: timed_out ?? 0,
+        totalRequests: totalRequests ?? 0,
+      });
       setJobStats([
         { name: "Completed", value: completed.length },
-        { name: "Pending", value: pending },
-        { name: "Rejected", value: rejected },
+        { name: "Pending", value: pending ?? 0 },
+        { name: "Rejected", value: rejected ?? 0 },
+        { name: "Timed Out", value: timed_out ?? 0 },
       ]);
       const monthlyEarnings = [
         { month: "Jan", earning: 0 },
@@ -355,9 +361,10 @@ export default function LabourDashboard() {
               {profile?.name || "Loading..."}
             </h2>
             <p className="text-gray-500">
-              {profile?.profession || "-"} •{" "}
+              {profile?.profession || ""} •{" "}
               {profile?.city || profile?.location || "-"}
             </p>
+            <p className="text-gray-500">Mob: {profile?.phone || "-"}</p>
             <p className="text-yellow-500">⭐ {profile?.rating || 0} Rating</p>
           </div>
         </div>
@@ -386,17 +393,17 @@ export default function LabourDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Stat
           title="Total Jobs"
-          value={`${hireStats.totalRequests}`}
+          value={`${hireStats.totalRequests ?? 0}`}
           onClick={() => setActiveTab("allRequests")}
         />
         <Stat
           title="Completed Jobs"
-          value={`${completedJobs.length}`}
+          value={`${completedJobs.length ?? 0}`}
           onClick={() => setActiveTab("completed")}
         />
         <Stat
           title="Pending Requests"
-          value={`${hireRequests.length}`}
+          value={`${hireRequests.length ?? 0}`}
           onClick={() => setActiveTab("pending")}
         />
         <Stat title="Total Earnings" value={`₹${totalEarnings}`} />

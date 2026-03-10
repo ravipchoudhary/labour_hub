@@ -1,9 +1,27 @@
 import { ObjectId } from "mongodb";
 import { connection } from "../config/db.js";
 
+const autoRejectExpiredRequests = async (db) => {
+    const now = new Date();
+
+    await db.collection("hireRequests").updateMany(
+        {
+            status: "pending",
+            expiresAt: { $lte: now },
+        },
+        {
+            $set: {
+                status: "timed_out",
+                updatedAt: now,
+                rejectReason: "Auto rejected after 12 hours",
+            },
+        }
+    );
+};
 export const getEmployeeRejectedRequests = async (req, res) => {
     try {
         const db = await connection();
+        await autoRejectExpiredRequests(db);
         const employeeId = new ObjectId(req.user.id);
 
         const rejected = await db.collection("hireRequests").aggregate([
@@ -25,6 +43,8 @@ export const getEmployeeRejectedRequests = async (req, res) => {
                     message: 1,
                     createdAt: 1,
                     updatedAt: 1,
+                    expiresAt: 1,
+                    rejectsReason: 1,
                     labour: {
                         _id: "$labour._id",
                         name: "$labour.name",
@@ -48,8 +68,8 @@ export const getEmployeeRejectedRequests = async (req, res) => {
 export const getLabourAllRequests = async (req, res) => {
     try {
         const db = await connection();
+        await autoRejectExpiredRequests(db);
         const labourId = new ObjectId(req.user.id);
-
 
         const requests = await db
             .collection("hireRequests")
@@ -93,7 +113,7 @@ export const getLabourAllRequests = async (req, res) => {
 export const getEmployeeHiredWorkers = async (req, res) => {
     try {
         const db = await connection();
-
+        await autoRejectExpiredRequests(db);
 
         const employeeId = new ObjectId(req.user.id);
 
@@ -143,7 +163,7 @@ export const getHireStats = async (req, res) => {
     try {
         const db = await connection();
         const labourId = new ObjectId(req.user.id);
-
+        await autoRejectExpiredRequests(db);
 
         const rows = await db.collection("hireRequests").aggregate([
             { $match: { labourId } },
@@ -151,13 +171,14 @@ export const getHireStats = async (req, res) => {
         ]).toArray();
 
 
-        const stats = { pending: 0, accepted: 0, rejected: 0 };
+        const stats = { pending: 0, accepted: 0,rejected: 0, timed_out: 0 };
 
 
         for (const r of rows) {
             if (r._id === "pending") stats.pending = r.count;
             if (r._id === "accepted") stats.accepted = r.count;
             if (r._id === "rejected") stats.rejected = r.count;
+            if (r._id === "timed_out") stats.timed_out = r.count;
         }
 
 
@@ -165,7 +186,8 @@ export const getHireStats = async (req, res) => {
             pending: stats.pending,
             accepted: stats.accepted,
             rejected: stats.rejected,
-            totalRequests: stats.pending + stats.accepted + stats.rejected
+            timed_out: stats.timed_out,
+            totalRequests: stats.pending + stats.accepted + stats.rejected + stats.timed_out
         });
     } catch (err) {
         return res.status(500).json({ message: "Server error" });
@@ -204,15 +226,18 @@ export const createHireRequest = async (req, res) => {
         }
 
 
+        const now = new Date();
+        const expiresAt = new Date(now.getTime() + 12 * 60 * 60 * 1000);
+
         const doc = {
             labourId: labourObjectId,
             employeeId: employeeObjectId,
             message: message || "",
             status: "pending",
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            createdAt: now,
+            updatedAt: now,
+            expiresAt,
         };
-
 
         await db.collection("hireRequests").insertOne(doc);
 
@@ -226,7 +251,7 @@ export const createHireRequest = async (req, res) => {
 export const getPendingHireRequests = async (req, res) => {
     try {
         const db = await connection();
-
+        await autoRejectExpiredRequests(db);
 
         const labourId = req.user?.id;
         if (!labourId) {
@@ -280,33 +305,46 @@ export const updateHireRequestStatus = async (req, res) => {
         const db = await connection();
         const { status } = req.body;
 
-
         if (!["accepted", "rejected"].includes(status)) {
             return res.status(400).json({ message: "Invalid status" });
         }
 
-
         const requestId = new ObjectId(req.params.id);
-
 
         const hireReq = await db.collection("hireRequests").findOne({ _id: requestId });
         if (!hireReq) return res.status(404).json({ message: "Request not found" });
-
 
         if (hireReq.labourId.toString() !== req.user.id) {
             return res.status(403).json({ message: "Not allowed" });
         }
 
+        const now = new Date();
+
+        if (hireReq.status !== "pending") {
+            return res.status(400).json({ message: "Request already processed" });
+        }
+
+        if (hireReq.expiresAt && new Date(hireReq.expiresAt) <= now) {
+            await db.collection("hireRequests").updateOne(
+                { _id: requestId },
+                {
+                    $set: {
+                        status: "timed_out",
+                        updatedAt: now,
+                        rejectReason: "Auto rejected after 12 hours",
+                    },
+                }
+            );
+
+            return res.status(400).json({ message: "Request expired and auto rejected" });
+        }
 
         await db.collection("hireRequests").updateOne(
             { _id: requestId },
             { $set: { status, updatedAt: new Date() } }
         );
 
-
         if (status === "accepted") {
-            const now = new Date();
-
             const startTime = new Date(now);
             startTime.setHours(10, 0, 0, 0);
 
@@ -324,22 +362,19 @@ export const updateHireRequestStatus = async (req, res) => {
             const work = labourDoc?.profession || labourDoc?.skills?.[0] || "Work";
             const location = labourDoc?.location || "";
 
-            const month = startTime.toLocaleString("en-US", { month: "short" }); // "Jan", "Feb"...
+            const month = startTime.toLocaleString("en-US", { month: "short" });
 
             await db.collection("jobs").insertOne({
                 labourId: hireReq.labourId,
                 employeeId: hireReq.employeeId,
                 requestId: hireReq._id,
-
                 status: "pending",
                 startTime,
                 endTime,
-
                 work,
                 location,
                 amount,
                 month,
-
                 createdAt: new Date(),
                 updatedAt: new Date(),
             });
@@ -350,7 +385,6 @@ export const updateHireRequestStatus = async (req, res) => {
             );
         }
 
-
         return res.json({ message: "Status updated", status });
     } catch (err) {
         console.log("updateHireRequestStatus error:", err);
@@ -360,6 +394,7 @@ export const updateHireRequestStatus = async (req, res) => {
 export const getEmployeeCompletedJobs = async (req, res) => {
     try {
         const db = await connection();
+        await autoRejectExpiredRequests(db);
         const employeeId = new ObjectId(req.user.id);
 
         const jobs = await db.collection("jobs").aggregate([
@@ -410,6 +445,7 @@ export const getEmployeeCompletedJobs = async (req, res) => {
 export const getEmployeeContactedWorkers = async (req, res) => {
     try {
         const db = await connection();
+        await autoRejectExpiredRequests(db);
         const employeeId = new ObjectId(req.user.id);
 
         const data = await db.collection("hireRequests").aggregate([
