@@ -6,7 +6,7 @@ import hireRequestRoutes from "./routes/hireRequstRoutes.js";
 import cors from "cors";
 import dotenv from "dotenv";
 import employeeRoutes from "./routes/employeeRoutes.js";
-
+import publicRoutes from "./routes/publicRoutes.js";
 
 dotenv.config();
 
@@ -22,7 +22,7 @@ app.use("/admin", adminRouter);
 app.use("/api/labour", labourRoutes);
 app.use("/api/employees", employeeRoutes);
 app.use("/api/hire", hireRequestRoutes);
-
+app.use("/api", publicRoutes);
 
 await connectDB();
 

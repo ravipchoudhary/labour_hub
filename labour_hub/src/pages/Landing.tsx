@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -22,7 +22,13 @@ const Landing: React.FC = () => {
   const [selectedSkill, setSelectedSkill] = useState("All");
   const [location, setLocation] = useState("");
   const navigate = useNavigate();
-
+  const [stats, setStats] = useState({
+    verifiedWorkers: 0,
+    successfulJobs: 0,
+    citiesCovered: 0,
+    userRating: 0,
+  });
+  const[categoryCounts, setCategoreyCounts] = useState<Record<string, number>>({});
   const handleSearch = () => {
     navigate(
       `/find-labour?skill=${encodeURIComponent(
@@ -36,7 +42,34 @@ const Landing: React.FC = () => {
       handleSearch();
     }
   };
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch("http://localhost:4000/api/home-stats");
+        const data = await res.json();
 
+        setStats({
+          verifiedWorkers: data.verifiedWorkers ?? 0,
+          successfulJobs: data.successfulJobs ?? 0,
+          citiesCovered: data.citiesCovered ?? 0,
+          userRating: data.userRating ?? 0,
+        });
+      } catch (e) {
+        console.log("Home stats error", e);
+      }
+    };
+    const fetchCategoryCounts = async () => {
+      try {
+        const res = await fetch("http://localhost:4000/api/category-counts");
+        const data = await res.json();
+        setCategoreyCounts(data?.counts || {});
+      } catch (e) {
+        console.log("Category counts error", e);
+      }
+    };
+    fetchCategoryCounts();
+    fetchStats();
+  }, []);
   return (
     <main className="w-full font-sans text-gray-800">
 
@@ -109,10 +142,10 @@ const Landing: React.FC = () => {
             transition={{ duration: 1, delay: 1 }}
             className="grid grid-cols-2 sm:grid-cols-4 gap-10 mb-14"
           >
-            <HeroStat value="25K+" label="Verified Workers" />
-            <HeroStat value="10K+" label="Successful Jobs" />
-            <HeroStat value="100+" label="Cities Covered" />
-            <HeroStat value="4.8★" label="User Rating" />
+            <HeroStat value={stats.verifiedWorkers} label="Verified Workers" />
+            <HeroStat value={stats.successfulJobs} label="Successful Jobs" />
+            <HeroStat value={stats.citiesCovered} label="Cities Covered" />
+            <HeroStat value={`${stats.userRating}★`} label="User Rating" />
           </motion.div>
 
           {/* ================= SKILL CHIPS ================= */}
@@ -183,14 +216,14 @@ const Landing: React.FC = () => {
 
           <div className="max-w-[1800px] mx-auto">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-x-12 gap-y-14">
-              <Skill icon={<Plug size={28} />} name="Electrician" />
-              <Skill icon={<Wrench size={28} />} name="Plumber" />
-              <Skill icon={<Hammer size={28} />} name="Carpenter" />
-              <Skill icon={<Users size={28} />} name="Mason" />
-              <Skill icon={<Zap size={28} />} name="Welder" />
-              <Skill icon={<Car size={28} />} name="Driver" />
-              <Skill icon={<Scissors size={28} />} name="Tailor" />
-              <Skill icon={<Paintbrush size={28} />} name="Painter" />
+              <Skill icon={<Plug size={28} />} name="Electrician" count={categoryCounts["Electrician"] ?? 0} />
+              <Skill icon={<Wrench size={28} />} name="Plumber" count={categoryCounts["Plumber"] ?? 0} />
+              <Skill icon={<Hammer size={28} />} name="Carpenter" count={categoryCounts["Carpenter"] ?? 0} />
+              <Skill icon={<Users size={28} />} name="Mason" count={categoryCounts["Mason"] ?? 0} />
+              <Skill icon={<Zap size={28} />} name="Welder" count={categoryCounts["Welder"] ?? 0} />
+              <Skill icon={<Car size={28} />} name="Driver" count={categoryCounts["Driver"] ?? 0} />
+              <Skill icon={<Scissors size={28} />} name="Tailor" count={categoryCounts["Tailor"] ?? 0} />
+              <Skill icon={<Paintbrush size={28} />} name="Painter" count={categoryCounts["Painter"] ?? 0} />
             </div>
           </div>
         </div>
@@ -243,13 +276,13 @@ const Feature = ({ icon, title }: any) => (
   </div>
 );
 
-const Skill = ({ icon, name }: any) => (
+const Skill = ({ icon, name,count }: any) => (
   <div className="border rounded-2xl p-8 flex flex-col items-center gap-4 hover:border-[#FF7A00] hover:shadow transition cursor-pointer">
     <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center text-[#FF7A00]">
       {icon}
     </div>
     <h3 className="font-semibold text-lg">{name}</h3>
-    <p className="text-sm text-gray-500">110+ Workers</p>
+    <p className="text-sm text-gray-500">{count}+ Workers</p>
   </div>
 );
 
