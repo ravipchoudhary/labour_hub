@@ -7,13 +7,14 @@ const Dashboard = () => {
     const [selectedSkill, setSelectedSkill] = useState("All");
     const [location, setLocation] = useState("");
     const navigate = useNavigate();
-    
-    const [stats, setStats] = useState({
+    const [showNotifications, setShowNotifications] = useState(false);
+        const [stats, setStats] = useState({
         workersContacted: 0,
         rejected: 0,
         workersHired: 0,
         completedJobs: 0,
     });
+    const notificationCount = (stats.rejected ?? 0) + (stats.completedJobs ?? 0);
     useEffect(() => {
         const fetchStats = async () => {
             try {
@@ -47,8 +48,53 @@ const Dashboard = () => {
     }, []);
     return (
         <div className="bg-gray-50 p-8 min-h-screen">
-            <h2 className="text-2xl font-semibold mb-6">Welcome back, Employer!</h2>
+            <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-semibold">Welcome back, Employer!</h2>
 
+                <div className="relative">
+                    <button
+                        onClick={() => setShowNotifications(!showNotifications)}
+                        className="text-2xl relative"
+                    >
+                        🔔
+                        {notificationCount > 0 && (
+                            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
+                                {notificationCount}
+                            </span>
+                        )}
+                    </button>
+
+                    {showNotifications && (
+                        <div className="absolute right-0 mt-2 w-72 bg-white border rounded-xl shadow-lg p-4 z-50">
+                            <h3 className="font-semibold mb-3">Notifications</h3>
+
+                            <div className="space-y-3">
+                                {stats.rejected > 0 && (
+                                    <div className="border-b pb-2">
+                                        <p className="text-sm font-medium">Rejected Requests</p>
+                                        <p className="text-xs text-gray-500">
+                                            {stats.rejected} request(s) were rejected
+                                        </p>
+                                    </div>
+                                )}
+
+                                {stats.completedJobs > 0 && (
+                                    <div className="border-b pb-2">
+                                        <p className="text-sm font-medium">Completed Jobs</p>
+                                        <p className="text-xs text-gray-500">
+                                            {stats.completedJobs} job(s) completed
+                                        </p>
+                                    </div>
+                                )}
+
+                                {notificationCount === 0 && (
+                                    <p className="text-sm text-gray-500">No notifications</p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
             <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 <StatCard value={stats.workersContacted} title="Workers Contacted" icon={<span className="text-xl">👥</span>} onClick={() => navigate("/contacted-workers")} />
                 <StatCard value={stats.rejected} title="Rejected" icon={<span className="text-xl">🔍</span>} onClick={() => navigate("/rejected-workers")} />
