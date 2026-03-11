@@ -6,6 +6,7 @@ import { ObjectId } from "mongodb";
 import { OAuth2Client } from "google-auth-library";
 import { Parser } from "json2csv";
 import PDFDocument from "pdfkit";
+import axios from "axios";
 
 
 
@@ -375,170 +376,469 @@ export const recentRegistrations = async (req, resp) => {
   try {
     const db = await connection();
 
+    const labourUsers = await db.collection("labour").find({}).toArray();
+    const employeeUsers = await db.collection("employees").find({}).toArray();
 
-    const recentUsers = await db.collection("labour").find({}).sort({ createdAt: -1 }).limit(5).toArray();
+    const labour = labourUsers.map((u) => ({
+      ...u,
+      role: "labour"
+    }));
+
+    const employees = employeeUsers.map((u) => ({
+      ...u,
+      role: "employee"
+    }));
+
+    const allUsers = [...labour, ...employees]
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 5);
+
     resp.send({
       success: true,
-      data: recentUsers
+      data: allUsers
     });
   } catch (err) {
     resp.status(500).send({
       success: false,
       message: "server error"
-    })
-  }
-}
-
-
-export const getAllUsers = async (req, resp) => {
-  try {
-    const { role, status, search } = req.query;
-
-
-    const db = await connection();
-
-
-    let filter = {};
-    if (role && role !== "all") {
-      filter.role = role;
-    }
-    if (status && status !== "all") {
-      filter.status = status;
-    }
-    if (search) {
-      filter.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { email: { $regex: search, $options: "i" } }
-      ]
-    }
-    const users = await db.collection("labour").find(filter).sort({ createdAt: -1 }).toArray();
-    resp.status(200).send({
-      success: true, users
-    })
-  }
-  catch (error) {
-    resp.status(500).send({
-      success: false,
-      message: "Failed to fetch users"
     });
   }
 };
 
 
-export const updateUserStatus = async (req, resp) => {
+export const getAllUsers = async (req, res) => {
+  try {
+    const { role, search, status } = req.query;
+    const db = await connection();
+
+    const labourUsers = await db.collection("labour").find({}).sort({ createdAt: -1 }).toArray();
+    const employeeUsers = await db.collection("employees").find({}).sort({ createdAt: -1 }).toArray();
+
+    const hireRequests = await db.collection("hireRequests").find({}).sort({ createdAt: -1 }).toArray();
+
+    const ignored = await db.collection("hireRequests").aggregate([
+      {
+        $match: {
+          status: "rejected",
+          rejectReason:"timeout"
+        }
+      },
+      {
+        $group: {
+          _id: "$labourId",
+          ignoredJobs: { $sum: 1 }
+        }
+      }
+    ]).toArray();
+
+    const ignoreMap = {};
+    ignored.forEach(i => {
+      ignoreMap[i._id.toString()] = i.ignoredJobs;
+    });
+
+    const labours = labourUsers.map(u => {
+      const request = hireRequests.find(r => r.labourId?.toString() === u._id.toString());
+
+      return {
+        ...u,
+        role: "labour",
+        status: request ? request.status : "pending",
+        ignoredJobs: ignoreMap[u._id.toString()] || 0
+      };
+    });
+
+    const employees = employeeUsers.map(u => ({
+      ...u,
+      role: "employee",
+      status: u.status || "accepted",
+      ignoredJobs: 0
+    }));
+
+    let allUsers = [...labours, ...employees];
+
+    if (role && role !== "all") {
+      allUsers = allUsers.filter(u => u.role === role);
+    }
+
+    if (status && status !== "all") {
+      allUsers = allUsers.filter(u => u.status === status);
+    }
+
+    if (search) {
+      const s = search.toLowerCase();
+      allUsers = allUsers.filter(u =>
+        u.name?.toLowerCase().includes(s) ||
+        u.email?.toLowerCase().includes(s)
+      );
+    }
+
+    res.send({
+      success: true,
+      users: allUsers
+    });
+
+  } catch {
+    res.status(500).send({ success: false });
+  }
+};
+
+
+export const updateUserStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
-
-
     const db = await connection();
 
+    await db.collection("hireRequests").updateOne(
+      { labourId: new ObjectId(id) },
+      { $set: { status, updatedAt: new Date() } }
+    );
+
+    res.send({
+      success: true,
+      message: "Status updated"
+    });
+
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Update failed"
+    });
+  }
+};
+
+
+const sendWhatsAppReminder = async (phone) => {
+  await axios.post(
+    "https://graph.facebook.com/v18.0/YOUR_PHONE_NUMBER_ID/messages",
+    {
+      messaging_product: "whatsapp",
+      to: phone,
+      type: "text",
+      text: { body: "Reminder: You missed job requests. Please respond." }
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`,
+        "Content-Type": "application/json"
+      }
+    }
+  )
+}
+
+const sendWhatsAppWarning = async (phone) => {
+  await axios.post(
+    "https://graph.facebook.com/v18.0/YOUR_PHONE_NUMBER_ID/messages",
+    {
+      messaging_product: "whatsapp",
+      to: phone,
+      type: "text",
+      text: { body: "Warning: You are ignoring job requests. Please respond immediately." }
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`,
+        "Content-Type": "application/json"
+      }
+    }
+  )
+}
+
+export const getLabourVerification = async (req, res) => {
+  try {
+
+    const db = await connection()
+
+    const data = await db.collection("hireRequests").aggregate([
+      {
+        $match: {
+          status: "rejected",
+          rejectReason:"timeout"
+        }
+      },
+      {
+        $group: {
+          _id: "$labourId",
+          ignoredJobs: { $sum: 1 }
+        }
+      },
+      {
+        $lookup: {
+          from: "labour",
+          localField: "_id",
+          foreignField: "_id",
+          as: "labour"
+        }
+      },
+      { $unwind: "$labour" },
+      {
+        $project: {
+          labourId: "$_id",
+          name: "$labour.name",
+          phone: "$labour.phone",
+          document: "$labour.document",
+          ignoredJobs: 1
+        }
+      }
+    ]).toArray()
+
+    res.send({ success: true, data })
+
+  } catch {
+    res.status(500).send({ success: false })
+  }
+}
+
+export const sendReminder = async (req, res) => {
+  try {
+
+    const db = await connection()
+
+    const users = await db.collection("hireRequests").aggregate([
+      {
+        $match: {
+          status: "rejected",
+          rejectReason:"timeout"
+        }
+      },
+      {
+        $group: {
+          _id: "$labourId",
+          ignoredJobs: { $sum: 1 }
+        }
+      },
+      {
+        $match: { ignoredJobs: 2 }
+      }
+    ]).toArray()
+
+    if (!users.length) {
+      return res.send({ success: false, message: "No users eligible for reminder" })
+    }
+
+    const now = new Date()
+    const next24 = new Date(now.getTime() + 86400000)
+
+    let sent = 0
+
+    for (const u of users) {
+
+      const last = await db.collection("labourActions").findOne(
+        { labourId: u._id, type: "reminder" },
+        { sort: { createdAt: -1 } }
+      )
+
+      if (last && new Date(last.nextAllowedAt) > now) {
+        continue
+      }
+
+      const labour = await db.collection("labour").findOne({
+        _id: new ObjectId(u._id)
+      })
+
+      if (!labour) continue
+
+      await db.collection("labourActions").insertOne({
+        labourId: u._id,
+        type: "reminder",
+        createdAt: now,
+        nextAllowedAt: next24
+      })
+
+      sent++
+    }
+
+    res.send({
+      success: true,
+      sent
+    })
+
+  } catch (error) {
+
+    console.log("Reminder Error:", error)
+
+    res.status(500).send({
+      success: false,
+      error: error.message
+    })
+
+  }
+}
+
+export const sendWarning = async (req, res) => {
+  try {
+
+    const db = await connection()
+
+    const users = await db.collection("hireRequests").aggregate([
+      // { $match: { status: "rejected" } },
+      { $match:{ status:"rejected", rejectReason:"timeout" } },
+      { $group: { _id: "$labourId", ignoredJobs: { $sum: 1 } } },
+      { $match: { ignoredJobs: 3 } }
+    ]).toArray()
+
+    const now = new Date()
+    const next24 = new Date(now.getTime() + 86400000)
+
+    let sent = 0
+
+    for (const u of users) {
+
+      const last = await db.collection("labourActions").findOne(
+        { labourId: u._id, type: "warning" },
+        { sort: { createdAt: -1 } }
+      )
+
+      if (last && new Date(last.nextAllowedAt) > now) {
+        continue
+      }
+
+      const labour = await db.collection("labour").findOne({ _id: u._id })
+
+      if (labour?.phone) {
+
+        await sendWhatsAppWarning(labour.phone)
+
+        await db.collection("labourActions").insertOne({
+          labourId: u._id,
+          type: "warning",
+          createdAt: now,
+          nextAllowedAt: next24
+        })
+
+        sent++
+      }
+    }
+
+    res.send({ success: true, sent })
+
+  } catch {
+    res.status(500).send({ success: false })
+  }
+}
+
+export const getReminderCooldown = async (req, res) => {
+  try {
+
+    const db = await connection()
+
+    const last = await db.collection("labourActions").findOne(
+      { type: "reminder" },
+      { sort: { createdAt: -1 } }
+    )
+
+    if (!last) {
+      return res.send({ remaining: 0 })
+    }
+
+    const remaining = new Date(last.nextAllowedAt) - new Date()
+
+    res.send({ remaining: remaining > 0 ? remaining : 0 })
+
+  } catch {
+    res.send({ remaining: 0 })
+  }
+}
+
+export const blockLabour = async (req, res) => {
+  try {
+
+    const db = await connection()
+    const { id } = req.params
 
     await db.collection("labour").updateOne(
       { _id: new ObjectId(id) },
-      { $set: { status, updatedAt: new Date() } }
-    );
-    resp.status(200).send({
-      success: true,
-      message: "Status updated"
-    })
-  } catch (error) {
-    resp.status(500).send({
-      success: false,
-      message: "Update failed"
-    })
+      { $set: { status: "blocked", updatedAt: new Date() } }
+    )
+
+    res.send({ success: true })
+
+  } catch {
+    res.status(500).send({ success: false })
   }
 }
 
-
-export const getLabourVerification = async (req, resp) => {
+export const blockAllInactive = async (req, res) => {
   try {
-    const db = await connection();
-    const labours = await db.collection("labour").find({
-      role: "labour", status: "pending"
-    }).sort({ createdAt: -1 }).toArray();
 
+    const db = await connection()
 
-    resp.status(200).send({
+    const users = await db.collection("hireRequests").aggregate([
+      {
+        $match: {
+          status: "rejected",
+          rejectReason:"timeout"
+        }
+      },
+      {
+        $group: {
+          _id: "$labourId",
+          ignoredJobs: { $sum: 1 }
+        }
+      },
+      {
+        $match: { ignoredJobs: { $gte: 4 } }
+      }
+    ]).toArray()
+
+    const ids = users.map(u => new ObjectId(u._id))
+
+    if (!ids.length) {
+      return res.send({
+        success: false,
+        blocked: 0
+      })
+    }
+
+    const result = await db.collection("labour").updateMany(
+      { _id: { $in: ids } },
+      { $set: { status: "blocked", updatedAt: new Date() } }
+    )
+
+    res.send({
       success: true,
-      data: labours
+      blocked: result.modifiedCount
     })
-  } catch (error) {
-    resp.status(500).send({
-      success: false
-    })
+
+  } catch {
+    res.status(500).send({ success: false })
   }
 }
 
-
-export const updateLabourVerificationStatus = async (req, resp) => {
-  try {
-    const { id } = req.params.id;
-    const { status } = req.body;
-
-
-    const db = await connection();
-
-
-    await db.collection("labour").updateOne({
-      _is: new ObjectId(id)
-    },
-      { $set: { status } })
-
-
-    resp.status(200).send({
-      success: true,
-      message: "Status updated"
-    })
-  } catch (error) {
-    resp.status(500).send({
-      success: false
-    })
-  }
-}
-
-export const getDashboardStats = async (req, resp) => {
+export const getDashboardStats = async (req, res) => {
   try {
     const db = await connection();
 
-    const totalUsers = await db.collection("labour").countDocuments();
+    const labourCount = await db.collection("labour").countDocuments();
+    const employeeCount = await db.collection("employees").find({}).toArray();
+    const employerTotal = employeeCount.length;
 
-    const activeWorkers = await db.collection("labour").countDocuments({
-      role: { $regex: "^labour$", $options: "i" },
-      status: { $regex: "^accept$", $options: "i" }
-    });
+    const totalUsers = labourCount + employerTotal;
 
-    const employers = await db.collection("labour").countDocuments({
-      role: { $regex: "^employer$", $options: "i" },
-      status: { $regex: "^accept$", $options: "i" }
-    });
+    const approved = await db.collection("hireRequests").countDocuments({ status: "accepted" });
+    const pending = await db.collection("hireRequests").countDocuments({ status: "pending" });
+    const rejected = await db.collection("hireRequests").countDocuments({ status: "rejected" });
 
-    const pending = await db.collection("labour").countDocuments({
-      status: { $regex: "^pending$", $options: "i" }
-    });
-
-    const blocked = await db.collection("labour").countDocuments({
-      status: { $regex: "^reject$", $options: "i" }
-    });
-
-    resp.status(200).send({
+    res.send({
       success: true,
       data: {
         totalUsers,
-        approved: activeWorkers,
+        approved,
         pending,
-        blocked,
-        employers
+        blocked: rejected,
+        employers: employerTotal,
+        labour: labourCount
       }
     });
 
   } catch (error) {
-    resp.status(500).send({
+    res.status(500).send({
       success: false,
       message: "Dashboard stats failed"
     });
   }
 };
+
 
 export const getSingleUser = async (req, resp) => {
   try {
@@ -549,7 +849,7 @@ export const getSingleUser = async (req, resp) => {
     let user = await db.collection("labour").findOne({ _id: objectId });
 
     if (!user) {
-      user = await db.collection("employer").findOne({ _id: objectId })
+      user = await db.collection("employees").findOne({ _id: objectId })
     }
     if (!user) {
       return resp.status(404).send({
@@ -592,7 +892,7 @@ export const updateUserProfileStatus = async (req, resp) => {
     );
 
     if (result.matchedCount === 0) {
-      result = await db.collection("employer").updateOne(
+      result = await db.collection("employees").updateOne(
         { _id: objectId },
         { $set: { status, updateAt: new Date() } }
       );
@@ -672,42 +972,83 @@ export const getReportsData = async (req, res) => {
 export const exportCSVData = async (req, res) => {
   try {
     const db = await connection();
-    const users = await db.collection("labour").find().toArray();
+
+    const labours = await db.collection("labour").find({}).toArray();
+    const employers = await db.collection("employees").find({}).toArray();
+
+    const users = [
+      ...labours.map(u => ({
+        name: u.name || "",
+        email: u.email || "",
+        role: "labour"
+      })),
+      ...employers.map(u => ({
+        name: u.name || "",
+        email: u.email || "",
+        role: "employer"
+      }))
+    ];
 
     let csv = "Name,Email,Role\n";
 
-    users.forEach(user => {
-      csv += `${user.name},${user.email},${user.role}\n`;
+    users.forEach(u => {
+      csv += `${u.name},${u.email},${u.role}\n`;
     });
 
     res.header("Content-Type", "text/csv");
     res.attachment("report.csv");
-    return res.send(csv);
+    res.send(csv);
 
   } catch (error) {
     res.status(500).send({ success: false });
   }
 };
 
-
 export const exportPDFData = async (req, res) => {
   try {
-    const db = await connection();
-    const users = await db.collection("labour").find().toArray();
 
-    const doc = new PDFDocument();
+    const db = await connection();
+
+    const labours = await db.collection("labour").find({}).toArray();
+    const employers = await db.collection("employees").find({}).toArray();
+
+    const users = [
+      ...labours.map(u => ({
+        name: u.name || "",
+        email: u.email || "",
+        role: "labour"
+      })),
+      ...employers.map(u => ({
+        name: u.name || "",
+        email: u.email || "",
+        role: "employer"
+      }))
+    ];
+
+    const doc = new PDFDocument({ margin: 40 });
+
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", "attachment; filename=report.pdf");
 
     doc.pipe(res);
 
-    doc.fontSize(18).text("Urban Force Report", { align: "center" });
+    doc.fontSize(20).text("Urban Force Report", { align: "center" });
+
     doc.moveDown();
 
-    users.forEach(user => {
-      doc.fontSize(12).text(
-        `Name: ${user.name} | Email: ${user.email} | Role: ${user.role}`
-      );
+    let y = 120;
+
+    doc.fontSize(12).text("Name", 50, y);
+    doc.text("Email", 250, y);
+    doc.text("Role", 450, y);
+
+    y += 20;
+
+    users.forEach(u => {
+      doc.text(u.name, 50, y);
+      doc.text(u.email, 250, y);
+      doc.text(u.role, 450, y);
+      y += 20;
     });
 
     doc.end();

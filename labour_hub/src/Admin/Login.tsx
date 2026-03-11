@@ -260,6 +260,8 @@ const Login = () => {
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
+                data-lpignore="true"
+                autoComplete="new-password"
                 value={form.password}
                 onChange={(e) => {
                   setForm({ ...form, password: e.target.value });
@@ -272,7 +274,6 @@ const Login = () => {
                   }`}
               />
 
-              {/* Show/Hide Button */}
               <span
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-3 cursor-pointer text-sm text-gray-600"
