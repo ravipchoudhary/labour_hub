@@ -7,9 +7,10 @@ type Props = {
     rating: number;
     available: boolean;
     price: number;
+    rate_type: string;
 };
 
-const WorkerCard = ({ _id, name, price, rating, available, location, skills }: Props) => {
+const WorkerCard = ({ _id, name, price, rating, available, location, skills, rate_type }: Props) => {
     const navigate = useNavigate();
     return (
         <div
@@ -24,7 +25,7 @@ const WorkerCard = ({ _id, name, price, rating, available, location, skills }: P
                 </span>
             </div>
             <p className="text-sm text-gray-500">⭐ {rating.toFixed(1)}</p>
-            <p className="mt-2 text-lg font-normal  text-gray-800">₹{price} / day</p>
+            <p className="mt-2 text-lg font-normal  text-gray-800">₹{price} / {rate_type}</p>
             <p className="text-sm text-gray-500">{location}</p>
             <div className="flex items-center gap-2 mt-2">
                 <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">{skills}</span>

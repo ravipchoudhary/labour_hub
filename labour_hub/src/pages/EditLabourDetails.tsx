@@ -20,7 +20,7 @@ export default function EditLabourProfile() {
     phone: "+91 9876543210",
     experience: 8,
     rate: 600,
-    rateType: "Per Day",
+    rate_type: "Per Day",
     location: "Sector 18, Noida, UP",
     about:
       "Experienced electrician with expertise in residential and commercial wiring, AC installation and repair.",
@@ -54,6 +54,7 @@ export default function EditLabourProfile() {
           rate: Number(data?.price || 0),
           location: data?.location || "",
           about: data?.about || "",
+          rate_type: data?.rate_type || "Per Day",
         }));
 
 
@@ -112,6 +113,7 @@ export default function EditLabourProfile() {
           location: profile.location,
           about: profile.about,
           skills: skills,
+          rate_type: profile.rate_type,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -244,9 +246,9 @@ export default function EditLabourProfile() {
 
 
                 <select
-                  value={profile.rateType}
+                  value={profile.rate_type}
                   onChange={(e) =>
-                    setProfile((p) => ({ ...p, rateType: e.target.value }))
+                    setProfile((p) => ({ ...p, rate_type: e.target.value }))
                   }
                   className="rounded-xl border px-4 py-3"
                 >

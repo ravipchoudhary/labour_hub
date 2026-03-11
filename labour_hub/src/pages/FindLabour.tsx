@@ -128,6 +128,7 @@ const FindLabour = () => {
                         <WorkerCard
                             key={worker._id}
                             _id={worker._id}
+                            rate_type={worker.rate_type}
                             name={worker.name}
                             skills={worker.skills}
                             location={worker.location}
