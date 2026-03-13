@@ -167,7 +167,11 @@ export default function LabourDashboard() {
   const [hireActionLoadingId, setHireActionLoadingId] = useState<string | null>(
     null
   );
+  const [showNotifications, setShowNotifications] = useState(false);
 
+  const notificationCount = allRequests.filter(
+    (req) => req.status === "pending" || req.status === "timed_out"
+  ).length;
 
   const [earningsData, setEarningsData] = useState([
     { month: "Jan", earning: 0 },
@@ -386,6 +390,47 @@ export default function LabourDashboard() {
           >
             Edit Profile
           </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="text-2xl relative"
+            >
+              🔔
+              {notificationCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
+                  {notificationCount}
+                </span>
+              )}
+            </button>
+
+            {showNotifications && (
+              <div className="absolute right-0 mt-2 w-72 bg-white border rounded-xl shadow-lg p-4 z-50">
+                <h3 className="font-semibold mb-3">Notifications</h3>
+
+                {allRequests.length === 0 ? (
+                  <p className="text-sm text-gray-500">No notifications</p>
+                ) : (
+                  <div className="space-y-3 max-h-64 overflow-y-auto">
+                    {allRequests.slice(0, 5).map((req) => (
+                      <div key={req._id} className="border-b pb-2">
+                        <p className="text-sm font-medium">
+                          {req.employee?.name || "Employer"}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Status: {req.status === "timed_out" ? "Timed Out" : req.status}
+                        </p>
+                        {req.createdAt && (
+                          <p className="text-xs text-gray-400">
+                            {new Date(req.createdAt).toLocaleString()}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
