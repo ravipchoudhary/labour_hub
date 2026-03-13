@@ -6,6 +6,7 @@ export interface Worker {
     skills: string[];
     location: string;
     price: number;
+    rate_type:string;
     phone: string;
     rating?: number;
     available?: boolean;
@@ -29,6 +30,7 @@ export const workers: Worker[] = [
         rating: 4.8,
         phone: "9876543210",
         price: 600,
+        rate_type:"Per Day",
         available: true,
         experience: 6,
         languages: ["Hindi", "English"],
@@ -47,6 +49,7 @@ export const workers: Worker[] = [
         skills: ["Wiring", "AC Repair"],
         rating: 4.5,
         price: 550,
+        rate_type: "Per Day",
         phone: "9876543211",
         available: false,
         experience: 4,

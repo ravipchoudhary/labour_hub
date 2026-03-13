@@ -154,6 +154,7 @@ const WorkerDetail = () => {
                     phone: workerData.phone || "N/A",
                     location: workerData.location,
                     price: Number(workerData.price) || 0,
+                    rate_type: workerData.rate_type || "Per Day",
                     skills: workerData.skills?.length
                         ? workerData.skills
                         : workerData.skill
@@ -178,6 +179,7 @@ const WorkerDetail = () => {
                     name: w.name,
                     location: w.location,
                     price: Number(w.price) || 0,
+                    rate_Type: w.rate_type || "Per Day",
                     skills: w.skills?.length ? w.skills : w.skill ? [w.skill] : [],
                     rating: Number(w.rating ?? 0),
                     experience: Number(w.experience ?? 0),

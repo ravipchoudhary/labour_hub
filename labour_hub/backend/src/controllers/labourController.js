@@ -19,6 +19,7 @@ export const registerLabour = async (req, res) => {
             price,
             experience,
             gender,
+            rateType,
         } = req.body;
 
 
@@ -50,6 +51,7 @@ export const registerLabour = async (req, res) => {
             skills: Array.isArray(skills) ? skills : [],
             location: location || "",
             price: Number(price) || 0,
+            rate_type: rateType || "Per Day",
 
 
             experience: Number(experience) || 0,
@@ -244,6 +246,7 @@ export const updateLabourProfile = async (req, res) => {
             location,
             about,
             skills,
+            rate_type,
         } = req.body;
 
 
@@ -255,6 +258,7 @@ export const updateLabourProfile = async (req, res) => {
             ...(location !== undefined && { location }),
             ...(about !== undefined && { about }),
             ...(skills !== undefined && { skills: Array.isArray(skills) ? skills : [] }),
+            ...(rate_type !== undefined && { rate_type: rate_type }),
             updatedAt: new Date(),
         };
 
